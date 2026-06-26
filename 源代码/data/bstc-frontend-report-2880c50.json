@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "version": "VII-1.0",
+    "test_type": "frontend-fault-tolerance",
+    "target_url": "http://localhost:4177",
+    "commit_hash": "2880c50",
+    "started_at": "2026-06-26T05:18:48.727Z",
+    "total_cases": 6
+  },
+  "results": [
+    {
+      "id": "freeze-001",
+      "description": "HTTP 500 → input recovers, error bubble shown",
+      "passed": true,
+      "error": null,
+      "tookMs": 2270,
+      "details": {
+        "inputEnabled": true,
+        "errorBubbleVisible": true
+      }
+    },
+    {
+      "id": "freeze-002",
+      "description": "Request timeout (hang 30s) → AbortController fires at 25s, input recovers",
+      "passed": true,
+      "error": null,
+      "tookMs": 25510,
+      "details": {
+        "inputEnabled": true,
+        "note": "AbortController 25s timeout verified"
+      }
+    },
+    {
+      "id": "freeze-003",
+      "description": "Network disconnected → input recovers",
+      "passed": true,
+      "error": null,
+      "tookMs": 1804,
+      "details": {
+        "inputEnabled": true,
+        "errorBubbleVisible": true
+      }
+    },
+    {
+      "id": "freeze-004",
+      "description": "Malformed response (missing reply) → no crash, input recovers",
+      "passed": true,
+      "error": null,
+      "tookMs": 1781,
+      "details": {
+        "inputEnabled": true
+      }
+    },
+    {
+      "id": "freeze-005",
+      "description": "Empty JSON response → input recovers, no crash",
+      "passed": true,
+      "error": null,
+      "tookMs": 1785,
+      "details": {
+        "inputEnabled": true
+      }
+    },
+    {
+      "id": "freeze-006",
+      "description": "15-round stress test — 0 freezes, input always recovers",
+      "passed": true,
+      "error": null,
+      "tookMs": 48737,
+      "details": {
+        "rounds": 15,
+        "freezes": 0,
+        "freezeLog": []
+      }
+    }
+  ],
+  "summary": {
+    "pass": 6,
+    "fail": 0,
+    "total": 6,
+    "completed_at": "2026-06-26T05:20:11.844Z"
+  }
+}

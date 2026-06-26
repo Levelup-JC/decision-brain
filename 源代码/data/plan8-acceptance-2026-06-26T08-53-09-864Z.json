@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "version": "VIII-1.0",
+    "mode": "process",
+    "http_base": null,
+    "ruleOnly": false,
+    "started_at": "2026-06-26T08:52:44.186Z",
+    "total_cases": 9
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": false,
+      "tookMs": 2780,
+      "input": "BTC 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "BTC",
+      "replyPreview": "由于目前缺乏所有代理报告及实时市场数据，无法对BTC（比特币）进行任何有依据的分析或估值。建议立即启动数据采集流程，获取BTC的当前价格、市值及流通量等关键信息，以便后续做出投资决策。下一步行动：请数据团队优先提供BTC的实时市场数据。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 2731,
+      "input": "ETH 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ETH",
+      "replyPreview": "由于当前缺乏ETH的实时市场数据报告（包括价格、市值和FDV等关键指标），无法进行具体分析。建议首先获取ETH的实时链上数据及市场行情，再评估其投资价值。下一步行动：立即调用数据源更新ETH的市场信息。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 2939,
+      "input": "SOL 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "SOL",
+      "replyPreview": "目前无法提供关于SOL的实时市场数据（价格、市值、FDV均不可用）。建议您通过官方行情平台或交易所接口手动查询最新报价，以获取准确信息。下一步行动：请提供具体数据来源或重新提交查询请求。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯",
+      "passed": false,
+      "tookMs": 2286,
+      "input": "ENA 的 FDV 是多少",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ENA",
+      "replyPreview": "由于目前缺乏ENA的实时市场数据（包括价格、市值和FDV），无法进行具体的投资分析。建议暂停对该资产的评估，待数据源恢复后重新提交查询请求。下一步操作：请确认数据连接或稍后重试。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": true,
+      "tookMs": 2738,
+      "input": "今天大盘怎么样",
+      "intent": "refresh_research",
+      "assetQuery": "BTC",
+      "replyPreview": "由于当前缺乏所有代理报告和市场数据，无法对BTC进行任何基于事实的分析或给出具体建议。请立即启动数据采集流程，重新获取BTC的实时价格、市值及FDV等关键信息，以便进行后续决策。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": false,
+      "tookMs": 3286,
+      "input": "AAVE 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "AAVE",
+      "replyPreview": "由于当前缺乏AAVE的实时市场数据（包括价格、市值和完全稀释估值），我们无法提供具体的投资建议。建议您首先从可靠数据源获取AAVE的最新市场信息，再结合其协议基本面（如借贷活跃度、代币经济模型）进行独立判断。下一步操作：请先补充AAVE的实时价格、市值和FDV数据。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 — ok:true 且 tool 名在已知列表中",
+      "passed": false,
+      "tookMs": 3415,
+      "input": "DOGE 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "DOGE",
+      "replyPreview": "由于目前缺乏DOGE的实时市场数据报告，无法提供具体的价格、市值和FDV信息。建议在获取完整数据报告后再进行投资决策，当前不宜操作。下一步行动：请求数据代理立即补充DOGE的实时市场数据。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": false,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-03",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时回传 degraded + 非空回复",
+      "passed": true,
+      "tookMs": 2541,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": "evaluate_candidate",
+      "assetQuery": "BTC",
+      "replyPreview": "由于当前缺乏所有代理报告，无法获取BTC的实时价格、市值及FDV数据。建议立即启动数据采集流程，优先从CoinGecko或Binance API获取BTC的当前市场价格与流通供应量，以便完成后续评估。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noCrash": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": true,
+      "tookMs": 2953,
+      "input": "你好",
+      "intent": "smalltalk",
+      "assetQuery": "BTC",
+      "replyPreview": "根据当前会话，您仅表达了闲聊意图，未提供具体的投资参数（如数量或成本）。由于缺乏市场数据报告，无法对BTC进行任何投资分析。建议您明确投资意图并提供相关参数，以便我们调用实时数据生成具体建议。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 1,
+      "fail": 4
+    },
+    "dimension_obs": {
+      "pass": 2,
+      "fail": 2
+    },
+    "total_assertions": 30,
+    "passed_assertions": 14,
+    "completed_at": "2026-06-26T08:53:09.864Z",
+    "pass_rate": 0.4666666666666667
+  }
+}

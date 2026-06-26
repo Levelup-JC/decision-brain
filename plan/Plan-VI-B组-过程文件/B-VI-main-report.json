@@ -1,0 +1,88 @@
+{
+  "plan": "Plan-VI",
+  "group": "B",
+  "timestamp": "2026-06-26T02:56:15.316Z",
+  "url": "https://decision-brain-gray.vercel.app",
+  "screenshot_dir": "/var/folders/xj/hl342d1949x0tfsktlm8h6bw0000gn/T/planvi-b-Ar8S3A",
+  "console_errors": 0,
+  "items": [
+    {
+      "status": "PASS",
+      "label": "B-VI-0 页面连接",
+      "detail": "LIVE/已连接",
+      "extra": "Console: 0"
+    },
+    {
+      "status": "PASS",
+      "label": "B-VI-2 多资产覆盖 (BTC/ETH/SOL)",
+      "detail": "BTC: OK | ETH: OK | SOL: OK",
+      "extra": "TTFB: BTC=26.3s, ETH=31.5s, SOL=1.6s"
+    },
+    {
+      "status": "PASS",
+      "label": "B-VI-1 追问链路连贯",
+      "detail": "E1 \"比特币怎么样\": PASS 31.5s | E2 \"它是什么\": PASS 5.7s | E3 \"能加仓吗\": PASS 31.5s | E7 \"卖一半\": PASS 2.1s | E4 \"以太坊呢\": PASS 31.5s | E5 \"卖 30%\": PASS 4.6s"
+    },
+    {
+      "status": "PASS",
+      "label": "B-VI-3 反例 sell 时延 < 8s",
+      "detail": "B-VI-1 E7 \"卖一半\": 2.1s | B-VI-1 E5 \"卖 30%\": 4.6s",
+      "extra": "Avg TTFB: 18.5s"
+    },
+    {
+      "status": "PASS",
+      "label": "B-VI 最终诚信检查",
+      "detail": "待补充/补强可见 | Trace累积 | 无undefined"
+    },
+    {
+      "status": "PASS",
+      "label": "B-VI Console 0 Error",
+      "detail": "0 errors",
+      "extra": ""
+    }
+  ],
+  "latency_log": [
+    {
+      "step": "B-VI-2 BTC",
+      "ttfb_s": 26.3
+    },
+    {
+      "step": "B-VI-2 ETH",
+      "ttfb_s": 31.5
+    },
+    {
+      "step": "B-VI-2 SOL",
+      "ttfb_s": 1.6
+    },
+    {
+      "step": "B-VI-1 E1 \"比特币怎么样\"",
+      "ttfb_s": 31.5,
+      "isSell": false
+    },
+    {
+      "step": "B-VI-1 E2 \"它是什么\"",
+      "ttfb_s": 5.7,
+      "isSell": false
+    },
+    {
+      "step": "B-VI-1 E3 \"能加仓吗\"",
+      "ttfb_s": 31.5,
+      "isSell": false
+    },
+    {
+      "step": "B-VI-1 E7 \"卖一半\"",
+      "ttfb_s": 2.1,
+      "isSell": true
+    },
+    {
+      "step": "B-VI-1 E4 \"以太坊呢\"",
+      "ttfb_s": 31.5,
+      "isSell": false
+    },
+    {
+      "step": "B-VI-1 E5 \"卖 30%\"",
+      "ttfb_s": 4.6,
+      "isSell": true
+    }
+  ]
+}

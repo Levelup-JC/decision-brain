@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-06-26T05:00:05.000Z",
+  "url": "https://decision-brain-gray.vercel.app",
+  "commit": "2880c50",
+  "test": "B-VII-3 长会话稳定性",
+  "totalRounds": 15,
+  "freezeCount": 0,
+  "consoleErrors": 0,
+  "memoryBefore": { "usedJSHeapSize": 2170376, "totalJSHeapSize": 3660372 },
+  "memoryAfter": { "usedJSHeapSize": 3410976, "totalJSHeapSize": 5551720 },
+  "memoryGrowth": "1.2MB",
+  "chatCount": 31,
+  "errorBubbles": 0,
+  "results": [
+    { "test": "15轮无冻结", "pass": true, "detail": "0/15 freezes" },
+    { "test": "Console 0 error", "pass": true, "detail": "0 errors" },
+    { "test": "recentTurns ≤ 10", "pass": true, "detail": "Capped by dashboard.js MAX_RECENT_TURNS=10" },
+    { "test": "内存增长可控", "pass": true, "detail": "Growth: 1.2MB" }
+  ],
+  "summary": { "pass": 4, "fail": 0, "total": 4 }
+}

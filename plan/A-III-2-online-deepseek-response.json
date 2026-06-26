@@ -1,0 +1,74 @@
+{
+  "ok": true,
+  "intent": "evaluate_candidate",
+  "assetQuery": "BTW",
+  "fanout": [
+    "memory",
+    "macro",
+    "onchain",
+    "sentiment",
+    "technical",
+    "news",
+    "valuation"
+  ],
+  "agentResults": [
+    {
+      "role": "memory",
+      "status": "ok",
+      "headline": "意图: unknown，资产: BTW",
+      "tookMs": 9
+    },
+    {
+      "role": "macro",
+      "status": "ok",
+      "headline": "Macro environment: 数据已刷新 (2 条来源)",
+      "tookMs": 16502
+    },
+    {
+      "role": "onchain",
+      "status": "ok",
+      "headline": "Market intelligence: 数据已刷新 (3 条来源)",
+      "tookMs": 20090
+    },
+    {
+      "role": "sentiment",
+      "status": "ok",
+      "headline": "Sentiment analysis: 数据已刷新 (2 条来源)",
+      "tookMs": 17166
+    },
+    {
+      "role": "technical",
+      "status": "ok",
+      "headline": "Technical analysis: 数据已刷新 (2 条来源)",
+      "tookMs": 16225
+    },
+    {
+      "role": "news",
+      "status": "ok",
+      "headline": "News briefing: 数据已刷新 (1 条来源)",
+      "tookMs": 20797
+    },
+    {
+      "role": "valuation",
+      "status": "ok",
+      "headline": "需确认持仓历史",
+      "tookMs": 3910
+    }
+  ],
+  "reply": "根据宏观与链上数据，BTW当前市场环境中性偏积极，但技术面与情绪指标显示短期波动风险上升。新闻简报未发现重大利好或利空事件，而估值因缺乏持仓历史无法评估。建议暂不操作，等待链上资金流向与情绪指标进一步明朗后再做决策。下一步：持续监控链上大额交易与情绪指数变化。",
+  "suggestions": [
+    "研究 BTW 是否值得买",
+    "我持有 BTW，记录仓位",
+    "刷新全部研究",
+    "看我的持仓总览"
+  ],
+  "degraded": false,
+  "sessionId": "demo-001",
+  "_meta": {
+    "source": "online",
+    "url": "https://decision-brain-gray.vercel.app/api/chat",
+    "testedAt": "2026-06-26T07:48:00Z",
+    "llm": "DeepSeek (deepseek-chat via api.deepseek.com/v1)",
+    "note": "区别于本地 A-II-3-deepseek-response.json，此份为线上公网实测留档"
+  }
+}

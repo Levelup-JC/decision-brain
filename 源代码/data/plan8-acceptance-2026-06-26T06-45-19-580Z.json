@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "version": "VIII-1.0",
+    "mode": "http",
+    "http_base": "http://localhost:4177",
+    "ruleOnly": true,
+    "started_at": "2026-06-26T06:44:45.328Z",
+    "total_cases": 9
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": false,
+      "tookMs": 29,
+      "input": "BTC 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "BTC",
+      "replyPreview": "【asset_info】Bitcoin: 价格$60102 市值$1204.7B FDV $1204.7B",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": true,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 4362,
+      "input": "ETH 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ETH",
+      "replyPreview": "【asset_info】Ethereum: 价格$1565.74 市值$188.7B FDV $188.7B",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": true,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 5124,
+      "input": "SOL 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "SOL",
+      "replyPreview": "【asset_info】Solana: 价格$69.37 市值$40.2B FDV $40.2B",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": true,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯",
+      "passed": false,
+      "tookMs": 5435,
+      "input": "ENA 的 FDV 是多少",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ENA",
+      "replyPreview": "【asset_info】Ethena: 价格$0.079933 市值$0.7B FDV $0.7B",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": true,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": true,
+      "tookMs": 18,
+      "input": "今天大盘怎么样",
+      "intent": "unknown",
+      "assetQuery": "BTC",
+      "replyPreview": "委员会成员尚未返回意见",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": true,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": true,
+      "tookMs": 5250,
+      "input": "AAVE 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "AAVE",
+      "replyPreview": "【asset_info】Aave: 价格$85.49 市值$1.3B FDV $1.3B",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": true,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 — ok:true 且 tool 名在已知列表中",
+      "passed": false,
+      "tookMs": 7006,
+      "input": "LINK 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "LINK",
+      "replyPreview": "委员会成员尚未返回意见",
+      "traceHasMcp": false,
+      "traceCount": 1,
+      "ruleOnly": true,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": false,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-03",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时回传 degraded + 非空回复",
+      "passed": true,
+      "tookMs": 7017,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": "evaluate_candidate",
+      "assetQuery": "BTC",
+      "replyPreview": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+      "traceHasMcp": false,
+      "traceCount": 7,
+      "ruleOnly": true,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noCrash": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": true,
+      "tookMs": 6,
+      "input": "你好",
+      "intent": "smalltalk",
+      "assetQuery": "BTC",
+      "replyPreview": "我是 Decision Brain 首席决策官，随时为你服务。你可以让我研究资产、管理仓位或给出投资建议。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": true,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 1,
+      "fail": 4
+    },
+    "dimension_obs": {
+      "pass": 3,
+      "fail": 1
+    },
+    "total_assertions": 30,
+    "passed_assertions": 22,
+    "completed_at": "2026-06-26T06:45:19.579Z",
+    "pass_rate": 0.7333333333333333
+  }
+}

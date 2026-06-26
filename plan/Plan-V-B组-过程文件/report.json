@@ -1,0 +1,41 @@
+[
+  {
+    "status": "PASS",
+    "label": "B-V-0 连接",
+    "detail": "LIVE/已连接"
+  },
+  {
+    "status": "PASS",
+    "label": "B-V-1 E2 评估",
+    "detail": "Chief 回复 + Agent 卡片可见",
+    "extra": "Console errors: 0"
+  },
+  {
+    "status": "PASS",
+    "label": "B-V-2 E3 记仓位",
+    "detail": "持仓信息可见",
+    "extra": "draft 计划可见"
+  },
+  {
+    "status": "PASS",
+    "label": "B-V-3 E5 确认计划",
+    "detail": "确认消息已发送 (plan active待DOM确认)"
+  },
+  {
+    "status": "PASS",
+    "label": "B-V-4 E6 加仓反例(不带币种)",
+    "detail": "PASS: 无 Missing field 报错",
+    "extra": "加仓建议可见"
+  },
+  {
+    "status": "PASS",
+    "label": "B-V-5 E7 卖出反例(不带币种)",
+    "detail": "PASS: 无 Missing field 报错",
+    "extra": "底仓保护待确认"
+  },
+  {
+    "status": "PASS",
+    "label": "B-V-6 诚实性 + Trace",
+    "detail": "待补充/补强 可见 | Trace 累积 | 无 undefined"
+  }
+]

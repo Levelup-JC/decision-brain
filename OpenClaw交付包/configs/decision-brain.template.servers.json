@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "decision-brain": {
+      "type": "stdio",
+      "command": "/ABSOLUTE/PATH/TO/node",
+      "args": [
+        "/ABSOLUTE/PATH/TO/decision-brain-openclaw-handoff/runtime/decision-brain/src/mcp-server.mjs"
+      ],
+      "env": {
+        "DECISION_BRAIN_DATA_DIR": "/ABSOLUTE/PATH/TO/decision-brain-data"
+      }
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "version": "VII-1.0",
+    "test_type": "frontend-fault-tolerance",
+    "target_url": "http://localhost:4177",
+    "commit_hash": "021f3ec",
+    "started_at": "2026-06-26T04:26:16.653Z",
+    "total_cases": 6
+  },
+  "results": [
+    {
+      "id": "freeze-001",
+      "description": "HTTP 500 → input recovers, error bubble shown",
+      "passed": true,
+      "error": null,
+      "tookMs": 2119,
+      "details": {
+        "inputEnabled": true,
+        "errorBubbleVisible": true
+      }
+    },
+    {
+      "id": "freeze-002",
+      "description": "Request timeout → input recovers, timeout hint",
+      "passed": false,
+      "error": null,
+      "tookMs": 4276,
+      "details": {
+        "inputEnabled": false
+      }
+    },
+    {
+      "id": "freeze-003",
+      "description": "Network disconnected → input recovers",
+      "passed": true,
+      "error": null,
+      "tookMs": 1796,
+      "details": {
+        "inputEnabled": true,
+        "errorBubbleVisible": true
+      }
+    },
+    {
+      "id": "freeze-004",
+      "description": "Malformed response (missing reply) → no crash, input recovers",
+      "passed": true,
+      "error": null,
+      "tookMs": 1772,
+      "details": {
+        "inputEnabled": true
+      }
+    },
+    {
+      "id": "freeze-005",
+      "description": "Empty JSON response → input recovers, no crash",
+      "passed": true,
+      "error": null,
+      "tookMs": 1769,
+      "details": {
+        "inputEnabled": true
+      }
+    },
+    {
+      "id": "freeze-006",
+      "description": "15-round stress test — 0 freezes, input always recovers",
+      "passed": false,
+      "error": null,
+      "tookMs": 50432,
+      "details": {
+        "rounds": 15,
+        "freezes": 12,
+        "freezeLog": [
+          {
+            "round": 1,
+            "message": "能加仓吗",
+            "status": "frozen_after_send"
+          },
+          {
+            "round": 2,
+            "message": "ETH 呢",
+            "status": "frozen_before_send"
+          },
+          {
+            "round": 4,
+            "message": "卖一半 SOL",
+            "status": "frozen_after_send"
+          },
+          {
+            "round": 5,
+            "message": "BTC 现在什么情况",
+            "status": "frozen_before_send"
+          },
+          {
+            "round": 6,
+            "message": "ETH 加仓建议",
+            "status": "frozen_after_send"
+          },
+          {
+            "round": 7,
+            "message": "SOL 刷新数据",
+            "status": "frozen_before_send"
+          },
+          {
+            "round": 7,
+            "message": "SOL 刷新数据",
+            "status": "frozen_after_send"
+          },
+          {
+            "round": 8,
+            "message": "看我的持仓",
+            "status": "frozen_before_send"
+          },
+          {
+            "round": 10,
+            "message": "PEPE 值得研究吗",
+            "status": "frozen_after_send"
+          },
+          {
+            "round": 11,
+            "message": "AAVE 分析一下",
+            "status": "frozen_before_send"
+          },
+          {
+            "round": 11,
+            "message": "AAVE 分析一下",
+            "status": "frozen_after_send"
+          },
+          {
+            "round": 12,
+            "message": "ENA 怎么样",
+            "status": "frozen_before_send"
+          }
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 2,
+    "total": 6,
+    "completed_at": "2026-06-26T04:27:24.105Z"
+  }
+}

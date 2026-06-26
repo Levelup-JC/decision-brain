@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-06-26T03:38:59.708Z",
+  "url": "http://localhost:4177",
+  "version": "v2-post-fix",
+  "console_errors": 0,
+  "results": [
+    {
+      "test": "E1 比特币怎么样",
+      "pass": false,
+      "detail": "Response does NOT mention BTC",
+      "ttfb": 33326,
+      "snippet": "\n          我是 Chief 决策官。描述你想研究的资产，我将派出委员会成员并行分析。\n        "
+    },
+    {
+      "test": "E2 它是什么 (追问BTC)",
+      "pass": true,
+      "detail": "PASS: BTC resolved from context, reply mentions BTC",
+      "ttfb": 20767,
+      "snippet": "根据当前评估，比特币（BTC）作为加密资产龙头，具备高波动性与潜在增长空间，但缺乏具体持仓与成本信息，无法精确判断风险敞口。建议先明确您的投资成本与目标仓位，再结合市场趋势做决策。下一步请提供BTC的买入成本与计划配置比例。11:37:28"
+    },
+    {
+      "test": "E3 能加仓吗 (追问BTC)",
+      "pass": true,
+      "detail": "PASS: BTC add-position advice",
+      "ttfb": 29473,
+      "snippet": "根据当前评估，BTC基本面研究偏薄，但市场情绪与技术面数据均已刷新，短期信号中性偏积极。建议暂不急于追加持仓，先等待更充分的基本面验证。下一步可安排深入调研BTC的链上数据与宏观关联性，再决定是否执行增持操作。11:37:58"
+    },
+    {
+      "test": "E7 卖一半 (追问BTC)",
+      "pass": false,
+      "detail": "PASS*: BTC resolved but ttfb=16642ms > 8s",
+      "ttfb": 16642,
+      "snippet": "根据当前评估，BTC基本面研究偏薄，技术面与情绪面数据虽已刷新但来源有限，尚未形成明确加仓信号。建议暂缓加仓操作，优先补充估值与基本面深度分析，待数据完善后再做决策。下一步：安排研究团队输出BTC估值报告。11:38:14"
+    },
+    {
+      "test": "E4 以太坊呢 (切换到ETH)",
+      "pass": true,
+      "detail": "PASS: ETH evaluation",
+      "ttfb": 25305,
+      "snippet": "综合宏观环境、链上数据、市场情绪与技术指标，当前ETH基本面偏中性，未出现明确加仓或减仓信号。建议维持现有仓位，重点观察链上活跃地址与资金流入变化。下一步可等待技术面突破或关键宏观事件落地后再做决策。11:38:40"
+    },
+    {
+      "test": "E5 卖 30% (追问ETH)",
+      "pass": true,
+      "detail": "PASS: ETH sell 30% advice, ttfb=16641ms",
+      "ttfb": 16641,
+      "snippet": "**首席投资官决策：**\n\n综合来看，以太坊当前估值偏薄，情绪与技术面信号中性（数据已刷新），且缺乏明确的加仓或减仓催化剂。建议**维持现有仓位不动**，暂不执行“卖一半”操作。下一步可等待ETH出现更明确的技术突破或基本面变化后，再重新评估调整。11:38:56"
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 2,
+    "total": 6
+  }
+}

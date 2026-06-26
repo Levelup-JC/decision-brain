@@ -1,0 +1,1050 @@
+{
+  "meta": {
+    "version": "VI-1.0",
+    "commit_hash": "321ccde",
+    "branch": "main",
+    "started_at": "2026-06-26T03:01:21.313Z",
+    "total_cases": 32
+  },
+  "results": [
+    {
+      "id": "bstc-001",
+      "category": "直问资产",
+      "description": "BTC evaluate — ticker in message",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "研究一下 BTC 是否值得买",
+          "intent": "evaluate_candidate",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-002",
+      "category": "直问资产",
+      "description": "ETH evaluate — English input",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "evaluate ETH for me",
+          "intent": "evaluate_candidate",
+          "assetQuery": "ETH",
+          "replyPreview": "委员会已对 ETH 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-003",
+      "category": "直问资产",
+      "description": "SOL position recording",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "我买了 100 个 SOL，成本 120",
+          "intent": "manage_position",
+          "assetQuery": "SOL",
+          "replyPreview": "SOL 已写入持仓，已生成 draft 投资计划，请确认。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-004",
+      "category": "直问资产",
+      "description": "PEPE small coin evaluate",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "看看 PEPE 怎么样",
+          "intent": "unknown",
+          "assetQuery": "PEPE",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-005",
+      "category": "直问资产",
+      "description": "Missing ticker — should ask or fallback gracefully",
+      "passed": true,
+      "error": null,
+      "tookMs": 5,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "最近有什么值得买的吗",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 5,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-006",
+      "category": "直问资产",
+      "description": "Misspelled ticker — non-standard symbol",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "研究一下 BTW",
+          "intent": "evaluate_candidate",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会已对 BTW 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-007",
+      "category": "直问资产",
+      "description": "Chinese asset name — no ticker",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "比特币现在怎么样",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-008",
+      "category": "直问资产",
+      "description": "Smalltalk greeting",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "你好",
+          "intent": "smalltalk",
+          "assetQuery": "BTW",
+          "replyPreview": "我是 Decision Brain 首席决策官，随时为你服务。你可以让我研究资产、管理仓位或给出投资建议。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-009",
+      "category": "直问资产",
+      "description": "Portfolio lookup",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "查看我的持仓",
+          "intent": "lookup_memory",
+          "assetQuery": "BTW",
+          "replyPreview": "BTW 的持仓记忆：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-010",
+      "category": "直问资产",
+      "description": "Mixed CN/EN: '帮我分析一下 SOL 的估值'",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "帮我分析一下 SOL 的估值",
+          "intent": "evaluate_candidate",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会已对 SOL 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-011",
+      "category": "追问链路",
+      "description": "Focus BTC then ask 'what is it'",
+      "passed": true,
+      "error": null,
+      "tookMs": 1,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "比特币怎么样",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 1,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "它是什么",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-012",
+      "category": "追问链路",
+      "description": "Focus BTC then 'can I add more'",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "研究一下 BTC",
+          "intent": "evaluate_candidate",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "能加仓吗",
+          "intent": "review_add",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-013",
+      "category": "追问链路",
+      "description": "Focus BTC then 'sell half'",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "BTC 现在怎么样",
+          "intent": "unknown",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "卖一半",
+          "intent": "review_sell",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-014",
+      "category": "追问链路",
+      "description": "Focus BTC then switch to ETH explicitly",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "研究一下 BTC",
+          "intent": "evaluate_candidate",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "以太坊呢",
+          "intent": "unknown",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-015",
+      "category": "追问链路",
+      "description": "Empty context — 3 turn chain without any ticker",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "最近有什么好的投资机会",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "能具体说说吗",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 2,
+          "message": "那风险呢",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-016",
+      "category": "追问链路",
+      "description": "Sell+pct without asset in follow-up",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "ETH 持有 50 个，成本 3000",
+          "intent": "manage_position",
+          "assetQuery": "ETH",
+          "replyPreview": "ETH 已写入持仓，已生成 draft 投资计划，请确认。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "卖 30%",
+          "intent": "review_sell",
+          "assetQuery": "ETH",
+          "replyPreview": "ETH 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-017",
+      "category": "追问链路",
+      "description": "Multi-asset focus drift: BTC → ETH → SOL",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "BTC 怎么样",
+          "intent": "unknown",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "ETH 呢",
+          "intent": "unknown",
+          "assetQuery": "ETH",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 2,
+          "message": "SOL 呢",
+          "intent": "unknown",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-018",
+      "category": "追问链路",
+      "description": "Ask advice after evaluate",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "分析一下 AAVE",
+          "intent": "evaluate_candidate",
+          "assetQuery": "AAVE",
+          "replyPreview": "委员会已对 AAVE 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "给个建议",
+          "intent": "unknown",
+          "assetQuery": "AAVE",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-019",
+      "category": "追问链路",
+      "description": "Ask nature of focused asset",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "SOL 值得研究吗",
+          "intent": "evaluate_candidate",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会已对 SOL 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "它有什么特点",
+          "intent": "unknown",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-020",
+      "category": "追问链路",
+      "description": "Refresh after position recording",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "我买了 100 个 SOL 成本 120",
+          "intent": "manage_position",
+          "assetQuery": "SOL",
+          "replyPreview": "SOL 已写入持仓，已生成 draft 投资计划，请确认。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "刷新一下数据",
+          "intent": "refresh_research",
+          "assetQuery": "SOL",
+          "replyPreview": "SOL 研究数据已刷新。委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-021",
+      "category": "反例意图",
+      "description": "Sell+pct without ticker (negative)",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "卖 30%",
+          "intent": "review_sell",
+          "assetQuery": "BTW",
+          "replyPreview": "BTW 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-022",
+      "category": "反例意图",
+      "description": "Sell with empty message (negative)",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "卖",
+          "intent": "review_sell",
+          "assetQuery": "BTW",
+          "replyPreview": "BTW 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-023",
+      "category": "反例意图",
+      "description": "Buy with empty ticker (negative)",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "可以买吗",
+          "intent": "evaluate_candidate",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会已对 BTW 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-024",
+      "category": "反例意图",
+      "description": "Add position without asset (negative)",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "能加仓吗",
+          "intent": "review_add",
+          "assetQuery": "BTW",
+          "replyPreview": "BTW 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-025",
+      "category": "反例意图",
+      "description": "Ask what something is (nature question) — no ticker",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "这是什么币",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-026",
+      "category": "反例意图",
+      "description": "Ask for advice — no ticker",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "给个投资建议",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-027",
+      "category": "长会话",
+      "description": "10-round focus drift across BTC/ETH/SOL",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "BTC 怎么样",
+          "intent": "unknown",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "能加仓吗",
+          "intent": "review_add",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 2,
+          "message": "ETH 呢",
+          "intent": "unknown",
+          "assetQuery": "ETH",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 3,
+          "message": "SOL 也看看",
+          "intent": "unknown",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 4,
+          "message": "卖一半 SOL",
+          "intent": "review_sell",
+          "assetQuery": "SOL",
+          "replyPreview": "SOL 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 5,
+          "message": "BTC 现在什么情况",
+          "intent": "unknown",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 6,
+          "message": "ETH 加仓建议",
+          "intent": "review_add",
+          "assetQuery": "ETH",
+          "replyPreview": "ETH 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 7,
+          "message": "SOL 刷新数据",
+          "intent": "refresh_research",
+          "assetQuery": "SOL",
+          "replyPreview": "SOL 研究数据已刷新。委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 8,
+          "message": "看我的持仓",
+          "intent": "unknown",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 9,
+          "message": "总结一下",
+          "intent": "unknown",
+          "assetQuery": "SOL",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-028",
+      "category": "长会话",
+      "description": "Cross-topic: smalltalk → evaluate → position → sell → refresh",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "你好",
+          "intent": "smalltalk",
+          "assetQuery": "BTW",
+          "replyPreview": "我是 Decision Brain 首席决策官，随时为你服务。你可以让我研究资产、管理仓位或给出投资建议。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "研究一下 AAVE",
+          "intent": "evaluate_candidate",
+          "assetQuery": "AAVE",
+          "replyPreview": "委员会已对 AAVE 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 2,
+          "message": "我买了 100 个 AAVE 成本 80",
+          "intent": "manage_position",
+          "assetQuery": "AAVE",
+          "replyPreview": "AAVE 已写入持仓，已生成 draft 投资计划，请确认。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 3,
+          "message": "加仓建议",
+          "intent": "review_add",
+          "assetQuery": "AAVE",
+          "replyPreview": "AAVE 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 4,
+          "message": "卖 30%",
+          "intent": "review_sell",
+          "assetQuery": "AAVE",
+          "replyPreview": "AAVE 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 5,
+          "message": "刷新 AAVE 数据",
+          "intent": "refresh_research",
+          "assetQuery": "AAVE",
+          "replyPreview": "AAVE 研究数据已刷新。委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 6,
+          "message": "查看 AAVE 持仓",
+          "intent": "lookup_memory",
+          "assetQuery": "AAVE",
+          "replyPreview": "AAVE 的持仓记忆：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 7,
+          "message": "谢谢",
+          "intent": "smalltalk",
+          "assetQuery": "AAVE",
+          "replyPreview": "我是 Decision Brain 首席决策官，随时为你服务。你可以让我研究资产、管理仓位或给出投资建议。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-029",
+      "category": "长会话",
+      "description": "Focus drift with ambiguous pronoun references",
+      "passed": true,
+      "error": null,
+      "tookMs": 1,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "研究一下 PEPE",
+          "intent": "evaluate_candidate",
+          "assetQuery": "PEPE",
+          "replyPreview": "委员会已对 PEPE 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "它是什么",
+          "intent": "unknown",
+          "assetQuery": "PEPE",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 2,
+          "message": "能加仓吗",
+          "intent": "review_add",
+          "assetQuery": "PEPE",
+          "replyPreview": "PEPE 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 1,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 3,
+          "message": "卖 50%",
+          "intent": "review_sell",
+          "assetQuery": "PEPE",
+          "replyPreview": "PEPE 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 4,
+          "message": "为什么这么建议",
+          "intent": "unknown",
+          "assetQuery": "PEPE",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 5,
+          "message": "ETH 对比一下",
+          "intent": "unknown",
+          "assetQuery": "ETH",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-030",
+      "category": "长会话",
+      "description": "BTC-only deep chain: evaluate → record → confirm → add → sell → refresh → lookup",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "分析 BTC",
+          "intent": "unknown",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 1,
+          "message": "我买了 1 个 BTC 成本 65000",
+          "intent": "manage_position",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 已写入持仓，已生成 draft 投资计划，请确认。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 2,
+          "message": "确认计划",
+          "intent": "confirm_plan",
+          "assetQuery": "BTC",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 3,
+          "message": "能加仓吗",
+          "intent": "review_add",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 加仓建议：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 4,
+          "message": "卖 25%",
+          "intent": "review_sell",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 卖出分析：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 5,
+          "message": "刷新数据",
+          "intent": "refresh_research",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 研究数据已刷新。委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        },
+        {
+          "turn": 6,
+          "message": "查看 BTC 持仓",
+          "intent": "lookup_memory",
+          "assetQuery": "BTC",
+          "replyPreview": "BTC 的持仓记忆：委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-031",
+      "category": "追问链路",
+      "description": "Very short message — single char ticker-like but not real",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "买",
+          "intent": "unknown",
+          "assetQuery": "BTW",
+          "replyPreview": "委员会成员尚未返回意见",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "bstc-032",
+      "category": "直问资产",
+      "description": "ENA candidate evaluate",
+      "passed": true,
+      "error": null,
+      "tookMs": 0,
+      "turns": [
+        {
+          "turn": 0,
+          "message": "ENA 值得研究吗",
+          "intent": "evaluate_candidate",
+          "assetQuery": "ENA",
+          "replyPreview": "委员会已对 ENA 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+          "tookMs": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 32,
+    "fail": 0,
+    "total_assertions": 32,
+    "passed_assertions": 32,
+    "completed_at": "2026-06-26T03:01:21.323Z",
+    "pass_rate": 1,
+    "avg_turn_ms": 0
+  }
+}

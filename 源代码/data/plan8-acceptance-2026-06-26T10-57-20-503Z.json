@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "version": "VIII-1.0",
+    "mode": "http",
+    "http_base": "https://decision-brain-gray.vercel.app",
+    "ruleOnly": true,
+    "started_at": "2026-06-26T10:57:20.492Z",
+    "total_cases": 9
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": false,
+      "tookMs": 4,
+      "input": "BTC 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 1,
+      "input": "ETH 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 1,
+      "input": "SOL 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯",
+      "passed": false,
+      "tookMs": 0,
+      "input": "ENA 的 FDV 是多少",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": false,
+      "tookMs": 1,
+      "input": "今天大盘怎么样",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": false,
+      "tookMs": 0,
+      "input": "AAVE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 — ok:true 且 tool 名在已知列表中",
+      "passed": false,
+      "tookMs": 0,
+      "input": "DOGE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": false,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-03",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时回传 degraded + 非空回复",
+      "passed": false,
+      "tookMs": 1,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "hasReply": {
+          "passed": false,
+          "error": null
+        },
+        "noCrash": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": false,
+      "tookMs": 0,
+      "input": "你好",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": false,
+          "error": null
+        },
+        "hasReply": {
+          "passed": false,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 0,
+      "fail": 5
+    },
+    "dimension_obs": {
+      "pass": 0,
+      "fail": 4
+    },
+    "total_assertions": 30,
+    "passed_assertions": 5,
+    "completed_at": "2026-06-26T10:57:20.502Z",
+    "pass_rate": 0.16666666666666666
+  }
+}

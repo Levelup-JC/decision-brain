@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-06-26T03:11:10.814Z",
+  "url": "http://localhost:4177",
+  "console_errors": 0,
+  "results": [
+    {
+      "test": "E1 比特币怎么样",
+      "pass": false,
+      "detail": "Response does NOT mention BTC",
+      "snippet": "\n          我是 Chief 决策官。描述你想研究的资产，我将派出委员会成员并行分析。\n        "
+    },
+    {
+      "test": "E2 它是什么 (追问BTC)",
+      "pass": false,
+      "detail": "FAIL: No BTC mention in response",
+      "snippet": "\n          我是 Chief 决策官。描述你想研究的资产，我将派出委员会成员并行分析。\n        "
+    },
+    {
+      "test": "E3 能加仓吗 (追问BTC)",
+      "pass": true,
+      "detail": "PASS: add advice (coin name from previous)",
+      "snippet": "BTW 加仓建议：【memory】意图: add_to_existing，资产: BTW；【valuation】研究偏薄；【sentiment】Sentiment analysis: 数据已刷新 (2 条来源)；【technical】Technical analysis: 数据已刷新 (2 条来源)11:10:20"
+    },
+    {
+      "test": "E7 卖一半 (追问BTC)",
+      "pass": true,
+      "detail": "PASS: sell advice",
+      "snippet": "BTW 卖出分析：【memory】意图: add_to_existing，资产: BTW；【valuation】研究偏薄；【sentiment】Sentiment analysis: 数据已刷新 (2 条来源)；【technical】Technical analysis: 数据已刷新 (2 条来源)11:10:43"
+    },
+    {
+      "test": "E4 以太坊呢 (切换到ETH)",
+      "pass": false,
+      "detail": "FAIL: No ETH mention",
+      "snippet": "BTW 卖出分析：【memory】意图: add_to_existing，资产: BTW；【valuation】研究偏薄；【sentiment】Sentiment analysis: 数据已刷新 (2 条来源)；【technical】Technical analysis: 数据已刷新 (2 条来源)11:10:43"
+    },
+    {
+      "test": "E5 卖 30% (追问ETH)",
+      "pass": true,
+      "detail": "PASS: sell advice",
+      "snippet": "BTW 卖出分析：【memory】意图: add_to_existing，资产: BTW；【valuation】研究偏薄；【sentiment】Sentiment analysis: 数据已刷新 (2 条来源)；【technical】Technical analysis: 数据已刷新 (2 条来源)11:11:08"
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 3,
+    "total": 6
+  }
+}

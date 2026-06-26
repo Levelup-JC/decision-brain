@@ -1,0 +1,475 @@
+{
+  "ok": true,
+  "intent": "evaluate_candidate",
+  "assetQuery": "BTW",
+  "fanout": [
+    "memory",
+    "macro",
+    "onchain",
+    "sentiment",
+    "technical",
+    "news",
+    "valuation"
+  ],
+  "agentResults": [
+    {
+      "role": "memory",
+      "status": "ok",
+      "headline": "意图: add_to_existing，资产: BTW",
+      "data": {
+        "portfolioMemoryProfile": {
+          "hasCurrentPosition": true,
+          "hasHistoricalPosition": true,
+          "isArchived": false,
+          "hasPriorResearch": true,
+          "knownAliases": [
+            "BTW",
+            "4gfdyudddfc2pvyvd1fjmefydxcpbqzjftujj3rhqvoj",
+            "btw",
+            "bitway",
+            "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj"
+          ],
+          "matchedSources": [
+            {
+              "sourceType": "decision_brain_asset",
+              "matchStrength": "exact_current",
+              "assetId": "asset_btw",
+              "assetSymbol": "BTW",
+              "status": "draft",
+              "details": {
+                "aliases": [
+                  "4gfdyudddfc2pvyvd1fjmefydxcpbqzjftujj3rhqvoj",
+                  "btw",
+                  "bitway",
+                  "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj",
+                  "BTW"
+                ],
+                "hasPriorResearch": true,
+                "traceCount": 68
+              },
+              "positionSnapshot": {
+                "units": 500,
+                "averageCost": 1,
+                "currentPrice": 1,
+                "currentValue": 500,
+                "peakUnits": 500
+              }
+            }
+          ],
+          "confidence": "high",
+          "suggestedIntentClass": "add_to_existing",
+          "requiresUserConfirmation": false,
+          "allowUnconfirmedHistoryFlow": false,
+          "confirmationPrompt": null
+        },
+        "asset": {
+          "id": "asset_btw",
+          "symbol": "BTW",
+          "name": "Bitway",
+          "assetType": "onchain_token",
+          "chain": "solana",
+          "contractAddress": "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj",
+          "riskClass": "high",
+          "tags": [
+            "manual-review",
+            "unclassified",
+            "solana",
+            "onchain"
+          ],
+          "aliases": [
+            "4gfdyudddfc2pvyvd1fjmefydxcpbqzjftujj3rhqvoj",
+            "btw",
+            "bitway",
+            "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj"
+          ],
+          "createdAt": "2026-06-12T13:44:57.814Z",
+          "updatedAt": "2026-06-25T23:10:45.127Z"
+        }
+      },
+      "tookMs": 11
+    },
+    {
+      "role": "macro",
+      "status": "degraded",
+      "headline": "Macro environment: 数据源未连接",
+      "data": {
+        "bitgetStatus": {
+          "ok": false,
+          "sourceType": "market_data_not_connected",
+          "connectionStatus": {
+            "connected": false,
+            "mode": "not_configured",
+            "missingUrl": "MARKET_DATA_MCP_URL env or default datahub URL",
+            "installHint": "Market-data MCP is public (no API key). Install bitget-skill-hub: npm install -g bitget-skill-hub",
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": []
+        },
+        "sources": [
+          {
+            "id": "source_1546324c",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "not_connected",
+            "author": "macro-analyst",
+            "title": "Macro environment",
+            "url": null,
+            "keyClaim": "Market data MCP not connected: MCP error: Invalid request parameters",
+            "roleInDecision": "macro_context",
+            "confidenceAtTime": 7,
+            "createdAt": "2026-06-25T23:10:48.652Z"
+          }
+        ]
+      },
+      "tookMs": 3536
+    },
+    {
+      "role": "onchain",
+      "status": "degraded",
+      "headline": "Market intelligence: 数据源未连接",
+      "data": {
+        "bitgetStatus": {
+          "ok": false,
+          "sourceType": "market_data_not_connected",
+          "connectionStatus": {
+            "connected": false,
+            "mode": "not_configured",
+            "missingUrl": "MARKET_DATA_MCP_URL env or default datahub URL",
+            "installHint": "Market-data MCP is public (no API key). Install bitget-skill-hub: npm install -g bitget-skill-hub",
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": []
+        },
+        "sources": [
+          {
+            "id": "source_b518d61e",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "not_connected",
+            "author": "market-intel",
+            "title": "Market intelligence",
+            "url": null,
+            "keyClaim": "Market data MCP not connected: MCP error: Invalid request parameters",
+            "roleInDecision": "market_intel",
+            "confidenceAtTime": 7,
+            "createdAt": "2026-06-25T23:10:49.370Z"
+          }
+        ]
+      },
+      "tookMs": 4252
+    },
+    {
+      "role": "sentiment",
+      "status": "degraded",
+      "headline": "Sentiment analysis: 数据源未连接",
+      "data": {
+        "bitgetStatus": {
+          "ok": false,
+          "sourceType": "market_data_not_connected",
+          "connectionStatus": {
+            "connected": false,
+            "mode": "not_configured",
+            "missingUrl": "MARKET_DATA_MCP_URL env or default datahub URL",
+            "installHint": "Market-data MCP is public (no API key). Install bitget-skill-hub: npm install -g bitget-skill-hub",
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": []
+        },
+        "sources": [
+          {
+            "id": "source_b9386ede",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "not_connected",
+            "author": "sentiment-analyst",
+            "title": "Sentiment analysis",
+            "url": null,
+            "keyClaim": "Market data MCP not connected: MCP error: Invalid request parameters",
+            "roleInDecision": "sentiment_context",
+            "confidenceAtTime": 7,
+            "createdAt": "2026-06-25T23:10:48.947Z"
+          }
+        ]
+      },
+      "tookMs": 3830
+    },
+    {
+      "role": "technical",
+      "status": "degraded",
+      "headline": "Technical analysis: 数据源未连接",
+      "data": {
+        "bitgetStatus": {
+          "ok": false,
+          "sourceType": "market_data_not_connected",
+          "connectionStatus": {
+            "connected": false,
+            "mode": "not_configured",
+            "missingUrl": "MARKET_DATA_MCP_URL env or default datahub URL",
+            "installHint": "Market-data MCP is public (no API key). Install bitget-skill-hub: npm install -g bitget-skill-hub",
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": []
+        },
+        "sources": [
+          {
+            "id": "source_687ce703",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "not_connected",
+            "author": "technical-analysis",
+            "title": "Technical analysis",
+            "url": null,
+            "keyClaim": "Market data MCP not connected: MCP error: Invalid request parameters",
+            "roleInDecision": "technical_context",
+            "confidenceAtTime": 7,
+            "createdAt": "2026-06-25T23:10:48.904Z"
+          }
+        ]
+      },
+      "tookMs": 3791
+    },
+    {
+      "role": "news",
+      "status": "degraded",
+      "headline": "News briefing: 数据源未连接",
+      "data": {
+        "bitgetStatus": {
+          "ok": false,
+          "sourceType": "market_data_not_connected",
+          "connectionStatus": {
+            "connected": false,
+            "mode": "not_configured",
+            "missingUrl": "MARKET_DATA_MCP_URL env or default datahub URL",
+            "installHint": "Market-data MCP is public (no API key). Install bitget-skill-hub: npm install -g bitget-skill-hub",
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": []
+        },
+        "sources": [
+          {
+            "id": "source_96ec73b9",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "not_connected",
+            "author": "news-briefing",
+            "title": "News briefing",
+            "url": null,
+            "keyClaim": "Market data MCP not connected: MCP error: Invalid request parameters",
+            "roleInDecision": "news_briefing",
+            "confidenceAtTime": 7,
+            "createdAt": "2026-06-25T23:10:48.922Z"
+          }
+        ]
+      },
+      "tookMs": 3806
+    },
+    {
+      "role": "valuation",
+      "status": "ok",
+      "headline": "研究偏薄",
+      "data": {
+        "decisionLicense": {
+          "key": "draftable",
+          "label": "研究偏薄",
+          "reason": "已补充部分研究，但关键信息还不够完整，更适合先补信息再讨论仓位动作。"
+        },
+        "valuationModel": {
+          "id": "valuation_f159472b88",
+          "assetId": "asset_btw",
+          "assetSymbol": "BTW",
+          "comparables": [],
+          "currentMetrics": {
+            "currentPrice": 1,
+            "marketCap": 68002149,
+            "fdv": 68002149,
+            "liquidityUsd": 0,
+            "dailyVolumeUsd": 0
+          },
+          "scenarios": [
+            {
+              "id": "scenario_c8d65add",
+              "name": "conservative",
+              "targetMarketCapRange": [
+                54401719,
+                81602579
+              ],
+              "targetFdvRange": [
+                54401719,
+                81602579
+              ],
+              "impliedPriceRange": [
+                0.8,
+                1.2
+              ],
+              "requiredConditions": [
+                "thesis 持续有效",
+                "流动性不恶化"
+              ],
+              "planImplication": "只有在保守估值下沿附近，才考虑小幅补仓"
+            },
+            {
+              "id": "scenario_5a5b1708",
+              "name": "base",
+              "targetMarketCapRange": [
+                102003224,
+                170005373
+              ],
+              "targetFdvRange": [
+                102003224,
+                170005373
+              ],
+              "impliedPriceRange": [
+                1.5,
+                2.5
+              ],
+              "requiredConditions": [
+                "核心 catalyst 按预期兑现",
+                "交易所流动性稳定或改善"
+              ],
+              "planImplication": "进入基准区间后，考虑回本金或卖出 20%-30%"
+            },
+            {
+              "id": "scenario_b6fb26f5",
+              "name": "aggressive",
+              "targetMarketCapRange": [
+                204006447,
+                340010745
+              ],
+              "targetFdvRange": [
+                204006447,
+                340010745
+              ],
+              "impliedPriceRange": [
+                3,
+                5
+              ],
+              "requiredConditions": [
+                "出现强 catalyst",
+                "上所或采用明显提升",
+                "市场风险偏好支持扩张"
+              ],
+              "planImplication": "进入乐观区间后，分批卖出，除非强证据继续增强"
+            }
+          ],
+          "confidence": 0.45,
+          "createdAt": "2026-06-12T13:44:57.816Z",
+          "refreshedAt": "2026-06-25T23:10:47.886Z"
+        },
+        "investmentMemo": {
+          "id": "memo_618f0943",
+          "assetId": "asset_btw",
+          "assetSymbol": "BTW",
+          "investmentContextClass": "add_to_winner",
+          "why_buy": [
+            "需要补充真实项目研究",
+            "先按高风险资产处理，避免过大仓位"
+          ],
+          "valuation_anchor": {
+            "currentFdv": 68002149,
+            "comparables": []
+          },
+          "risk_map": [
+            "当前研究资料不足",
+            "估值结论可信度有限"
+          ],
+          "position_rule": {
+            "suggestedInitialAllocation": 0.01,
+            "maxTotalAllocation": 0.03,
+            "addConditions": [
+              "研究补全后再讨论后续加仓"
+            ],
+            "doNotAddConditions": [
+              "研究状态 blocked",
+              "流动性恶化",
+              "价格曲线已进入追高段"
+            ]
+          },
+          "thesis_invalidator": [
+            "核心 thesis 被证伪",
+            "上所/分发路径明显受阻",
+            "流动性或承接显著恶化"
+          ],
+          "factual_inputs": [
+            "当前市值约 68002149",
+            "当前 FDV 约 68002149",
+            "当前价格约 0.0068",
+            "{\"coins\": [{\"item\": {\"id\": \"rain\", \"coin_id\": 69134, \"name\": \"Rain\", \"symbol\": \"RAIN\", \"market_cap_rank\": 13, \"thumb\": \"https://coin-images.coingecko.com/coins/images/69134/standard/Rain_logo_1_.png?1762952191\", \"small\": \"https://coin-images.coingecko.com/coins/images/69134/small/Rain_logo_1_.png?1762952191\", \"large\": \"https://coin-images.coingecko.com/coins/images/69134/large/Rain_logo_1_.png?1762952191\", \"slug\": \"rain\", \"price_btc\": 2.632582428653693e-07, \"score\": 0, \"data\": {\"price\": 0.015747",
+            "solana, meteora, liquidity $67.00M"
+          ],
+          "research_gaps": [
+            "补至少 1-2 个对标项目，或者给出一个你认可的 FDV / 市值锚点",
+            "补充目前已上哪些所、理论上还有哪些所可能上，以及为什么",
+            "补充融资背景、投资方、解锁节奏和潜在抛压"
+          ],
+          "structured_research": {
+            "comparablesDraft": {
+              "status": "partial",
+              "summary": "已拿到实时市值/FDV（市值 68002149，FDV 68002149），但还缺对标项目。",
+              "items": [],
+              "nextStep": "补至少 1-2 个对标项目，或者给出一个你认可的 FDV / 市值锚点"
+            },
+            "listingPathDraft": {
+              "status": "missing",
+              "summary": "暂无上所路径草稿。",
+              "currentListings": [],
+              "potentialListings": [],
+              "rationale": "待补充",
+              "nextStep": "补充目前已上哪些所、理论上还有哪些所可能上，以及为什么"
+            },
+            "fundingUnlockDraft": {
+              "status": "missing",
+              "summary": "暂无融资与解锁草稿。",
+              "fundingBackground": "待补充",
+              "unlockRisk": "待补充",
+              "tokenomicsNotes": [],
+              "nextStep": "补充融资背景、投资方、解锁节奏和潜在抛压"
+            }
+          },
+          "prior_position_summary": "当前已有仓位，约 500 单位，成本 1。",
+          "delta_from_last_thesis": "本次判断会在既有 thesis 基础上重新评估估值、事件和流动性。",
+          "createdAt": "2026-06-25T23:10:47.887Z"
+        }
+      },
+      "tookMs": 2771
+    }
+  ],
+  "reply": "根据现有分析，BTW资产目前缺乏宏观、链上、情绪、技术和新闻数据的有效支撑，且估值研究偏薄，无法形成可靠的投资判断。建议暂缓对该资产的评估，等待数据源恢复或补充更多基本面研究后再行决策。下一步：请技术团队排查数据连接问题，并安排分析师补充BTW的估值与行业背景报告。",
+  "suggestions": [
+    "研究 BTW 是否值得买",
+    "我持有 BTW，记录仓位",
+    "刷新全部研究",
+    "看我的持仓总览"
+  ],
+  "degraded": false,
+  "sessionId": "demo-001"
+}

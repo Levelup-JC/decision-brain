@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-06-26T03:16:22.194Z",
+  "url": "http://localhost:4177/api/chat",
+  "results": [
+    {
+      "test": "E1 比特币怎么样",
+      "pass": true,
+      "assetQuery": "BTC",
+      "intent": "evaluate_candidate",
+      "ttfb": 29202,
+      "snippet": "**Chief Recommendation（最终建议）：**\n\n综合宏观、链上、情绪与技术面数据，BTC当前处于多空交织的震荡区间。宏观环境中性偏弱，链上活跃度与市场情绪均未形成明确方向，技术面显示短期支撑与阻力位清晰。建议**暂不执行买入操作**，保持观望，等待更明确的突破信号或回调至关键支撑位（如$60,000附近）再行评估。\n\n**下一步行动：** 设置价格警报，监控BTC能否有效突破$6"
+    },
+    {
+      "test": "E2 它是什么 (追问BTC)",
+      "pass": true,
+      "assetQuery": "BTC",
+      "intent": "get_context",
+      "ttfb": 2760,
+      "snippet": "根据当前会话，用户正在询问比特币（BTC）的整体情况，但尚未提供具体投资意向或持仓细节。建议首先明确用户意图（如是否考虑买入、卖出或仅需市场分析），并补充BTC当前价格、技术面及宏观环境等关键信息。下一步可要求用户说明具体需求，或直接提供BTC最新行情与趋势简报。"
+    },
+    {
+      "test": "E3 能加仓吗 (追问BTC)",
+      "pass": true,
+      "assetQuery": "BTC",
+      "intent": "review_add",
+      "ttfb": 25177,
+      "snippet": "根据当前评估，BTC基本面研究偏薄，但市场情绪与技术面数据已更新，显示短期关注度提升。建议暂不追加仓位，优先补充基本面分析后再做决策。下一步：请研究团队提交BTC估值与链上数据深度报告。"
+    },
+    {
+      "test": "E7 卖一半 (追问BTC)",
+      "pass": false,
+      "assetQuery": "BTC",
+      "intent": "review_sell",
+      "ttfb": 26399,
+      "snippet": "**Chief Recommendation:**\n\n根据估值报告，BTC当前研究支撑偏薄，基本面缺乏明确上行动力；技术面与情绪面虽已刷新数据，但未形成强共振信号。结合你此前“加仓”意图，建议暂缓卖出操作，转为观望，等待估值逻辑补强或技术面出现明确趋势信号。**下一步：请提供BTC最新持仓成本与数量，以便进行精确的盈亏评估与仓位调整建议。**"
+    },
+    {
+      "test": "E4 以太坊呢 (切换到ETH)",
+      "pass": false,
+      "assetQuery": "ETH",
+      "intent": "evaluate_candidate",
+      "ttfb": 45428,
+      "snippet": "根据近期对BTC的评估，宏观环境与链上数据均显示市场情绪偏中性，技术面未出现明确突破信号，建议暂缓加仓操作。当前持仓可维持现状，待技术面出现明确方向性信号后再考虑调整。下一步建议持续监控BTC价格在关键支撑位与阻力位的表现，并关注即将发布的宏观经济数据。"
+    },
+    {
+      "test": "E5 卖 30% (追问ETH, sell+pct fast path)",
+      "pass": false,
+      "assetQuery": "ETH",
+      "intent": "review_sell",
+      "ttfb": 24127,
+      "snippet": "**首席投资官建议：**  \n基于估值研究偏薄、市场情绪与技术面数据刚刷新但未现明确趋势信号，当前对ETH维持中性偏审慎立场。参考此前BTC减仓逻辑，建议暂不执行ETH卖出操作，优先等待更完整的基本面与链上数据确认。**下一步：** 请valuation团队补充ETH估值模型更新，并监控关键支撑位突破情况。"
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 3,
+    "total": 6
+  }
+}

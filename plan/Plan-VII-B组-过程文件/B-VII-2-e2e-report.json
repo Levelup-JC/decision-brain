@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-06-26T04:56:22.934Z",
+  "url": "https://decision-brain-gray.vercel.app",
+  "commit": "2880c50",
+  "test": "B-VII-2 E1-E7 公网链路复验",
+  "results": [
+    {
+      "step": "E1",
+      "message": "比特币怎么样",
+      "expectedAsset": "BTC",
+      "ttfbMs": 11402,
+      "pass": true,
+      "detail": "PASS: BTC confirmed in reply",
+      "replySnippet": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。12:55:48",
+      "inputDisabled": false,
+      "btnDisabled": false
+    },
+    {
+      "step": "E2",
+      "message": "它是什么",
+      "expectedAsset": "BTC",
+      "ttfbMs": 3367,
+      "pass": true,
+      "detail": "PASS: BTC confirmed in reply",
+      "replySnippet": "根据当前会话上下文，您正在评估比特币（BTC）的投资价值。目前缺乏具体的市场报告和持仓数据，建议优先获取BTC的实时价格、技术面分析及市场情绪报告。下一步请指示“获取BTC市场数据”以生成详细评估。12:55:53",
+      "inputDisabled": false,
+      "btnDisabled": false
+    },
+    {
+      "step": "E3",
+      "message": "能加仓吗",
+      "expectedAsset": "BTC",
+      "ttfbMs": 6130,
+      "pass": true,
+      "detail": "PASS: BTC confirmed in reply",
+      "replySnippet": "根据现有报告，技术面和情绪面分析均因系统文件错误（ENOENT）无法执行，且记忆模块重建失败，当前缺乏对BTC的完整评估依据。建议暂缓对BTC的增持操作，优先修复系统状态文件并重新获取完整分析数据。下一步请立即检查/tmp/decision-brain-state.json的读写权限，并重启分析流程。12:56:01",
+      "inputDisabled": false,
+      "btnDisabled": false
+    },
+    {
+      "step": "E7",
+      "message": "卖一半",
+      "expectedAsset": "BTC",
+      "ttfbMs": 6456,
+      "pass": true,
+      "detail": "PASS: BTC confirmed in reply",
+      "replySnippet": "根据当前Agent报告，系统出现严重文件错误（ENOENT），导致技术分析、情绪分析和记忆模块均无法正常运行。在系统恢复前，无法评估BTC的卖出时机。建议立即修复/tmp/decision-brain-state.json文件权限或路径问题，并重新运行全量数据采集与模型评估。12:56:09",
+      "inputDisabled": false,
+      "btnDisabled": false
+    },
+    {
+      "step": "E4",
+      "message": "以太坊呢",
+      "expectedAsset": "ETH",
+      "ttfbMs": 5650,
+      "pass": true,
+      "detail": "PASS: ETH confirmed in reply",
+      "replySnippet": "根据当前所有数据源均无法连接（宏观、链上、情绪、技术、新闻均执行失败），无法对ETH进行任何有效评估。建议等待系统恢复后重新发起评估请求，届时再基于完整数据给出投资建议。12:56:16",
+      "inputDisabled": false,
+      "btnDisabled": false
+    },
+    {
+      "step": "E5",
+      "message": "卖 30%",
+      "expectedAsset": "ETH",
+      "ttfbMs": 2686,
+      "pass": true,
+      "detail": "PASS: ETH confirmed in reply",
+      "replySnippet": "根据记忆报告，ETH近期存在重建后的退出意图，且情绪分析数据源未连接，缺乏明确的市场情绪支撑。考虑到用户刚对比特币执行了减仓操作，建议对ETH保持谨慎，暂不进行卖出操作。下一步建议先连接情绪数据源，重新评估ETH的持仓价值后再做决策。12:56:21",
+      "inputDisabled": false,
+      "btnDisabled": false
+    }
+  ],
+  "console_errors": [],
+  "screenshots": [
+    "B-VII-2_E1_BTC.png",
+    "B-VII-2_E2_BTC.png",
+    "B-VII-2_E3_BTC.png",
+    "B-VII-2_E7_BTC.png",
+    "B-VII-2_E4_ETH.png",
+    "B-VII-2_E5_ETH.png"
+  ],
+  "summary": {
+    "pass": 6,
+    "fail": 0,
+    "total": 6
+  }
+}

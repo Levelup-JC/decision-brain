@@ -1,0 +1,404 @@
+{
+  "ok": true,
+  "intent": "review_sell",
+  "assetQuery": "BTW",
+  "fanout": [
+    "memory",
+    "valuation",
+    "sentiment",
+    "technical"
+  ],
+  "agentResults": [
+    {
+      "role": "memory",
+      "status": "ok",
+      "headline": "意图: rebuild_after_exit，资产: BTW",
+      "data": {
+        "portfolioMemoryProfile": {
+          "hasCurrentPosition": false,
+          "hasHistoricalPosition": true,
+          "isArchived": false,
+          "hasPriorResearch": true,
+          "knownAliases": [
+            "BTW",
+            "4gfdyudddfc2pvyvd1fjmefydxcpbqzjftujj3rhqvoj",
+            "btw",
+            "bitway",
+            "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj"
+          ],
+          "matchedSources": [
+            {
+              "sourceType": "decision_brain_asset",
+              "matchStrength": "exact_historical",
+              "assetId": "asset_btw",
+              "assetSymbol": "BTW",
+              "status": "draft",
+              "details": {
+                "aliases": [
+                  "4gfdyudddfc2pvyvd1fjmefydxcpbqzjftujj3rhqvoj",
+                  "btw",
+                  "bitway",
+                  "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj",
+                  "BTW"
+                ],
+                "hasPriorResearch": true,
+                "traceCount": 10
+              },
+              "positionSnapshot": null
+            }
+          ],
+          "confidence": "medium",
+          "suggestedIntentClass": "rebuild_after_exit",
+          "requiresUserConfirmation": false,
+          "allowUnconfirmedHistoryFlow": false,
+          "confirmationPrompt": null
+        },
+        "asset": {
+          "id": "asset_btw",
+          "symbol": "BTW",
+          "name": "Bitway",
+          "assetType": "onchain_token",
+          "chain": "solana",
+          "contractAddress": "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj",
+          "riskClass": "high",
+          "tags": [
+            "manual-review",
+            "unclassified",
+            "solana",
+            "onchain"
+          ],
+          "aliases": [
+            "4gfdyudddfc2pvyvd1fjmefydxcpbqzjftujj3rhqvoj",
+            "btw",
+            "bitway",
+            "4GFdYUDDDFC2Pvyvd1fjMEfyDxcpBqzjfTujJ3RHqvoj"
+          ],
+          "createdAt": "2026-06-26T01:15:18.150Z",
+          "updatedAt": "2026-06-26T01:19:39.334Z"
+        }
+      },
+      "tookMs": 7
+    },
+    {
+      "role": "valuation",
+      "status": "ok",
+      "headline": "研究偏薄",
+      "data": {
+        "decisionLicense": {
+          "key": "draftable",
+          "label": "研究偏薄",
+          "reason": "已补充部分研究，但关键信息还不够完整，更适合先补信息再讨论仓位动作。"
+        },
+        "valuationModel": {
+          "id": "valuation_359fd04866",
+          "assetId": "asset_btw",
+          "assetSymbol": "BTW",
+          "comparables": [],
+          "currentMetrics": {
+            "currentPrice": 0,
+            "marketCap": 68002149,
+            "fdv": 68002149,
+            "liquidityUsd": 0,
+            "dailyVolumeUsd": 0
+          },
+          "scenarios": [
+            {
+              "id": "scenario_a43d0b24",
+              "name": "conservative",
+              "targetMarketCapRange": [
+                54401719,
+                81602579
+              ],
+              "targetFdvRange": [
+                54401719,
+                81602579
+              ],
+              "impliedPriceRange": null,
+              "requiredConditions": [
+                "thesis 持续有效",
+                "流动性不恶化"
+              ],
+              "planImplication": "只有在保守估值下沿附近，才考虑小幅补仓"
+            },
+            {
+              "id": "scenario_26cd60db",
+              "name": "base",
+              "targetMarketCapRange": [
+                102003224,
+                170005373
+              ],
+              "targetFdvRange": [
+                102003224,
+                170005373
+              ],
+              "impliedPriceRange": null,
+              "requiredConditions": [
+                "核心 catalyst 按预期兑现",
+                "交易所流动性稳定或改善"
+              ],
+              "planImplication": "进入基准区间后，考虑回本金或卖出 20%-30%"
+            },
+            {
+              "id": "scenario_8ced000c",
+              "name": "aggressive",
+              "targetMarketCapRange": [
+                204006447,
+                340010745
+              ],
+              "targetFdvRange": [
+                204006447,
+                340010745
+              ],
+              "impliedPriceRange": null,
+              "requiredConditions": [
+                "出现强 catalyst",
+                "上所或采用明显提升",
+                "市场风险偏好支持扩张"
+              ],
+              "planImplication": "进入乐观区间后，分批卖出，除非强证据继续增强"
+            }
+          ],
+          "confidence": 0.45,
+          "createdAt": "2026-06-26T01:15:29.144Z",
+          "refreshedAt": "2026-06-26T01:19:46.747Z"
+        },
+        "investmentMemo": {
+          "id": "memo_0789cedc",
+          "assetId": "asset_btw",
+          "assetSymbol": "BTW",
+          "investmentContextClass": "reentry_after_exit",
+          "why_buy": [
+            "需要补充真实项目研究",
+            "先按高风险资产处理，避免过大仓位"
+          ],
+          "valuation_anchor": {
+            "currentFdv": 68002149,
+            "comparables": []
+          },
+          "risk_map": [
+            "当前研究资料不足",
+            "估值结论可信度有限"
+          ],
+          "position_rule": {
+            "suggestedInitialAllocation": 0.01,
+            "maxTotalAllocation": 0.03,
+            "addConditions": [
+              "研究补全后再讨论后续加仓"
+            ],
+            "doNotAddConditions": [
+              "研究状态 blocked",
+              "流动性恶化",
+              "价格曲线已进入追高段"
+            ]
+          },
+          "thesis_invalidator": [
+            "核心 thesis 被证伪",
+            "上所/分发路径明显受阻",
+            "流动性或承接显著恶化"
+          ],
+          "factual_inputs": [
+            "当前市值约 68002149",
+            "当前 FDV 约 68002149",
+            "当前价格约 0.0068",
+            "{\"coins\": [{\"item\": {\"id\": \"bitcoin\", \"coin_id\": 1, \"name\": \"Bitcoin\", \"symbol\": \"BTC\", \"market_cap_rank\": 1, \"thumb\": \"https://coin-images.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400\", \"small\": \"https://coin-images.coingecko.com/coins/images/1/small/bitcoin.png?1696501400\", \"large\": \"https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400\", \"slug\": \"bitcoin\", \"price_btc\": 1.0, \"score\": 0, \"data\": {\"price\": 59507.4155232665, \"price_btc\": \"1.0\", \"price_chang",
+            "[{\"id\": \"2269\", \"name\": \"Binance CEX\", \"address\": null, \"symbol\": \"BNB\", \"url\": \"https://www.binance.com\", \"description\": \"Binance is a cryptocurrency exchange which is the largest exchange in the world in terms of daily trading volume of cryptocurrencies\", \"chain\": \"Multi-Chain\", \"logo\": \"https://icons.llamao.fi/icons/protocols/binance-cex\", \"audits\": \"0\", \"gecko_id\": null, \"cmcId\": null, \"category\": \"CEX\", \"chains\": [\"Ethereum\", \"Bitcoin\", \"Binance\", \"Solana\", \"Ripple\", \"Doge\", \"Tron\", \"Arbitr",
+            "[{\"id\": \"2269\", \"name\": \"Binance CEX\", \"address\": null, \"symbol\": \"BNB\", \"url\": \"https://www.binance.com\", \"description\": \"Binance is a cryptocurrency exchange which is the largest exchange in the world in terms of daily trading volume of cryptocurrencies\", \"chain\": \"Multi-Chain\", \"logo\": \"https://icons.llamao.fi/icons/protocols/binance-cex\", \"audits\": \"0\", \"gecko_id\": null, \"cmcId\": null, \"category\": \"CEX\", \"chains\": [\"Ethereum\", \"Bitcoin\", \"Binance\", \"Solana\", \"Ripple\", \"Doge\", \"Tron\", \"Arbitr"
+          ],
+          "research_gaps": [
+            "补至少 1-2 个对标项目，或者给出一个你认可的 FDV / 市值锚点",
+            "补充目前已上哪些所、理论上还有哪些所可能上，以及为什么",
+            "补充融资背景、投资方、解锁节奏和潜在抛压"
+          ],
+          "structured_research": {
+            "comparablesDraft": {
+              "status": "partial",
+              "summary": "已拿到实时市值/FDV（市值 68002149，FDV 68002149），但还缺对标项目。",
+              "items": [],
+              "nextStep": "补至少 1-2 个对标项目，或者给出一个你认可的 FDV / 市值锚点"
+            },
+            "listingPathDraft": {
+              "status": "missing",
+              "summary": "暂无上所路径草稿。",
+              "currentListings": [],
+              "potentialListings": [],
+              "rationale": "待补充",
+              "nextStep": "补充目前已上哪些所、理论上还有哪些所可能上，以及为什么"
+            },
+            "fundingUnlockDraft": {
+              "status": "missing",
+              "summary": "暂无融资与解锁草稿。",
+              "fundingBackground": "待补充",
+              "unlockRisk": "待补充",
+              "tokenomicsNotes": [],
+              "nextStep": "补充融资背景、投资方、解锁节奏和潜在抛压"
+            }
+          },
+          "prior_position_summary": "BTW 过去曾出现于本地仓位画像中，但当前没有确认中的持仓。",
+          "delta_from_last_thesis": "本次判断会在既有 thesis 基础上重新评估估值、事件和流动性。",
+          "createdAt": "2026-06-26T01:19:46.747Z"
+        }
+      },
+      "tookMs": 1046
+    },
+    {
+      "role": "sentiment",
+      "status": "ok",
+      "headline": "Sentiment analysis: 数据已刷新 (2 条来源)",
+      "data": {
+        "bitgetStatus": {
+          "ok": true,
+          "sourceType": "market_data_mcp",
+          "connectionStatus": {
+            "connected": true,
+            "mode": "market-data-http-mcp",
+            "url": "https://datahub.noxiaohao.com/mcp",
+            "timeoutMs": 20000,
+            "retryCount": 2,
+            "toolCount": 19,
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": [
+            "crypto_market",
+            "defi_analytics",
+            "dex_market",
+            "sentiment_index",
+            "tradfi_news",
+            "crypto_price",
+            "social_trending",
+            "network_status",
+            "derivatives_sentiment",
+            "global_data",
+            "news_feed",
+            "cn_market",
+            "global_assets",
+            "crypto_derivatives",
+            "technical_analysis",
+            "backtest",
+            "macro_indicators",
+            "rates_yields",
+            "cross_asset"
+          ]
+        },
+        "sources": [
+          {
+            "id": "source_11c7d7e7",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "market_data_mcp",
+            "author": "sentiment-analyst / sentiment_index",
+            "title": "Sentiment analysis",
+            "url": null,
+            "keyClaim": "{\"value\": \"13\", \"classification\": \"Extreme Fear\", \"timestamp\": \"1782432000\", \"realtime_value\": null, \"btc_price\": null}",
+            "roleInDecision": "sentiment_context",
+            "confidenceAtTime": 8,
+            "createdAt": "2026-06-26T01:19:53.097Z"
+          },
+          {
+            "id": "source_f309ae88",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "market_data_mcp",
+            "author": "sentiment-analyst / derivatives_sentiment",
+            "title": "Sentiment analysis",
+            "url": null,
+            "keyClaim": "[{\"symbol\": \"BTCUSDT\", \"longAccount\": \"0.6200\", \"longShortRatio\": \"1.6316\", \"shortAccount\": \"0.3800\", \"timestamp\": 1782158400000}, {\"symbol\": \"BTCUSDT\", \"longAccount\": \"0.6351\", \"longShortRatio\": \"1.7405\", \"shortAccount\": \"0.3649\", \"timestamp\": 1782172800000}, {\"symbol\": \"BTCUSDT\", \"longAccount\": \"0.6426\", \"longShortRatio\": \"1.7980\", \"shortAccount\": \"0.3574\", \"timestamp\": 1782187200000}, {\"symbol\": \"BTCUSDT\", \"longAccount\": \"0.6555\", \"longShortRatio\": \"1.9028\", \"shortAccount\": \"0.3445\", \"timesta",
+            "roleInDecision": "sentiment_context",
+            "confidenceAtTime": 8,
+            "createdAt": "2026-06-26T01:19:53.097Z"
+          }
+        ]
+      },
+      "tookMs": 7396
+    },
+    {
+      "role": "technical",
+      "status": "ok",
+      "headline": "Technical analysis: 数据已刷新 (2 条来源)",
+      "data": {
+        "bitgetStatus": {
+          "ok": true,
+          "sourceType": "market_data_mcp",
+          "connectionStatus": {
+            "connected": true,
+            "mode": "market-data-http-mcp",
+            "url": "https://datahub.noxiaohao.com/mcp",
+            "timeoutMs": 20000,
+            "retryCount": 2,
+            "toolCount": 19,
+            "skills": [
+              "macro-analyst",
+              "market-intel",
+              "news-briefing",
+              "sentiment-analyst",
+              "technical-analysis"
+            ]
+          },
+          "availableTools": [
+            "crypto_market",
+            "defi_analytics",
+            "dex_market",
+            "sentiment_index",
+            "tradfi_news",
+            "crypto_price",
+            "social_trending",
+            "network_status",
+            "derivatives_sentiment",
+            "global_data",
+            "news_feed",
+            "cn_market",
+            "global_assets",
+            "crypto_derivatives",
+            "technical_analysis",
+            "backtest",
+            "macro_indicators",
+            "rates_yields",
+            "cross_asset"
+          ]
+        },
+        "sources": [
+          {
+            "id": "source_09e51bee",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "market_data_mcp",
+            "author": "technical-analysis / global_assets",
+            "title": "Technical analysis",
+            "url": null,
+            "keyClaim": "{\"symbol\": \"BTW-USD\", \"price\": 0.0018631396}",
+            "roleInDecision": "technical_context",
+            "confidenceAtTime": 8,
+            "createdAt": "2026-06-26T01:19:52.909Z"
+          },
+          {
+            "id": "source_13fb3a23",
+            "assetId": "asset_btw",
+            "assetSymbol": "BTW",
+            "sourceType": "market_data_mcp",
+            "author": "technical-analysis / crypto_derivatives",
+            "title": "Technical analysis",
+            "url": null,
+            "keyClaim": "{\"symbol\": \"BTW/USDT\", \"last\": 0.09806, \"high\": 0.11555, \"low\": 0.085, \"volume\": 718635425.0, \"quote_volume\": 70987519.440895, \"change_pct\": 1.817, \"timestamp\": 1782436790125}",
+            "roleInDecision": "technical_context",
+            "confidenceAtTime": 8,
+            "createdAt": "2026-06-26T01:19:52.909Z"
+          }
+        ]
+      },
+      "tookMs": 7209
+    }
+  ],
+  "reply": "根据当前评估，BTW资产基本面研究偏薄，缺乏足够支撑，且市场情绪与技术面数据刚刷新，尚未形成明确趋势信号。建议暂缓卖出操作，待补充更多基本面分析及技术指标确认后再决策。下一步请要求研究团队补充BTW的估值与行业对比报告。",
+  "suggestions": [
+    "卖 30%",
+    "刷新全部研究",
+    "看我的持仓总览"
+  ],
+  "degraded": false,
+  "sessionId": "demo-001"
+}

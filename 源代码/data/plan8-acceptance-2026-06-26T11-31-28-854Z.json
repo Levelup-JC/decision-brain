@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "version": "VIII-1.0",
+    "mode": "http",
+    "http_base": "https://decision-brain-gray.vercel.app",
+    "ruleOnly": true,
+    "started_at": "2026-06-26T11:30:15.229Z",
+    "total_cases": 9
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": false,
+      "tookMs": 3013,
+      "input": "BTC 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": true,
+      "tookMs": 11137,
+      "input": "ETH 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ETH",
+      "replyPreview": "根据当前实时数据，ETH（以太坊）价格为 **$1545.89**，市值与完全稀释估值（FDV）均为 **$186.6B**，数据来源可靠。结合资产信息报告，ETH 作为主流公链资产，基本面稳固，当前估值处于合理区间。建议下一步：持续监控链上活跃度及宏观流动性变化，无需立即操作。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": true,
+      "tookMs": 9203,
+      "input": "SOL 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "SOL",
+      "replyPreview": "根据实时市场数据，Solana当前价格为$68.58，市值和完全稀释估值均为$39.8B，市场数据来源可靠。建议您关注其作为高性能公链的生态发展，结合当前估值水平评估长期配置价值。下一步可深入分析Solana的链上活跃度及生态项目进展。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯",
+      "passed": false,
+      "tookMs": 9415,
+      "input": "ENA 的 FDV 是多少",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ENA",
+      "replyPreview": "**首席投资官决策摘要：**\n\n根据实时市场数据，Ethena (ENA) 当前价格为 **$0.078171**，市值与完全稀释估值均为 **$0.7B**，数据来源可靠。结合资产信息报告，ENA 目前估值稳定但缺乏短期催化剂。建议**暂时观望**，等待链上协议收入或治理提案等基本面信号后再决定入场时机。**下一步行动：** 监控 Ethena 协议月度收入及稳定币供应量变化，若市值回调至 **",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": true,
+      "tookMs": 3308,
+      "input": "今天大盘怎么样",
+      "intent": "unknown",
+      "assetQuery": null,
+      "replyPreview": "由于当前缺乏所有代理报告和市场数据（包括价格、市值和FDV），无法进行任何投资评估。请先提供具体的资产标的和意图，以便启动分析流程。下一步：请明确您要评估的资产和投资目标。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": true,
+      "tookMs": 9461,
+      "input": "AAVE 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "AAVE",
+      "replyPreview": "根据Agent报告，Aave当前价格为$84.97，市值和FDV均为$1.3B，数据来源可靠。建议关注其作为Polkadot生态DeFi协议的基本面，当前估值相对稳健。下一步可结合链上活跃度及借贷协议收入数据，评估是否适合纳入投资组合。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 — ok:true 且 tool 名在已知列表中",
+      "passed": true,
+      "tookMs": 9769,
+      "input": "DOGE 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "DOGE",
+      "replyPreview": "**首席投资官决策摘要：**  \n根据Agent报告，Dogecoin当前价格为$0.073529，市值与完全稀释估值（FDV）均为$11.4B，数据来源可靠。尽管DOGE作为meme币具有社区热度，但其基本面缺乏实际价值支撑，且链上数据（Solana）与主流认知存在偏差。建议短期观望，不主动建仓，若用户有持仓可考虑在反弹至$0.08附近分批减仓。  \n**下一步行动：** 监控DOGE链上活跃地",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": true,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-03",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时回传 degraded + 非空回复",
+      "passed": true,
+      "tookMs": 10167,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": "evaluate_candidate",
+      "assetQuery": "BTC",
+      "replyPreview": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+      "traceHasMcp": false,
+      "traceCount": 7,
+      "ruleOnly": false,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noCrash": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": true,
+      "tookMs": 3634,
+      "input": "你好",
+      "intent": "smalltalk",
+      "assetQuery": "BTC",
+      "replyPreview": "目前无法生成针对BTC的正式投资建议，因为缺乏必要的市场数据（价格、市值、FDV）和智能体分析报告。建议先请求获取BTC的实时市场数据及多维度分析报告，再基于完整信息进行决策。下一步操作：启动BTC数据采集流程，并等待各智能体完成分析。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 3,
+      "fail": 2
+    },
+    "dimension_obs": {
+      "pass": 4,
+      "fail": 0
+    },
+    "total_assertions": 30,
+    "passed_assertions": 25,
+    "completed_at": "2026-06-26T11:31:28.853Z",
+    "pass_rate": 0.8333333333333334
+  }
+}

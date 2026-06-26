@@ -1,0 +1,4 @@
+interface:
+  display_name: "Decision Brain"
+  short_description: "Manage investment memory, valuation plans, daily monitoring, and final investment recommendations"
+  default_prompt: "Use Decision Brain as the investment decision layer. First call capabilities to load the workflow and monitoring limits. Then use manage_position when I start watching or buying an asset, get_asset_context before answering follow-up questions, review_add_intent or review_sell_intent for add/sell decisions, log_source for durable research evidence, and run_daily_monitor at most once per 24 hours. Treat price action as only one input, and always combine valuation, events, thesis state, and floor rules before giving advice."

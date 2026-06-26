@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "version": "VIII-1.0",
+    "mode": "http",
+    "http_base": "https://decision-brain-gray.vercel.app",
+    "ruleOnly": false,
+    "started_at": "2026-06-26T10:58:43.231Z",
+    "total_cases": 9
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": false,
+      "tookMs": 3018,
+      "input": "BTC 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": true,
+      "tookMs": 5954,
+      "input": "ETH 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ETH",
+      "replyPreview": "**首席投资官建议：**  \n根据实时数据，ETH当前价格$1546.34，市值$186.6B，FDV $186.6B，市场数据来源可靠。结合资产信息报告，建议用户确认投资意图（如买入、卖出或仅查询），以便进一步分析链上活动与市场情绪。下一步：明确操作目标后，可深入评估ETH的链上活跃度与衍生品市场信号。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": true,
+      "tookMs": 5457,
+      "input": "SOL 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "SOL",
+      "replyPreview": "**首席投资官决策摘要：**\n\n根据实时市场数据，Solana当前价格为**$68.67**，市值与完全稀释估值均为**$39.9B**，数据来源可靠。该资产在公链生态中具备较高流动性和市场深度，当前估值水平与市值规模匹配。建议**维持现有仓位，暂不进行额外操作**，后续可重点关注链上活跃度及生态项目进展以评估趋势变化。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯",
+      "passed": false,
+      "tookMs": 3006,
+      "input": "ENA 的 FDV 是多少",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": true,
+      "tookMs": 13217,
+      "input": "今天大盘怎么样",
+      "intent": "refresh_research",
+      "assetQuery": "BTC",
+      "replyPreview": "BTC 研究数据已刷新。委员会成员尚未返回意见",
+      "traceHasMcp": false,
+      "traceCount": 5,
+      "ruleOnly": false,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": false,
+      "tookMs": 3005,
+      "input": "AAVE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 — ok:true 且 tool 名在已知列表中",
+      "passed": false,
+      "tookMs": 3005,
+      "input": "DOGE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": false,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-03",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时回传 degraded + 非空回复",
+      "passed": false,
+      "tookMs": 3005,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "hasReply": {
+          "passed": false,
+          "error": null
+        },
+        "noCrash": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": false,
+      "tookMs": 3006,
+      "input": "你好",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": false,
+          "error": null
+        },
+        "hasReply": {
+          "passed": false,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 3,
+      "fail": 2
+    },
+    "dimension_obs": {
+      "pass": 0,
+      "fail": 4
+    },
+    "total_assertions": 30,
+    "passed_assertions": 14,
+    "completed_at": "2026-06-26T10:59:25.912Z",
+    "pass_rate": 0.4666666666666667
+  }
+}

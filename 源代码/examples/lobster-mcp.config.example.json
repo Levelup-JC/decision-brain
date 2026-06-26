@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "decision-brain": {
+      "command": "/absolute/path/to/node",
+      "args": [
+        "/absolute/path/to/decision-brain/src/mcp-server.mjs"
+      ],
+      "env": {
+        "DECISION_BRAIN_DATA_DIR": "/absolute/path/to/decision-brain-data"
+      }
+    }
+  }
+}

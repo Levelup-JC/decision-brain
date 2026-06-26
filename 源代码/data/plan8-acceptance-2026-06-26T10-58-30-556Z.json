@@ -1,0 +1,290 @@
+{
+  "meta": {
+    "version": "VIII-1.0",
+    "mode": "http",
+    "http_base": "https://decision-brain-gray.vercel.app",
+    "ruleOnly": false,
+    "started_at": "2026-06-26T10:57:46.306Z",
+    "total_cases": 9
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": true,
+      "tookMs": 9056,
+      "input": "BTC 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "BTC",
+      "replyPreview": "根据Agent报告，BTC当前价格为$59319，市值和FDV均为$1189.2B，数据源可靠。建议用户关注该资产作为长期价值存储的核心配置，但需结合自身风险偏好。下一步可查看BTC链上活跃度或市场情绪指标以辅助决策。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 3011,
+      "input": "ETH 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": false,
+      "tookMs": 3006,
+      "input": "SOL 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "intentCorrect": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": false,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯",
+      "passed": true,
+      "tookMs": 9397,
+      "input": "ENA 的 FDV 是多少",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ENA",
+      "replyPreview": "经分析，Ethena（ENA）当前价格为$0.078275，市值与完全稀释估值均为$0.7B，数据来源可靠。建议关注其作为以太坊上合成美元协议的基本面，但当前价格与市值反映市场对其稳定币收益模型和治理代币价值的谨慎预期。下一步行动：监控ENA的协议收入及USDe锚定稳定性，等待更明确的市场催化剂。",
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": true,
+      "tookMs": 6924,
+      "input": "今天大盘怎么样",
+      "intent": "refresh_research",
+      "assetQuery": null,
+      "replyPreview": "由于当前会话未指定具体资产，所有分析模块（宏观、链上、情绪、技术、新闻）均因缺少资产查询字段而执行失败。建议您首先明确需要研究的资产名称（如 BTC、ETH 或某代币合约地址），以便重新发起研究请求。下一步操作：请提供目标资产名称或合约地址，我们将立即执行完整的深度分析。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": false,
+      "tookMs": 3006,
+      "input": "AAVE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 — ok:true 且 tool 名在已知列表中",
+      "passed": false,
+      "tookMs": 3005,
+      "input": "DOGE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": false,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-03",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时回传 degraded + 非空回复",
+      "passed": false,
+      "tookMs": 3007,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "fetch failed",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "assertions": {
+        "hasReply": {
+          "passed": false,
+          "error": null
+        },
+        "noCrash": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": true,
+      "tookMs": 3829,
+      "input": "你好",
+      "intent": "smalltalk",
+      "assetQuery": null,
+      "replyPreview": "根据当前会话信息，用户意图为闲聊，且未指定任何资产、单位或成本数据，因此无法提供具体的投资建议。建议先明确用户是否希望讨论特定资产或市场话题，再基于实时数据进行分析。下一步行动：请用户提供具体资产或投资兴趣点，以便生成有针对性的推荐。",
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 3,
+      "fail": 2
+    },
+    "dimension_obs": {
+      "pass": 1,
+      "fail": 3
+    },
+    "total_assertions": 30,
+    "passed_assertions": 16,
+    "completed_at": "2026-06-26T10:58:30.556Z",
+    "pass_rate": 0.5333333333333333
+  }
+}

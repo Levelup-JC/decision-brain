@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-06-26T03:05:34.648Z",
+  "url": "https://decision-brain-gray.vercel.app",
+  "console_errors": 1,
+  "results": [
+    {
+      "test": "E1 比特币怎么样",
+      "pass": false,
+      "detail": "Response does NOT mention BTC",
+      "snippet": "\n          我是 Chief 决策官。描述你想研究的资产，我将派出委员会成员并行分析。\n        "
+    },
+    {
+      "test": "E2 它是什么 (追问BTC)",
+      "pass": false,
+      "detail": "WARN: mentions BTC but doesn't explain",
+      "snippet": "抱歉，目前缺乏必要的市场分析报告和具体交易参数，无法对BTC做出有依据的投资判断。请补充技术面、链上数据及宏观环境等关键信息后再进行决策。11:03:47"
+    },
+    {
+      "test": "E3 能加仓吗 (追问BTC)",
+      "pass": true,
+      "detail": "PASS: BTC add-position advice",
+      "snippet": "根据现有分析，BTC的估值研究偏薄，且市场情绪与技术面数据来源有限（各仅2条），支撑力度不足。建议暂不执行加仓操作，优先补充估值与基本面分析报告，并扩大数据源至5条以上。下一步请团队补充深度研究后再提交审议。11:04:15"
+    },
+    {
+      "test": "E7 卖一半 (追问BTC)",
+      "pass": true,
+      "detail": "PASS: BTC sell advice",
+      "snippet": "根据当前市场情绪和技术分析数据（均已刷新），结合估值研究偏薄的情况，建议暂缓BTC卖出操作。需待更多基本面数据支撑后再做决策。下一步：请团队补充BTC链上活跃地址及矿工持仓数据。11:04:43"
+    },
+    {
+      "test": "E4 以太坊呢 (切换到ETH)",
+      "pass": false,
+      "detail": "FAIL: No ETH mention",
+      "snippet": "根据当前市场情绪和技术分析数据（均已刷新），结合估值研究偏薄的情况，建议暂缓BTC卖出操作。需待更多基本面数据支撑后再做决策。下一步：请团队补充BTC链上活跃地址及矿工持仓数据。11:04:43"
+    },
+    {
+      "test": "E5 卖 30% (追问ETH)",
+      "pass": true,
+      "detail": "WARN: unclear",
+      "snippet": "根据宏观、链上、情绪和技术面综合分析，ETH当前缺乏明确的单边驱动信号，市场处于多空博弈阶段。链上数据显示活跃度温和，但资金流入未见显著放大，情绪面偏中性，技术面呈震荡整理格局。建议维持观望，等待价格突破关键阻力位或出现明确的宏观催化剂后再行入场。下一步：设置价格警报，监控ETH能否站稳1800美元上方。11:05:31"
+    }
+  ],
+  "summary": {
+    "pass": 3,
+    "fail": 3,
+    "total": 6
+  }
+}

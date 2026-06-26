@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Decision Brain — AI Investment Committee</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #F2F4F8;
+      --panel: #FFFFFF;
+      --panel-hover: #F8FAFB;
+      --line: #E4E8EE;
+      --line2: #CDD4DE;
+      --accent: #00F0FF;
+      --accent-2: #00C8D6;
+      --accent-glow: rgba(0,240,255,0.16);
+      --accent-dim: rgba(0,240,255,0.06);
+      --gold: #F7931A;
+      --gold-glow: rgba(247,147,26,0.14);
+      --ink: #1A2332;
+      --ink2: #4A5568;
+      --muted: #94A3B8;
+      --ok: #00C853;
+      --warn: #F7931A;
+      --risk: #FF5252;
+      --font-mono: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --radius: 8px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      color: var(--ink);
+      background: var(--bg);
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Bar */
+    .topbar {
+      height: 48px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      gap: 14px;
+      background: var(--panel);
+      flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+      position: relative;
+    }
+    .topbar .logo {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--ink);
+      letter-spacing: 0.02em;
+    }
+    .topbar .logo span { color: var(--accent-2); }
+    .topbar .mode-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: var(--accent-dim);
+      color: var(--accent-2);
+      letter-spacing: 0.03em;
+    }
+    .topbar .mode-badge.rule {
+      background: var(--gold-glow);
+      color: var(--gold);
+    }
+    .topbar .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 6px rgba(0,200,83,0.4);
+    }
+    .topbar .status-text {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 3-Column Shell */
+    .shell {
+      display: grid;
+      grid-template-columns: 340px 1fr 380px;
+      height: calc(100vh - 48px);
+      gap: 0;
+    }
+
+    .col {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--line);
+    }
+    .col:last-child { border-right: none; }
+
+    .col-header {
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--ink2);
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+    }
+
+    .col-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+
+    /* Left: Chat */
+    #chatList {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 8px;
+    }
+    .chat-msg {
+      max-width: 94%;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.65;
+      animation: fadeUp 0.4s ease;
+      position: relative;
+    }
+    .chat-msg.user {
+      align-self: flex-end;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,240,255,0.15);
+      border-right: 3px solid var(--accent);
+      color: var(--ink);
+    }
+    .chat-msg.chief {
+      align-self: flex-start;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+    }
+    .chat-msg.error {
+      align-self: center;
+      background: rgba(255,82,82,0.08);
+      border: 1px solid rgba(255,82,82,0.25);
+      border-left: 3px solid var(--risk);
+      color: var(--risk);
+      font-size: 13px;
+      max-width: 80%;
+      text-align: center;
+    }
+    .chat-msg .ts {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+
+    .suggestions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .sug-btn {
+      font-size: 12px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line2);
+      background: var(--panel);
+      color: var(--accent-2);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .sug-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+      flex-shrink: 0;
+    }
+    .chat-input-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--ink);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .chat-input-row input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    .chat-input-row button {
+      background: var(--accent-2);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .chat-input-row button:hover {
+      background: #00B8C8;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,240,255,0.3);
+    }
+    .chat-input-row button:disabled {
+      background: var(--line);
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .chat-input-row input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Center: Committee */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .agent-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 3px solid transparent;
+      border-radius: var(--radius);
+      padding: 14px;
+      font-size: 13px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .agent-card.thinking {
+      opacity: 0.6;
+      border-left-color: var(--line2);
+    }
+    .agent-card.thinking::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(105deg, transparent 35%, rgba(0,240,255,0.05) 50%, transparent 65%);
+      animation: shimmer 2s infinite;
+    }
+    .agent-card.running {
+      border-left-color: var(--gold);
+      opacity: 0.85;
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+    .agent-card.done {
+      border-left-color: var(--accent);
+      border-color: rgba(0,240,255,0.2);
+      box-shadow: var(--shadow-md);
+      animation: cardArrive 0.5s ease;
+    }
+    .agent-card .agent-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .agent-card .agent-role {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .agent-card .agent-status {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .agent-card .agent-status.waiting {
+      background: #F2F4F8;
+      color: var(--muted);
+    }
+    .agent-card .agent-status.running {
+      background: var(--gold-glow);
+      color: var(--gold);
+    }
+    .agent-card .agent-status.ok {
+      background: var(--accent-dim);
+      color: var(--accent-2);
+    }
+    .agent-card .agent-headline {
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+    .agent-card .agent-headline.muted {
+      color: var(--muted);
+      font-style: italic;
+    }
+    .agent-card .agent-timing {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+
+    /* Agent error / timeout state */
+    .agent-card.error {
+      border-left-color: var(--risk) !important;
+      border-color: rgba(255,82,82,0.2);
+      box-shadow: 0 0 12px rgba(255,82,82,0.12);
+      animation: cardArrive 0.5s ease;
+    }
+    .agent-card .agent-status.error {
+      background: rgba(255,82,82,0.10);
+      color: var(--risk);
+    }
+
+    /* Trace expansion inside agent card */
+    .agent-trace {
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+    }
+    .agent-trace .trace-header {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .trace-entry {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .trace-entry.trace-ok { border-left: 2px solid var(--ok); }
+    .trace-entry.trace-fail { border-left: 2px solid var(--risk); }
+    .trace-summary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px;
+      cursor: pointer;
+      background: rgba(0,0,0,0.015);
+      border-radius: 3px;
+      transition: background 0.15s;
+      flex-wrap: wrap;
+    }
+    .trace-summary:hover { background: rgba(0,0,0,0.04); }
+    .trace-toggle {
+      font-size: 8px;
+      color: var(--muted);
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+    .trace-entry.trace-expanded .trace-toggle {
+      transform: rotate(90deg);
+    }
+    .trace-args {
+      color: var(--muted);
+      font-size: 10px;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .trace-timing {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--ink2);
+    }
+    .trace-cached {
+      font-size: 9px;
+      background: rgba(0,240,255,0.10);
+      color: var(--accent-2);
+      padding: 1px 5px;
+      border-radius: 999px;
+    }
+    .trace-detail {
+      display: none;
+      padding: 4px 8px 8px 8px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 0 0 4px 4px;
+    }
+    .trace-entry.trace-expanded .trace-detail {
+      display: block;
+    }
+    .trace-snippet {
+      font-size: 10px;
+      color: var(--ink2);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 120px;
+      overflow-y: auto;
+      margin-top: 4px;
+      padding: 4px 6px;
+      background: rgba(0,0,0,0.03);
+      border-radius: 3px;
+    }
+    .trace-error {
+      color: var(--risk);
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .dispatch-log {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .dispatch-log h3 {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .dispatch-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--ink2);
+      animation: fadeUp 0.3s ease;
+    }
+    .dispatch-entry .dl-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--muted);
+    }
+    .dispatch-entry .dl-dot.dispatch { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+    .dispatch-entry .dl-dot.arrive { background: var(--accent-2); }
+    .dispatch-entry .dl-dot.synthesize { background: var(--gold); box-shadow: 0 0 6px var(--gold-glow); }
+
+    /* Right: Portfolio */
+    .right-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .right-stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s;
+    }
+    .right-stat:hover { transform: translateY(-1px); }
+    .right-stat .val {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--ink);
+      transition: color 0.3s;
+    }
+    .right-stat .val.changed {
+      color: var(--gold);
+      animation: numberPop 0.5s ease;
+    }
+    .right-stat .lbl {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .asset-mini {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 3px solid transparent;
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: var(--shadow-sm);
+    }
+    .asset-mini:hover {
+      border-color: var(--accent);
+      border-left-color: var(--accent);
+      box-shadow: var(--shadow-md);
+      transform: translateX(2px);
+    }
+    .asset-mini .am-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .asset-mini .am-sym { font-weight: 700; font-size: 14px; }
+    .asset-mini .am-zone { font-size: 11px; padding: 3px 8px; border-radius: 999px; font-weight: 600; }
+    .zone-green { background: rgba(0,200,83,0.10); color: #009944; }
+    .zone-yellow { background: var(--gold-glow); color: #C56E00; }
+    .zone-red { background: rgba(255,82,82,0.10); color: var(--risk); }
+    .asset-mini .am-detail { color: var(--ink2); margin-top: 5px; font-size: 12px; line-height: 1.5; }
+
+    .trade-form {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 14px;
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .trade-form h3 {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .trade-form .tf-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .trade-form input {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      color: var(--ink);
+      font-size: 13px;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .trade-form input:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 2px var(--accent-dim);
+    }
+    .trade-form button {
+      width: 100%;
+      background: var(--accent-2);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: all 0.2s;
+    }
+    .trade-form button:hover {
+      background: #00B8C8;
+      box-shadow: 0 2px 8px rgba(0,240,255,0.3);
+    }
+
+    .placeholder-gray {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 12px;
+    }
+
+    /* Expandable detail panel */
+    .detail-panel {
+      display: none;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      margin-top: 10px;
+      box-shadow: var(--shadow-md);
+      animation: slideDown 0.3s ease;
+    }
+    .detail-panel.open { display: block; }
+    .detail-panel .dp-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(228,232,238,0.5);
+      font-size: 13px;
+    }
+    .detail-panel .dp-label { color: var(--muted); }
+    .detail-panel .dp-value { color: var(--ink); font-weight: 500; }
+
+    /* Charts */
+    .chart-box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-top: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .chart-box canvas { width: 100%; }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes cardArrive {
+      0% { opacity: 0; transform: scale(0.95) translateY(6px); }
+      60% { transform: scale(1.02); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    @keyframes numberPop {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; max-height: 0; }
+      to { opacity: 1; max-height: 400px; }
+    }
+    @keyframes glowBorder {
+      0%, 100% { border-color: var(--line); }
+      50% { border-color: var(--accent); }
+    }
+    .pulsing { animation: pulse 1s ease-in-out infinite; }
+    .glow-border { animation: glowBorder 2s infinite; }
+
+    /* Scrollbar */
+    .col-body::-webkit-scrollbar { width: 5px; }
+    .col-body::-webkit-scrollbar-track { background: transparent; }
+    .col-body::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+    .col-body::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .shell { grid-template-columns: 300px 1fr 340px; }
+    }
+    @media (max-width: 1000px) {
+      .shell { grid-template-columns: 280px 1fr; }
+      .col-right { display: none; }
+    }
+    @media (max-width: 650px) {
+      .shell { grid-template-columns: 1fr; }
+      .col-center, .col-left { border-right: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <span class="logo">DECISION <span>BRAIN</span></span>
+  <span class="mode-badge" id="modeBadge">LIVE</span>
+  <span class="status-text"><span class="dot" id="statusDot"></span><span id="statusLabel">就绪</span></span>
+</div>
+
+<div class="shell">
+
+  <!-- LEFT: Chief -->
+  <div class="col col-left">
+    <div class="col-header">Chief 对话</div>
+    <div class="col-body" id="chatBody">
+      <div id="chatList">
+        <div class="chat-msg chief">
+          我是 Chief 决策官。描述你想研究的资产，我将派出委员会成员并行分析。
+        </div>
+      </div>
+      <div id="suggestionsRow" class="suggestions-row"></div>
+    </div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" placeholder="例如：研究 BTW 值不值得买..." autofocus />
+      <button id="chatSendBtn">发送</button>
+    </div>
+  </div>
+
+  <!-- CENTER: Committee War Room -->
+  <div class="col col-center">
+    <div class="col-header">委员会作战室 <span style="font-size:10px;color:var(--muted);margin-left:auto;" id="roundLabel">待命</span></div>
+    <div class="col-body" id="committeeBody">
+      <div class="agent-grid" id="agentGrid">
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">Memory</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">Macro</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">On-chain</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">Sentiment</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">Technical</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">News</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+        <div class="agent-card thinking">
+          <div class="agent-head"><span class="agent-role">Valuation</span><span class="agent-status waiting">待命</span></div>
+          <div class="agent-headline muted">等待指令...</div>
+        </div>
+      </div>
+      <div class="dispatch-log" id="dispatchLog">
+        <h3>Chief 调度日志</h3>
+        <div class="dispatch-entry"><span class="dl-dot"></span><span class="muted">等待首轮派发...</span></div>
+      </div>
+
+      <div class="chart-box" id="valuationChartBox" style="display:none;">
+        <canvas id="valuationChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Portfolio Dashboard -->
+  <div class="col col-right">
+    <div class="col-header">实时资产看板</div>
+    <div class="col-body" id="portfolioBody">
+      <div class="right-stats" id="rightStats">
+        <div class="right-stat"><div class="val" id="statAssets">0</div><div class="lbl">纳入资产</div></div>
+        <div class="right-stat"><div class="val" id="statPositions">0</div><div class="lbl">持仓</div></div>
+        <div class="right-stat"><div class="val" id="statPlans">0</div><div class="lbl">计划</div></div>
+        <div class="right-stat"><div class="val" id="statPortfolio">--</div><div class="lbl">组合估值</div></div>
+      </div>
+
+      <div id="assetMiniList"></div>
+
+      <div class="detail-panel" id="detailPanel"></div>
+
+      <div class="trade-form" id="tradeForm">
+        <h3>记录交易</h3>
+        <div class="tf-row">
+          <input id="tfSymbol" placeholder="资产符号 (如 BTW)" />
+          <input id="tfUnits" placeholder="数量" type="number" step="any" />
+        </div>
+        <div class="tf-row">
+          <input id="tfCost" placeholder="成本价" type="number" step="any" />
+          <input id="tfPortfolioValue" placeholder="组合总值" type="number" step="any" />
+        </div>
+        <button id="tfSubmit">记录持仓</button>
+      </div>
+
+      <div class="chart-box" id="portfolioChartBox" style="display:none;">
+        <canvas id="portfolioChart" height="160"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/utils.js" type="module"></script>
+<script src="/mock-data.js" type="module"></script>
+<script src="/chat.js" type="module"></script>
+<script src="/committee.js" type="module"></script>
+<script src="/portfolio.js" type="module"></script>
+<script src="/charts.js" type="module"></script>
+<script src="/dashboard.js" type="module"></script>
+</body>
+</html>
