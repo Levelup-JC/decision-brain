@@ -1,0 +1,195 @@
+{
+  "meta": {
+    "version": "X-C-1.0",
+    "mode": "http",
+    "http_base": "http://localhost:4177",
+    "started_at": "2026-06-27T01:37:01.723Z",
+    "total_cases": 5
+  },
+  "preset": {
+    "sol_plan_status": "active",
+    "btc_plan_status": "draft"
+  },
+  "results": [
+    {
+      "id": "p10-mem-01",
+      "description": "我的持仓总览 — returns all positions with plan status",
+      "passed": true,
+      "tookMs": 10,
+      "input": "我的持仓总览",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "replyFull": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsSol": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsBtc": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsActiveStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsDraftStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsPlanStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsCostOrUnits": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-02",
+      "description": "我的 SOL 计划是什么 — returns SOL plan details + valuation",
+      "passed": true,
+      "tookMs": 12,
+      "input": "我的 SOL 计划是什么",
+      "intent": "lookup_memory",
+      "assetQuery": "SOL",
+      "replyPreview": "SOL 持仓: 100 个，成本 $120，当前价 $120，当前市值 $12000。\n历史最高持仓: 100 个。\n市值: $41.5B。\nFDV: $41.5B。\n投资计划状态: 活跃监控中\n确认时间: 2026-06-27T01:36:55.668Z\n下次复查: 2026-07-27T01:36:55.615Z\n当前估值区间: 基准估值区间\n三档估值 (FDV):\n  保守: FDV $19.0B - $19.0B，隐含价格 $54.9159 - $54.9159。只有在保守估值下沿附近，才考虑小幅补仓\n  基准: FDV $19.0B - $420.0B，隐含价格 $54.9159 -",
+      "replyFull": "SOL 持仓: 100 个，成本 $120，当前价 $120，当前市值 $12000。\n历史最高持仓: 100 个。\n市值: $41.5B。\nFDV: $41.5B。\n投资计划状态: 活跃监控中\n确认时间: 2026-06-27T01:36:55.668Z\n下次复查: 2026-07-27T01:36:55.615Z\n当前估值区间: 基准估值区间\n三档估值 (FDV):\n  保守: FDV $19.0B - $19.0B，隐含价格 $54.9159 - $54.9159。只有在保守估值下沿附近，才考虑小幅补仓\n  基准: FDV $19.0B - $420.0B，隐含价格 $54.9159 - $1213.9311。进入基准区间后，考虑回本金或卖出 20%-30%\n  乐观: FDV $22.0B - $420.0B，隐含价格 $63.5869 - $1213.9311。进入乐观区间后，分批卖出，除非强证据继续增强\n以上估值数字可追溯至对应 trace 记录。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "assetQueryIsSol": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsPlanActive": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsValuation": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsCostOrUnits": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-03",
+      "description": "我的投资历史 — returns structured history",
+      "passed": true,
+      "tookMs": 10,
+      "input": "我之前买过什么",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "replyFull": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsMultipleAssets": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-04",
+      "description": "空持仓说真话 — no positions, honest response",
+      "passed": true,
+      "tookMs": 4,
+      "input": "我有什么持仓",
+      "intent": "lookup_memory",
+      "assetQuery": null,
+      "replyPreview": "当前暂无持仓记录。你可以让我研究资产（如\"研究 SOL\"）或记录持仓来建立你的投资组合。",
+      "replyFull": "当前暂无持仓记录。你可以让我研究资产（如\"研究 SOL\"）或记录持仓来建立你的投资组合。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noPositionsHonest": {
+          "passed": true,
+          "error": null
+        },
+        "noFabricatedNumbers": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-05",
+      "description": "API portfolio-summary — returns structured JSON",
+      "passed": true,
+      "tookMs": 3,
+      "input": "(API direct)",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "{\"ok\":true,\"positions\":[],\"totalCount\":0,\"activeCount\":0,\"draftCount\":0}",
+      "replyFull": "{\"ok\":true,\"positions\":[],\"totalCount\":0,\"activeCount\":0,\"draftCount\":0}",
+      "apiData": {
+        "totalCount": 0,
+        "positions": []
+      },
+      "assertions": {
+        "apiReturnsOk": {
+          "passed": true,
+          "error": null
+        },
+        "hasPositions": {
+          "passed": true,
+          "error": null
+        },
+        "totalCountMatch": {
+          "passed": true,
+          "error": null
+        },
+        "eachPositionHasSymbol": {
+          "passed": true,
+          "error": null
+        },
+        "eachPositionHasPlanField": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "total_cases": 5,
+    "passed_cases": 5,
+    "failed_cases": 0,
+    "total_assertions": 25,
+    "passed_assertions": 25
+  }
+}

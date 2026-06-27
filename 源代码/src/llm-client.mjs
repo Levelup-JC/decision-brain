@@ -7,13 +7,13 @@ export function isRuleOnly() {
   return RULE_ONLY || !LLM_API_KEY;
 }
 
-export async function chatCompletion(systemPrompt, userMessage, { temperature = 0.3, maxTokens = 800 } = {}) {
+export async function chatCompletion(systemPrompt, userMessage, { temperature = 0.3, maxTokens = 800, timeoutMs = 8000 } = {}) {
   if (isRuleOnly()) {
     return null;
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(`${LLM_BASE_URL}/chat/completions`, {
@@ -46,7 +46,7 @@ export async function chatCompletion(systemPrompt, userMessage, { temperature = 
   } catch (err) {
     clearTimeout(timeout);
     if (err.name === "AbortError") {
-      throw new Error("LLM request timed out after 15s");
+      throw new Error(`LLM request timed out after ${timeoutMs}ms`);
     }
     throw err;
   }

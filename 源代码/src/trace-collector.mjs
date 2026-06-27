@@ -10,7 +10,10 @@
  *   const [result, entry] = await tc.call("crypto_market", { action: "search", query: "BTC" }, async () => { ... });
  */
 
+import { AsyncLocalStorage } from "node:async_hooks";
+
 const RAW_SNIPPET_MAX = 200;
+const _als = new AsyncLocalStorage();
 
 export function createTraceCollector(agentRole) {
   const entries = [];
@@ -37,13 +40,21 @@ export function createTraceCollector(agentRole) {
         typeof result?.text === "string"
           ? result.text.slice(0, RAW_SNIPPET_MAX)
           : JSON.stringify(result).slice(0, RAW_SNIPPET_MAX);
-      push({ agentRole, tool, args, ok: true, tookMs, cached: false, rawSnippet });
-      console.log("[MCP]", tool, JSON.stringify(args), "ok", tookMs + "ms");
+      const entry = { agentRole, tool, args, ok: true, tookMs, cached: false, rawSnippet };
+      if (typeof result?.retryCount === "number" && result.retryCount > 0) {
+        entry.retryCount = result.retryCount;
+      }
+      push(entry);
+      console.log("[MCP]", tool, JSON.stringify(args), "ok", tookMs + "ms", result.retryCount ? `(retry:${result.retryCount})` : "");
       return [result, entries[entries.length - 1]];
     } catch (err) {
       const tookMs = Date.now() - startedAt;
-      push({ agentRole, tool, args, ok: false, tookMs, cached: false, error: err.message });
-      console.log("[MCP]", tool, JSON.stringify(args), "FAIL", tookMs + "ms", err.message);
+      const entry = { agentRole, tool, args, ok: false, tookMs, cached: false, error: err.message };
+      if (typeof err?.retryCount === "number" && err.retryCount > 0) {
+        entry.retryCount = err.retryCount;
+      }
+      push(entry);
+      console.log("[MCP]", tool, JSON.stringify(args), "FAIL", tookMs + "ms", err.message, err.retryCount ? `(retries:${err.retryCount})` : "");
       throw err;
     }
   }
@@ -76,20 +87,13 @@ export function createTraceCollector(agentRole) {
   return { push, call, pushCached, pushTimeout, drain, snapshot };
 }
 
-// ── Current-request singleton ──────────────────────────────────────────
-// Bitget adapter checks this so we don't need to thread traceCollector
-// through every service layer. Set before fanout, clear after.
+// ── Per-branch trace collector via AsyncLocalStorage ─────────────────
+// Each concurrent agent branch gets its own collector, no cross-talk.
 
-let _current = null;
-
-export function setCurrentCollector(tc) {
-  _current = tc;
+export function runWithCollector(tc, fn) {
+  return _als.run(tc, fn);
 }
 
 export function getCurrentCollector() {
-  return _current;
-}
-
-export function clearCurrentCollector() {
-  _current = null;
+  return _als.getStore();
 }

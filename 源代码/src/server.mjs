@@ -8,6 +8,7 @@ import {
   confirmPlan,
   evaluateCandidate,
   getAssetContext,
+  getPortfolioSummary,
   getStateSummary,
   lookupPortfolioMemoryApi,
   logSource,
@@ -22,6 +23,7 @@ import { json, notFound, parseJsonBody, sendHtml, sendText } from "./utils/http.
 import { isRuleOnly } from "./llm-client.mjs";
 import { runOrchestrator, synthesizeRule, synthesizeWithResults } from "./chat-orchestrator.mjs";
 import { runAgent, runFanoutAgents } from "./agent-runner.mjs";
+import { store } from "./data-store.mjs";
 
 const uiDir = resolveProjectPath("src", "ui");
 
@@ -56,8 +58,19 @@ export async function handleRequest(request, response) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname === "/api/reset") {
+      await store.clear();
+      json(response, 200, { ok: true, message: "State reset" });
+      return;
+    }
+
     if (request.method === "GET" && url.pathname === "/api/capabilities") {
       json(response, 200, buildCapabilities());
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/portfolio-summary") {
+      json(response, 200, await getPortfolioSummary());
       return;
     }
 
@@ -151,39 +164,55 @@ export async function handleRequest(request, response) {
 
       const orchestration = await runOrchestrator(body.message, sessionId || "stateless", context);
 
-      if (orchestration.fanout.length > 0) {
-        const FANOUT_TIMEOUT_MS = 7000;
+      // C组: lookup_memory with no specific asset → portfolio overview, skip fanout
+      // Also trigger when message is clearly a portfolio-wide query even if
+      // Layer 2 fallback assigned a recent asset (e.g. "我的持仓总览" → BTC from traces)
+      const isPortfolioQuery = /持仓总览|投资总览|全部.*仓|投资组合|portfolio.*overview|总览|之前.*买|历史.*仓|买了什么|买过什么|投了什么|什么仓位|我.*持仓|我.*仓位|做过什么/.test(body.message);
+      if (orchestration.intent === "lookup_memory" && (!orchestration.assetQuery || isPortfolioQuery)) {
+        try {
+          const summary = await getPortfolioSummary();
+          if (summary.totalCount === 0) {
+            orchestration.reply = `当前暂无持仓记录。你可以让我研究资产（如"研究 SOL"）或记录持仓来建立你的投资组合。`;
+          } else {
+            const lines = summary.positions.map((p, i) => {
+              const planLabel = p.plan?.status === "active" ? "活跃监控中"
+                : p.plan?.status === "draft" ? "draft (待确认)" : "无计划";
+              const zoneLabel = p.valuationZone ? `，估值区间: ${p.valuationZone}` : "";
+              const costInfo = p.averageCost ? `，成本 $${p.averageCost}` : "";
+              const mcapInfo = p.latestMetrics?.marketCap
+                ? `，市值 $${(p.latestMetrics.marketCap / 1e9).toFixed(1)}B` : "";
+              return `${i + 1}. ${p.symbol}: 持有 ${p.units} 个${costInfo}，当前价 $${p.currentPrice}${mcapInfo}，计划状态: ${planLabel}${zoneLabel}`;
+            });
+            const statusParts = [];
+            if (summary.activeCount > 0) statusParts.push(`${summary.activeCount} 个活跃`);
+            if (summary.draftCount > 0) statusParts.push(`${summary.draftCount} 个待确认`);
+            orchestration.reply = `你的投资组合共 ${summary.totalCount} 个仓位 (${statusParts.join("，")}):\n\n${lines.join("\n")}\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。`;
+          }
+        } catch {
+          orchestration.reply = "暂时无法读取持仓数据，请稍后重试。";
+        }
+        orchestration.agentResults = [];
+        orchestration.trace = [];
+      } else if (orchestration.fanout.length > 0) {
+        // Per-agent timeouts are handled inside runFanoutAgents;
+        // partial results are preserved (timeout agents get error markers)
+        const fanoutResult = await runFanoutAgents(orchestration.fanout, orchestration.assetQuery, context);
+        orchestration.agentResults = fanoutResult.agentResults;
+        orchestration.trace = fanoutResult.trace || [];
 
-        const fanoutPromise = runFanoutAgents(orchestration.fanout, orchestration.assetQuery, context);
-        const timeoutPromise = new Promise((resolve) =>
-          setTimeout(() => resolve("__FANOUT_TIMEOUT__"), FANOUT_TIMEOUT_MS)
+        const allFailed = orchestration.agentResults.every(
+          (r) => r.status === "error" || r.status === "degraded"
         );
 
-        const raceResult = await Promise.race([fanoutPromise, timeoutPromise]);
-
-        if (raceResult === "__FANOUT_TIMEOUT__") {
-          orchestration.agentResults = [];
-          orchestration.trace = orchestration.fanout.map((role) => ({
-            agentRole: role,
-            tool: "unknown",
-            args: {},
-            ok: false,
-            tookMs: FANOUT_TIMEOUT_MS,
-            cached: false,
-            rawSnippet: "",
-            error: "fanout_timeout",
-          }));
+        if (allFailed && orchestration.agentResults.length > 0) {
           orchestration.degraded = true;
           orchestration.reply = synthesizeRule(
             orchestration.intent,
-            [],
+            orchestration.agentResults,
             { assetQuery: orchestration.assetQuery, ...orchestration.slots },
             context
           );
         } else {
-          orchestration.agentResults = raceResult.agentResults;
-          orchestration.trace = raceResult.trace || [];
-
           const reply = await synthesizeWithResults(
             orchestration.intent,
             orchestration.agentResults,

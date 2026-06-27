@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "version": "X-D-1.0",
+    "mode": "http",
+    "http_base": "http://localhost:4177",
+    "started_at": "2026-06-27T01:33:41.794Z",
+    "total_cases": 4
+  },
+  "results": [
+    {
+      "case_id": "px-d-01",
+      "description": "Step 1 — 研究 SOL（新 session）触发 evaluate_candidate，返回引导",
+      "assertions": {
+        "intentIsEvaluate": "PASS",
+        "hasReply": "PASS",
+        "hasSuggestions": "PASS",
+        "suggestsRecordPosition": "PASS"
+      },
+      "allPassed": true,
+      "responses": [
+        {
+          "intent": "evaluate_candidate",
+          "assetQuery": "SOL",
+          "reply": "委员会已对 SOL 完成调研。【memory】意图: add_to_existing，资产: SOL；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout。综合来看，建议先完成估值模型再决定是否建仓。",
+          "replyFull": "委员会已对 SOL 完成调研。【memory】意图: add_to_existing，资产: SOL；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout；【unknown】agent_timeout。综合来看，建议先完成估值模型再决定是否建仓。",
+          "suggestions": [
+            "我买了 SOL，记录仓位",
+            "刷新 SOL 研究数据",
+            "刷新全部研究",
+            "看我的持仓总览"
+          ],
+          "tookMs": 5017,
+          "error": null
+        }
+      ]
+    },
+    {
+      "case_id": "px-d-02",
+      "description": "Step 2 — 记录仓位（我买了 SOL 100 个，成本 120）生成 draft plan",
+      "assertions": {
+        "intentIsManage": "PASS",
+        "hasReply": "PASS",
+        "replyMentionsDraftOrPlan": "PASS",
+        "hasSuggestions": "PASS",
+        "suggestsConfirm": "PASS"
+      },
+      "allPassed": true,
+      "responses": [
+        {
+          "intent": "manage_position",
+          "assetQuery": "SOL",
+          "reply": "SOL 已写入持仓，已生成含三档估值的 draft 投资计划。请确认计划以激活持续监控。",
+          "replyFull": "SOL 已写入持仓，已生成含三档估值的 draft 投资计划。请确认计划以激活持续监控。",
+          "suggestions": [
+            "确认 SOL 投资计划",
+            "刷新 SOL 研究数据",
+            "刷新全部研究",
+            "看我的持仓总览"
+          ],
+          "tookMs": 4009,
+          "error": null
+        }
+      ]
+    },
+    {
+      "case_id": "px-d-03",
+      "description": "Step 3 — 确认 SOL 计划，plan 从 draft → active",
+      "assertions": {
+        "intentIsConfirm": "PASS",
+        "hasReply": "PASS",
+        "replyMentionsActiveOrMonitor": "PASS",
+        "hasSuggestions": "PASS"
+      },
+      "allPassed": true,
+      "responses": [
+        {
+          "intent": "confirm_plan",
+          "assetQuery": "SOL",
+          "reply": "SOL 投资计划已确认并激活。现在可以开始持续监控：检查实时数据与计划阈值的对比、获取加减仓建议。",
+          "replyFull": "SOL 投资计划已确认并激活。现在可以开始持续监控：检查实时数据与计划阈值的对比、获取加减仓建议。",
+          "suggestions": [
+            "运行监控 SOL",
+            "现在 SOL 能加仓吗",
+            "SOL 该减仓吗",
+            "刷新全部研究",
+            "看我的持仓总览"
+          ],
+          "tookMs": 5,
+          "error": null
+        }
+      ]
+    },
+    {
+      "case_id": "px-d-04",
+      "description": "新 session smalltalk — 首次交互给简短引导",
+      "assertions": {
+        "intentIsSmalltalk": "PASS",
+        "hasReply": "PASS",
+        "replyMentionsGuide": "PASS"
+      },
+      "allPassed": true,
+      "responses": [
+        {
+          "intent": "smalltalk",
+          "assetQuery": null,
+          "reply": "我是 Decision Brain 首席决策官。你可以让我：研究某个资产是否值得买、记录你的持仓、查看持仓总览、或确认投资计划。",
+          "replyFull": "我是 Decision Brain 首席决策官。你可以让我：研究某个资产是否值得买、记录你的持仓、查看持仓总览、或确认投资计划。",
+          "suggestions": [
+            "研究 BTC 是否值得买",
+            "我持有 ETH，记录仓位",
+            "刷新全部研究",
+            "看我的持仓总览"
+          ],
+          "tookMs": 3,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "pass": 4,
+    "fail": 0,
+    "total_assertions": 16,
+    "passed_assertions": 16,
+    "failed_assertions": 0
+  },
+  "stateSummary": {
+    "totalPlans": 7,
+    "draftPlans": 6,
+    "activePlans": 1,
+    "solPlanStatus": "active",
+    "solPlanHasZones": true
+  }
+}

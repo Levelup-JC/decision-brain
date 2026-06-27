@@ -368,14 +368,7 @@ export function createBitgetAdapter() {
               : `${asset.symbol}/USDT`;
           }
 
-          let result;
-          if (tc) {
-            [result] = await tc.call(call.tool, args, () =>
-              marketDataClient.callTool(call.tool, args)
-            );
-          } else {
-            result = await marketDataClient.callTool(call.tool, args);
-          }
+          const result = await retryMcpCall(marketDataClient, call.tool, args, tc, 2);
           results.push({
             tool: call.tool,
             available: true,
@@ -535,6 +528,53 @@ function readNumber(value) {
 
   const parsed = Number(cleaned);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+// B组: Application-level retry with exponential backoff for MCP tool calls.
+// HTTP-level retry exists in HttpMcpClient, but MCP servers can return
+// successful HTTP responses with empty/invalid content under load. This
+// catches those cases at the application layer.
+async function retryMcpCall(client, tool, args, tc, maxRetries = 2) {
+  let lastError = null;
+  let totalAttempts = 0;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      let result;
+      if (tc) {
+        [result] = await tc.call(tool, args, () =>
+          client.callTool(tool, args)
+        );
+      } else {
+        result = await client.callTool(tool, args);
+      }
+
+      // Check if the result is valid (not empty/inconclusive)
+      const text = result?.text || "";
+      const isEmpty = !text || text.length < 10;
+      const isError = /\b(unknown|error|failed|unavailable)\b/i.test(text) && text.length < 100;
+
+      if (!isEmpty && !isError) {
+        return result;
+      }
+
+      // Result looks invalid — retry
+      lastError = new Error(`MCP returned inconclusive result: ${text.slice(0, 80)}`);
+      totalAttempts = attempt + 1;
+    } catch (err) {
+      lastError = err;
+      totalAttempts = attempt + 1;
+    }
+
+    if (attempt < maxRetries) {
+      const delay = 300 * Math.pow(2, attempt); // 300ms, 600ms
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  lastError.retryCount = totalAttempts;
+  lastError.retriesExhausted = true;
+  throw lastError;
 }
 
 function firstFinite(values) {
@@ -751,18 +791,7 @@ function chooseDexQuery(context, cryptoCandidate) {
 async function lookupAssetMarketData(client, input, traceCollector) {
   const tc = traceCollector || getCurrentCollector();
   const context = normalizeLookupInput(input);
-  let cryptoResponse, dexResponse;
-
-  if (tc) {
-    [cryptoResponse] = await tc.call("crypto_market", { action: "search", query: context.query }, () =>
-      client.callTool("crypto_market", { action: "search", query: context.query })
-    );
-  } else {
-    cryptoResponse = await client.callTool("crypto_market", {
-      action: "search",
-      query: context.query,
-    });
-  }
+  const cryptoResponse = await retryMcpCall(client, "crypto_market", { action: "search", query: context.query }, tc, 2);
   const cryptoPayload = safeJsonParse(cryptoResponse.text);
   const cryptoCandidates = extractCryptoCandidates(cryptoPayload);
   const cryptoCandidate = pickBestCryptoCandidate(cryptoCandidates, context);
@@ -797,13 +826,7 @@ async function lookupAssetMarketData(client, input, traceCollector) {
     }
   }
 
-  if (tc) {
-    [dexResponse] = await tc.call("dex_market", dexArgs, () =>
-      client.callTool("dex_market", dexArgs)
-    );
-  } else {
-    dexResponse = await client.callTool("dex_market", dexArgs);
-  }
+  const dexResponse = await retryMcpCall(client, "dex_market", dexArgs, tc, 2);
   const dexPayload = safeJsonParse(dexResponse.text);
   const dexCandidates = extractDexCandidates(dexPayload);
   const dexContext = {
@@ -879,6 +902,24 @@ function buildResolvedIdentity(lookup) {
     normalizeChainName(dexCandidate.chainId || dexCandidate.chain || dexCandidate.network) ||
     parsedDex.chain ||
     null;
+
+  // Chain confidence: DEX-only attribution is unreliable for chain identity
+  // (e.g. a Solana memecoin named "DOGE" may outrank real Dogecoin in DEX search)
+  let chainSource = null;
+  let chainConfidence = "none";
+  if (lookup.context.preferredChain) {
+    chainSource = "user_specified";
+    chainConfidence = "high";
+  } else if (chain) {
+    const hasCryptoData = cryptoCandidate && Boolean(cryptoCandidate.id || cryptoCandidate.symbol);
+    if (hasCryptoData) {
+      chainSource = "dex_market";
+      chainConfidence = "medium";
+    } else {
+      chainSource = "dex_market";
+      chainConfidence = "low";
+    }
+  }
   const contractAddress =
     readString(lookup.context.contractAddress) ||
     readString(baseToken.address || dexCandidate.address || dexCandidate.tokenAddress) ||
@@ -927,6 +968,8 @@ function buildResolvedIdentity(lookup) {
     symbol,
     name,
     chain,
+    chainSource,
+    chainConfidence,
     contractAddress,
     assetType: null,
     marketCap,

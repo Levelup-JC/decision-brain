@@ -9,7 +9,7 @@
 const MCP_SESSION_HEADER = "mcp-session-id";
 
 export class HttpMcpClient {
-  constructor({ url, timeoutMs = 30000, headers = {}, retryCount = 0, retryDelayMs = 500 }) {
+  constructor({ url, timeoutMs = 30000, headers = {}, retryCount = 0, retryDelayMs = 300, maxConcurrent = 5 }) {
     this.url = url;
     this.timeoutMs = timeoutMs;
     this.sessionId = null;
@@ -18,9 +18,14 @@ export class HttpMcpClient {
     this.initialized = false;
     this.retryCount = retryCount;
     this.retryDelayMs = retryDelayMs;
+    this._maxConcurrent = maxConcurrent;
+    this._inFlight = 0;
+    this._waitQueue = [];
   }
 
   async _fetchOnce(method, params = {}) {
+    await this._acquireSlot();
+
     const id = this.nextId++;
     const body = JSON.stringify({
       jsonrpc: "2.0",
@@ -76,25 +81,32 @@ export class HttpMcpClient {
       return result.result;
     } finally {
       clearTimeout(timer);
+      this._releaseSlot();
     }
   }
 
-  async _fetch(method, params = {}) {
+  async _fetch(method, params = {}, { trackRetries = false } = {}) {
     let lastError = null;
+    let totalAttempts = 0;
 
     for (let attempt = 0; attempt <= this.retryCount; attempt += 1) {
       try {
-        return await this._fetchOnce(method, params);
+        const result = await this._fetchOnce(method, params);
+        return trackRetries ? { result, retryCount: attempt } : result;
       } catch (error) {
         lastError = error;
+        totalAttempts = attempt + 1;
         if (attempt >= this.retryCount) {
           break;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, this.retryDelayMs * (attempt + 1)));
+        const delay = this.retryDelayMs * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
+    lastError.retryCount = totalAttempts - 1;
+    lastError.retriesExhausted = true;
     throw lastError;
   }
 
@@ -122,15 +134,16 @@ export class HttpMcpClient {
   }
 
   async callTool(name, args = {}) {
-    const result = await this._fetch("tools/call", {
-      name,
-      arguments: args,
-    });
+    const { result, retryCount = 0 } = await this._fetch(
+      "tools/call",
+      { name, arguments: args },
+      { trackRetries: true }
+    );
 
     // Extract text content from MCP response
     const content = result?.content;
     if (!Array.isArray(content)) {
-      return { raw: result, text: JSON.stringify(result) };
+      return { raw: result, text: JSON.stringify(result), retryCount };
     }
 
     const text = content
@@ -141,7 +154,24 @@ export class HttpMcpClient {
       .filter(Boolean)
       .join("\n");
 
-    return { raw: result, text };
+    return { raw: result, text, retryCount };
+  }
+
+  async _acquireSlot() {
+    if (this._inFlight < this._maxConcurrent) {
+      this._inFlight += 1;
+      return;
+    }
+    await new Promise((resolve) => {
+      this._waitQueue.push(resolve);
+    });
+    this._inFlight += 1;
+  }
+
+  _releaseSlot() {
+    this._inFlight -= 1;
+    const next = this._waitQueue.shift();
+    if (next) next();
   }
 
   close() {

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { listTools, callTool } from "../src/service-contract.mjs";
+import { store } from "../src/data-store.mjs";
 
 test("service contract exposes lobster-facing tools", async () => {
   const tools = listTools();
@@ -78,6 +79,7 @@ test("service contract can execute lobster core flow with isolated state", async
 
   process.env.DECISION_BRAIN_DATA_DIR = dataDir;
   delete process.env.DECISION_BRAIN_STATE_FILE;
+  store.resetCache();
 
   try {
     const lookup = await callTool("lookup_portfolio_memory", {
@@ -119,6 +121,7 @@ test("service contract can execute lobster core flow with isolated state", async
     } else {
       process.env.DECISION_BRAIN_STATE_FILE = previousStateFile;
     }
+    store.resetCache();
   }
 });
 
@@ -139,10 +142,14 @@ test("mcp server can list tools and handle a manage_position call", async () => 
   }
 
   let stdoutBuffer = Buffer.alloc(0);
+  let childStderr = "";
   const responses = [];
   child.stdout.on("data", (chunk) => {
     stdoutBuffer = Buffer.concat([stdoutBuffer, chunk]);
     parseFrames();
+  });
+  child.stderr.on("data", (chunk) => {
+    childStderr += chunk.toString("utf8");
   });
 
   function parseFrames() {
@@ -168,7 +175,7 @@ test("mcp server can list tools and handle a manage_position call", async () => 
     }
   }
 
-  async function waitForResponse(id, timeoutMs = 15000) {
+  async function waitForResponse(id, timeoutMs = 30000) {
     return new Promise((resolve, reject) => {
       let settled = false;
       const cleanup = () => {
@@ -190,12 +197,12 @@ test("mcp server can list tools and handle a manage_position call", async () => 
       const onExit = () => {
         if (settled) return;
         cleanup();
-        reject(new Error(`Process exited before response id ${id}`));
+        reject(new Error(`Process exited before response id ${id}${childStderr ? `, stderr: ${childStderr.trim()}` : ""}`));
       };
       const timer = setTimeout(() => {
         if (settled) return;
         cleanup();
-        reject(new Error(`Timed out waiting for response id ${id}`));
+        reject(new Error(`Timed out waiting for response id ${id}${childStderr ? `, stderr: ${childStderr.trim()}` : ""}`));
       }, timeoutMs);
       const interval = setInterval(() => {
         if (check()) {

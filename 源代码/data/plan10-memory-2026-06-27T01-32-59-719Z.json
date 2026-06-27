@@ -1,0 +1,214 @@
+{
+  "meta": {
+    "version": "X-C-1.0",
+    "mode": "http",
+    "http_base": "http://localhost:4177",
+    "started_at": "2026-06-27T01:32:54.675Z",
+    "total_cases": 5
+  },
+  "preset": {
+    "sol_plan_status": "active",
+    "btc_plan_status": "draft"
+  },
+  "results": [
+    {
+      "id": "p10-mem-01",
+      "description": "我的持仓总览 — returns all positions with plan status",
+      "passed": false,
+      "tookMs": 8,
+      "input": "我的持仓总览",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "BTC 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: BTC",
+      "replyFull": "BTC 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: BTC",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsSol": {
+          "passed": false,
+          "error": null
+        },
+        "mentionsBtc": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsActiveStatus": {
+          "passed": false,
+          "error": null
+        },
+        "mentionsDraftStatus": {
+          "passed": false,
+          "error": null
+        },
+        "mentionsPlanStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsCostOrUnits": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-02",
+      "description": "我的 SOL 计划是什么 — returns SOL plan details + valuation",
+      "passed": false,
+      "tookMs": 8,
+      "input": "我的 SOL 计划是什么",
+      "intent": "lookup_memory",
+      "assetQuery": "SOL",
+      "replyPreview": "SOL 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: SOL",
+      "replyFull": "SOL 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: SOL",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "assetQueryIsSol": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsPlanActive": {
+          "passed": false,
+          "error": null
+        },
+        "mentionsValuation": {
+          "passed": false,
+          "error": null
+        },
+        "mentionsCostOrUnits": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-03",
+      "description": "我的投资历史 — returns structured history",
+      "passed": true,
+      "tookMs": 9,
+      "input": "我之前买过什么",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "BTC 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: BTC",
+      "replyFull": "BTC 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: BTC",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsMultipleAssets": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-04",
+      "description": "空持仓说真话 — no positions, honest response",
+      "passed": false,
+      "tookMs": 4,
+      "input": "我有什么持仓",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "BTC 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: BTC",
+      "replyFull": "BTC 的持仓记录与投资计划：【memory】意图: add_to_existing，资产: BTC",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noPositionsHonest": {
+          "passed": false,
+          "error": null
+        },
+        "noFabricatedNumbers": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-05",
+      "description": "API portfolio-summary — returns structured JSON",
+      "passed": true,
+      "tookMs": 5,
+      "input": "(API direct)",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "{\"ok\":true,\"positions\":[{\"symbol\":\"SOL\",\"assetId\":\"asset_sol\",\"units\":100,\"averageCost\":120,\"currentPrice\":120,\"currentValue\":12000,\"costBasisTotal\":12000,\"plan\":{\"id\":\"plan_bc6a70af77\",\"status\":\"active\",\"confirmedAt\":\"2026-06-27T01:32:36.483Z\",\"valuationTiers\":[{\"name\":\"conservative\",\"label\":\"保守估值\"",
+      "replyFull": "{\"ok\":true,\"positions\":[{\"symbol\":\"SOL\",\"assetId\":\"asset_sol\",\"units\":100,\"averageCost\":120,\"currentPrice\":120,\"currentValue\":12000,\"costBasisTotal\":12000,\"plan\":{\"id\":\"plan_bc6a70af77\",\"status\":\"active\",\"confirmedAt\":\"2026-06-27T01:32:36.483Z\",\"valuationTiers\":[{\"name\":\"conservative\",\"label\":\"保守估值\",\"fdvRange\":[19000000000,19000000000],\"fdvFormatted\":\"190.0亿 - 190.0亿\",\"priceRange\":[54.8305,54.8305],\"priceFormatted\":\"$54.8305 - $54.8305\",\"implication\":\"只有在保守估值下沿附近，才考虑小幅补仓\"},{\"name\":\"base\",\"label\":\"基准估值\",\"fdvRange\":[19000000000,420000000000],\"fdvFormatted\":\"190.0亿 - 4200亿\",\"priceRange\":[54.8305,1212.0435],\"priceFormatted\":\"$54.8305 - $1212.0435\",\"implication\":\"进入基准区间后，考虑回本金或卖出 20%-30%\"},{\"name\":\"aggressive\",\"label\":\"乐观估值\",\"fdvRange\":[22000000000,420000000000],\"fdvFormatted\":\"220.0亿 - 4200亿\",\"priceRange\":[63.488,1212.0435],\"priceFormatted\":\"$63.488 - $1212.0435\",\"implication\":\"进入乐观区间后，分批卖出，除非强证据继续增强\"}],\"nextReviewAt\":\"2026-07-27T01:32:58.300Z\",\"monitoringPolicy\":{\"newsHours\":24,\"positionHours\":24}},\"valuationZone\":\"base\",\"latestMetrics\":{\"marketCap\":41582664605.14991,\"fdv\":41582664605.14991,\"dailyVolumeUsd\":99.63},\"portfolioPct\":0.24,\"updatedAt\":\"2026-06-27T01:32:36.435Z\"},{\"symbol\":\"BTW\",\"assetId\":\"asset_btw\",\"units\":500,\"averageCost\":1,\"currentPrice\":1,\"currentValue\":500,\"costBasisTotal\":500,\"plan\":{\"id\":\"plan_38cce4ff30\",\"status\":\"draft\",\"confirmedAt\":null,\"valuationTiers\":{\"conservative\":[54401719,81602579],\"base\":[102003224,170005373],\"aggressive\":[204006447,340010745]},\"nextReviewAt\":\"2026-07-26T04:55:58.832Z\",\"monitoringPolicy\":{\"newsHours\":24,\"positionHours\":24}},\"valuationZone\":\"conservative\",\"latestMetrics\":{\"marketCap\":null,\"fdv\":null,\"dailyVolumeUsd\":null},\"portfolioPct\":0.05,\"updatedAt\":\"2026-06-17T05:23:15.039Z\"},{\"symbol\":\"BTC\",\"assetId\":\"asset_btc\",\"units\":0.5,\"averageCost\":45000,\"currentPrice\":45000,\"currentValue\":22500,\"costBasisTotal\":22500,\"plan\":{\"id\":\"plan_c331acc7d0\",\"status\":\"draft\",\"confirmedAt\":null,\"valuationTiers\":[{\"name\":\"conservative\",\"label\":\"保守估值\",\"fdvRange\":[960633975583,1440950963375],\"fdvFormatted\":\"9606亿 - 1.4万亿\",\"priceRange\":[36000,54000],\"priceFormatted\":\"$36000 - $54000\",\"implication\":\"只有在保守估值下沿附近，才考虑小幅补仓\"},{\"name\":\"base\",\"label\":\"基准估值\",\"fdvRange\":[1801188704218,3001981173697],\"fdvFormatted\":\"1.8万亿 - 3.0万亿\",\"priceRange\":[67500,112500],\"priceFormatted\":\"$67500 - $112500\",\"implication\":\"进入基准区间后，考虑回本金或卖出 20%-30%\"},{\"name\":\"aggressive\",\"label\":\"乐观估值\",\"fdvRange\":[3602377408437,6003962347395],\"fdvFormatted\":\"3.6万亿 - 6.0万亿\",\"priceRange\":[135000,225000],\"priceFormatted\":\"$135000 - $225000\",\"implication\":\"进入乐观区间后，分批卖出，除非强证据继续增强\"}],\"nextReviewAt\":\"2026-07-27T01:32:54.137Z\",\"monitoringPolicy\":{\"newsHours\":24,\"positionHours\":24}},\"valuationZone\":\"conservative\",\"latestMetrics\":{\"marketCap\":1200792469478.9905,\"fdv\":1200792469478.9905,\"dailyVolumeUsd\":71803.4},\"portfolioPct\":0.45,\"updatedAt\":\"2026-06-27T01:32:54.125Z\"}],\"totalCount\":3,\"activeCount\":1,\"draftCount\":2}",
+      "apiData": {
+        "totalCount": 3,
+        "positions": [
+          {
+            "symbol": "SOL",
+            "units": 100,
+            "planStatus": "active",
+            "valuationZone": "base"
+          },
+          {
+            "symbol": "BTW",
+            "units": 500,
+            "planStatus": "draft",
+            "valuationZone": "conservative"
+          },
+          {
+            "symbol": "BTC",
+            "units": 0.5,
+            "planStatus": "draft",
+            "valuationZone": "conservative"
+          }
+        ]
+      },
+      "assertions": {
+        "apiReturnsOk": {
+          "passed": true,
+          "error": null
+        },
+        "hasPositions": {
+          "passed": true,
+          "error": null
+        },
+        "totalCountMatch": {
+          "passed": true,
+          "error": null
+        },
+        "eachPositionHasSymbol": {
+          "passed": true,
+          "error": null
+        },
+        "eachPositionHasPlanField": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "total_cases": 5,
+    "passed_cases": 2,
+    "failed_cases": 3,
+    "total_assertions": 25,
+    "passed_assertions": 17
+  }
+}

@@ -86,11 +86,73 @@ export function buildDraftPlan(asset, position, valuationModel, naturalLanguageP
     createdAt: nowIso()
   };
 
+  // Build explicit valuation tiers from model scenarios (traceable numbers)
+  const valuationTiers = [];
+  if (conservative) {
+    valuationTiers.push({
+      name: "conservative",
+      label: "保守估值",
+      fdvRange: conservative.targetFdvRange,
+      fdvFormatted: formatRange(conservative.targetFdvRange),
+      priceRange: conservative.impliedPriceRange,
+      priceFormatted: conservative.impliedPriceRange
+        ? `$${conservative.impliedPriceRange[0]} - $${conservative.impliedPriceRange[1]}`
+        : "暂无",
+      implication: conservative.planImplication || "只有在保守估值下沿附近，才考虑小幅补仓",
+    });
+  }
+  if (base) {
+    valuationTiers.push({
+      name: "base",
+      label: "基准估值",
+      fdvRange: base.targetFdvRange,
+      fdvFormatted: formatRange(base.targetFdvRange),
+      priceRange: base.impliedPriceRange,
+      priceFormatted: base.impliedPriceRange
+        ? `$${base.impliedPriceRange[0]} - $${base.impliedPriceRange[1]}`
+        : "暂无",
+      implication: base.planImplication || "进入基准区间后，考虑回本金或卖出 20%-30%",
+    });
+  }
+  if (aggressive) {
+    valuationTiers.push({
+      name: "aggressive",
+      label: "乐观估值",
+      fdvRange: aggressive.targetFdvRange,
+      fdvFormatted: formatRange(aggressive.targetFdvRange),
+      priceRange: aggressive.impliedPriceRange,
+      priceFormatted: aggressive.impliedPriceRange
+        ? `$${aggressive.impliedPriceRange[0]} - $${aggressive.impliedPriceRange[1]}`
+        : "暂无",
+      implication: aggressive.planImplication || "估值明显高于同类项目时优先分批卖出",
+    });
+  }
+
+  // Position guide: allocation and zone-based actions from valuation data
+  const positionGuide = {
+    currentUnits: position.units,
+    averageCost: position.averageCost,
+    floorUnits: Number((position.peakUnits * floorRatio).toFixed(4)),
+    suggestedAddZone: conservative?.impliedPriceRange
+      ? `$${conservative.impliedPriceRange[0]} - $${conservative.impliedPriceRange[1]} (保守估值区)`
+      : "等待估值模型数据",
+    holdThroughZone: base?.impliedPriceRange
+      ? `$${base.impliedPriceRange[0]} - $${base.impliedPriceRange[1]} (基准估值区)`
+      : "持有观察",
+    takeProfitZone: base?.impliedPriceRange
+      ? `$${base.impliedPriceRange[0]} 以上可考虑分批止盈`
+      : aggressive?.impliedPriceRange
+        ? `$${aggressive.impliedPriceRange[0]} 以上优先分批卖出`
+        : "达到阶段性目标时分批卖出",
+  };
+
   return {
     ...plan,
     status: existingPlan?.status || "draft",
     rawInstruction: naturalLanguagePlan || "系统基于估值模型生成默认计划",
     valuationId: valuationModel.id,
+    valuationTiers,
+    positionGuide,
     floorRule: {
       basis: "peak_units",
       ratio: floorRatio,

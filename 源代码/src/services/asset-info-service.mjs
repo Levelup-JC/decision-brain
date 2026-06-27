@@ -3,7 +3,6 @@ import { resolveAssetFromQuery } from "./asset-service.mjs";
 import { getCurrentCollector } from "../trace-collector.mjs";
 
 const CACHE_TTL_MS = 60_000;
-const CACHEABLE_SYMBOLS = new Set(["BTC", "ETH", "SOL"]);
 
 const cache = new Map();
 
@@ -19,9 +18,7 @@ function getCached(symbol) {
 
 function setCache(symbol, data) {
   const key = symbol.toUpperCase();
-  if (CACHEABLE_SYMBOLS.has(key)) {
-    cache.set(key, { data, ts: Date.now() });
-  }
+  cache.set(key, { data, ts: Date.now() });
 }
 
 function formatCompactUsd(value) {
@@ -78,6 +75,7 @@ export async function getAssetInfo(assetQuery) {
     name: enrichment?.identity?.name || symbol,
     assetType: enrichment?.identity?.assetType || "unclassified_asset",
     chain: enrichment?.identity?.chain || null,
+    chainConfidence: enrichment?.identity?.chainConfidence || "none",
     currentMetrics: { price, marketCap, fdv },
     listedExchanges: enrichment?.listedExchanges || [],
     mcpOk,

@@ -7,7 +7,7 @@ import {
   refreshResearch,
 } from "./services/api-service.mjs";
 import { getAssetInfo } from "./services/asset-info-service.mjs";
-import { createTraceCollector, setCurrentCollector, clearCurrentCollector } from "./trace-collector.mjs";
+import { createTraceCollector, runWithCollector } from "./trace-collector.mjs";
 
 const BITGET_ROLE_MAP = Object.fromEntries(
   BITGET_SKILLS.map((s) => [s.key, s])
@@ -180,33 +180,52 @@ export async function runFanoutAgents(fanout, assetQuery, context = {}) {
   if (!fanout.length) return { agentResults: [], trace: [] };
   const focusedAsset = assetQuery || context.lastAsset;
 
+  // Per-agent timeout varies by fanout width; asset_info gets longer for MCP calls
+  const baseTimeoutMs = fanout.length <= 2 ? 4000 : 5000;
+  function agentTimeoutMs(role) {
+    if (role === "asset_info") return 8000; // MCP calls take 4-7s
+    return baseTimeoutMs;
+  }
+
   const allTraces = [];
 
   const results = await Promise.allSettled(
     fanout.map(async (role) => {
       const tc = createTraceCollector(role);
-      setCurrentCollector(tc);
-      try {
-        const result = await runAgent(role, focusedAsset || assetQuery);
-        allTraces.push(...tc.drain());
-        // Merge cached trace entries from agent (e.g. asset_info cache hit);
-        // skip non-cached to avoid doubling entries already captured by tc.drain()
-        if (result._trace && result._trace.length) {
-          for (const t of result._trace) {
-            if (t.cached) allTraces.push(t);
+      return runWithCollector(tc, async () => {
+        const agentPromise = runAgent(role, focusedAsset || assetQuery);
+        const timeoutMs = agentTimeoutMs(role);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("agent_timeout")), timeoutMs)
+        );
+        try {
+          const result = await Promise.race([agentPromise, timeoutPromise]);
+          allTraces.push(...tc.drain());
+          if (result._trace && result._trace.length) {
+            for (const t of result._trace) {
+              if (t.cached) allTraces.push(t);
+            }
           }
+          return result;
+        } catch (err) {
+          tc.pushTimeout(role, err.message === "agent_timeout" ? role : "unknown");
+          allTraces.push(...tc.drain());
+          throw err;
         }
-        return result;
-      } finally {
-        clearCurrentCollector();
-      }
+      });
     })
   );
 
   const agentResults = results.map((r) =>
     r.status === "fulfilled"
       ? r.value
-      : { role: "unknown", status: "error", headline: String(r.reason), data: {}, tookMs: 0 }
+      : {
+          role: "unknown",
+          status: "error",
+          headline: String(r.reason?.message || r.reason),
+          data: {},
+          tookMs: 0,
+        }
   );
 
   return { agentResults, trace: allTraces };

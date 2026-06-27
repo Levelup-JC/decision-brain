@@ -1,0 +1,214 @@
+{
+  "meta": {
+    "version": "X-C-1.0",
+    "mode": "http",
+    "http_base": "http://localhost:4177",
+    "started_at": "2026-06-27T01:35:57.180Z",
+    "total_cases": 5
+  },
+  "preset": {
+    "sol_plan_status": "active",
+    "btc_plan_status": "draft"
+  },
+  "results": [
+    {
+      "id": "p10-mem-01",
+      "description": "我的持仓总览 — returns all positions with plan status",
+      "passed": true,
+      "tookMs": 6,
+      "input": "我的持仓总览",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "replyFull": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsSol": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsBtc": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsActiveStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsDraftStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsPlanStatus": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsCostOrUnits": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-02",
+      "description": "我的 SOL 计划是什么 — returns SOL plan details + valuation",
+      "passed": true,
+      "tookMs": 7,
+      "input": "我的 SOL 计划是什么",
+      "intent": "lookup_memory",
+      "assetQuery": "SOL",
+      "replyPreview": "SOL 持仓: 100 个，成本 $120，当前价 $120，当前市值 $12000。\n历史最高持仓: 100 个。\n市值: $41.5B。\nFDV: $41.5B。\n投资计划状态: 活跃监控中\n确认时间: 2026-06-27T01:35:51.086Z\n下次复查: 2026-07-27T01:35:51.044Z\n当前估值区间: 基准估值区间\n三档估值 (FDV):\n  保守: FDV $19.0B - $19.0B，隐含价格 $54.9037 - $54.9037。只有在保守估值下沿附近，才考虑小幅补仓\n  基准: FDV $19.0B - $420.0B，隐含价格 $54.9037 -",
+      "replyFull": "SOL 持仓: 100 个，成本 $120，当前价 $120，当前市值 $12000。\n历史最高持仓: 100 个。\n市值: $41.5B。\nFDV: $41.5B。\n投资计划状态: 活跃监控中\n确认时间: 2026-06-27T01:35:51.086Z\n下次复查: 2026-07-27T01:35:51.044Z\n当前估值区间: 基准估值区间\n三档估值 (FDV):\n  保守: FDV $19.0B - $19.0B，隐含价格 $54.9037 - $54.9037。只有在保守估值下沿附近，才考虑小幅补仓\n  基准: FDV $19.0B - $420.0B，隐含价格 $54.9037 - $1213.6612。进入基准区间后，考虑回本金或卖出 20%-30%\n  乐观: FDV $22.0B - $420.0B，隐含价格 $63.5727 - $1213.6612。进入乐观区间后，分批卖出，除非强证据继续增强\n以上估值数字可追溯至对应 trace 记录。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "assetQueryIsSol": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsPlanActive": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsValuation": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsCostOrUnits": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-03",
+      "description": "我的投资历史 — returns structured history",
+      "passed": true,
+      "tookMs": 6,
+      "input": "我之前买过什么",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "replyFull": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "intentIsMemory": {
+          "passed": true,
+          "error": null
+        },
+        "mentionsMultipleAssets": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-04",
+      "description": "空持仓说真话 — no positions, honest response",
+      "passed": false,
+      "tookMs": 5,
+      "input": "我有什么持仓",
+      "intent": "lookup_memory",
+      "assetQuery": "BTC",
+      "replyPreview": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "replyFull": "你的投资组合共 3 个仓位 (1 个活跃，2 个待确认):\n\n1. SOL: 持有 100 个，成本 $120，当前价 $120，市值 $41.5B，计划状态: 活跃监控中，估值区间: base\n2. BTW: 持有 500 个，成本 $1，当前价 $1，计划状态: draft (待确认)，估值区间: conservative\n3. BTC: 持有 0.5 个，成本 $45000，当前价 $45000，市值 $1200.3B，计划状态: draft (待确认)，估值区间: conservative\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。",
+      "apiData": null,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noPositionsHonest": {
+          "passed": false,
+          "error": null
+        },
+        "noFabricatedNumbers": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p10-mem-05",
+      "description": "API portfolio-summary — returns structured JSON",
+      "passed": true,
+      "tookMs": 3,
+      "input": "(API direct)",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "{\"ok\":true,\"positions\":[{\"symbol\":\"SOL\",\"assetId\":\"asset_sol\",\"units\":100,\"averageCost\":120,\"currentPrice\":120,\"currentValue\":12000,\"costBasisTotal\":12000,\"plan\":{\"id\":\"plan_bc6a70af77\",\"status\":\"active\",\"confirmedAt\":\"2026-06-27T01:35:51.086Z\",\"valuationTiers\":[{\"name\":\"conservative\",\"label\":\"保守估值\"",
+      "replyFull": "{\"ok\":true,\"positions\":[{\"symbol\":\"SOL\",\"assetId\":\"asset_sol\",\"units\":100,\"averageCost\":120,\"currentPrice\":120,\"currentValue\":12000,\"costBasisTotal\":12000,\"plan\":{\"id\":\"plan_bc6a70af77\",\"status\":\"active\",\"confirmedAt\":\"2026-06-27T01:35:51.086Z\",\"valuationTiers\":[{\"name\":\"conservative\",\"label\":\"保守估值\",\"fdvRange\":[19000000000,19000000000],\"fdvFormatted\":\"190.0亿 - 190.0亿\",\"priceRange\":[54.9037,54.9037],\"priceFormatted\":\"$54.9037 - $54.9037\",\"implication\":\"只有在保守估值下沿附近，才考虑小幅补仓\"},{\"name\":\"base\",\"label\":\"基准估值\",\"fdvRange\":[19000000000,420000000000],\"fdvFormatted\":\"190.0亿 - 4200亿\",\"priceRange\":[54.9037,1213.6612],\"priceFormatted\":\"$54.9037 - $1213.6612\",\"implication\":\"进入基准区间后，考虑回本金或卖出 20%-30%\"},{\"name\":\"aggressive\",\"label\":\"乐观估值\",\"fdvRange\":[22000000000,420000000000],\"fdvFormatted\":\"220.0亿 - 4200亿\",\"priceRange\":[63.5727,1213.6612],\"priceFormatted\":\"$63.5727 - $1213.6612\",\"implication\":\"进入乐观区间后，分批卖出，除非强证据继续增强\"}],\"nextReviewAt\":\"2026-07-27T01:35:51.044Z\",\"monitoringPolicy\":{\"newsHours\":24,\"positionHours\":24}},\"valuationZone\":\"base\",\"latestMetrics\":{\"marketCap\":41527241631.57889,\"fdv\":41527241631.57889,\"dailyVolumeUsd\":99.63},\"portfolioPct\":0.24,\"updatedAt\":\"2026-06-27T01:35:51.038Z\"},{\"symbol\":\"BTW\",\"assetId\":\"asset_btw\",\"units\":500,\"averageCost\":1,\"currentPrice\":1,\"currentValue\":500,\"costBasisTotal\":500,\"plan\":{\"id\":\"plan_38cce4ff30\",\"status\":\"draft\",\"confirmedAt\":null,\"valuationTiers\":{\"conservative\":[54401719,81602579],\"base\":[102003224,170005373],\"aggressive\":[204006447,340010745]},\"nextReviewAt\":\"2026-07-26T04:55:58.832Z\",\"monitoringPolicy\":{\"newsHours\":24,\"positionHours\":24}},\"valuationZone\":\"conservative\",\"latestMetrics\":{\"marketCap\":null,\"fdv\":null,\"dailyVolumeUsd\":null},\"portfolioPct\":0.05,\"updatedAt\":\"2026-06-17T05:23:15.039Z\"},{\"symbol\":\"BTC\",\"assetId\":\"asset_btc\",\"units\":0.5,\"averageCost\":45000,\"currentPrice\":45000,\"currentValue\":22500,\"costBasisTotal\":22500,\"plan\":{\"id\":\"plan_c331acc7d0\",\"status\":\"draft\",\"confirmedAt\":null,\"valuationTiers\":[{\"name\":\"conservative\",\"label\":\"保守估值\",\"fdvRange\":[960233915742,1440350873613],\"fdvFormatted\":\"9602亿 - 1.4万亿\",\"priceRange\":[36000,54000],\"priceFormatted\":\"$36000 - $54000\",\"implication\":\"只有在保守估值下沿附近，才考虑小幅补仓\"},{\"name\":\"base\",\"label\":\"基准估值\",\"fdvRange\":[1800438592016,3000730986693],\"fdvFormatted\":\"1.8万亿 - 3.0万亿\",\"priceRange\":[67500,112500],\"priceFormatted\":\"$67500 - $112500\",\"implication\":\"进入基准区间后，考虑回本金或卖出 20%-30%\"},{\"name\":\"aggressive\",\"label\":\"乐观估值\",\"fdvRange\":[3600877184032,6001461973386],\"fdvFormatted\":\"3.6万亿 - 6.0万亿\",\"priceRange\":[135000,225000],\"priceFormatted\":\"$135000 - $225000\",\"implication\":\"进入乐观区间后，分批卖出，除非强证据继续增强\"}],\"nextReviewAt\":\"2026-07-27T01:35:56.645Z\",\"monitoringPolicy\":{\"newsHours\":24,\"positionHours\":24}},\"valuationZone\":\"conservative\",\"latestMetrics\":{\"marketCap\":1200292394677.2654,\"fdv\":1200292394677.2654,\"dailyVolumeUsd\":71803.4},\"portfolioPct\":0.45,\"updatedAt\":\"2026-06-27T01:35:56.639Z\"}],\"totalCount\":3,\"activeCount\":1,\"draftCount\":2}",
+      "apiData": {
+        "totalCount": 3,
+        "positions": [
+          {
+            "symbol": "SOL",
+            "units": 100,
+            "planStatus": "active",
+            "valuationZone": "base"
+          },
+          {
+            "symbol": "BTW",
+            "units": 500,
+            "planStatus": "draft",
+            "valuationZone": "conservative"
+          },
+          {
+            "symbol": "BTC",
+            "units": 0.5,
+            "planStatus": "draft",
+            "valuationZone": "conservative"
+          }
+        ]
+      },
+      "assertions": {
+        "apiReturnsOk": {
+          "passed": true,
+          "error": null
+        },
+        "hasPositions": {
+          "passed": true,
+          "error": null
+        },
+        "totalCountMatch": {
+          "passed": true,
+          "error": null
+        },
+        "eachPositionHasSymbol": {
+          "passed": true,
+          "error": null
+        },
+        "eachPositionHasPlanField": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "total_cases": 5,
+    "passed_cases": 4,
+    "failed_cases": 1,
+    "total_assertions": 25,
+    "passed_assertions": 23
+  }
+}

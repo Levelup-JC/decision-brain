@@ -1,0 +1,244 @@
+{
+  "test": "plan10-mcp-reliability",
+  "mode": "HTTP (http://localhost:4177)",
+  "timestamp": "2026-06-27T01:30:57.567Z",
+  "totalElapsedMs": 65498,
+  "symbols": [
+    "ENA",
+    "DOGE",
+    "AAVE"
+  ],
+  "roundsPerSymbol": 5,
+  "round1": {
+    "total": 15,
+    "mcpSuccess": 10,
+    "successRate": "66.7%",
+    "avgTookMs": 0,
+    "errors": 3
+  },
+  "round2": {
+    "total": 3,
+    "mcpSuccess": 1,
+    "cachedHits": 1,
+    "cacheHitRate": "33.3%"
+  },
+  "retries": {
+    "totalCallsWithRetries": 0,
+    "details": []
+  },
+  "results": [
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 0,
+      "sessionId": "p10-mcp-r1-ENA-0",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 0,
+      "sessionId": "p10-mcp-r1-DOGE-0",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 0,
+      "sessionId": "p10-mcp-r1-AAVE-0",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 1,
+      "sessionId": "p10-mcp-r1-ENA-1",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 1,
+      "sessionId": "p10-mcp-r1-DOGE-1",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 1,
+      "sessionId": "p10-mcp-r1-AAVE-1",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 2,
+      "sessionId": "p10-mcp-r1-ENA-2",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 2,
+      "sessionId": "p10-mcp-r1-DOGE-2",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "error": "fetch failed"
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 2,
+      "sessionId": "p10-mcp-r1-AAVE-2",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "error": "fetch failed"
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 3,
+      "sessionId": "p10-mcp-r1-ENA-3",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "error": "fetch failed"
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 3,
+      "sessionId": "p10-mcp-r1-DOGE-3",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 3,
+      "sessionId": "p10-mcp-r1-AAVE-3",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 4,
+      "sessionId": "p10-mcp-r1-ENA-4",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 4,
+      "sessionId": "p10-mcp-r1-DOGE-4",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 4,
+      "sessionId": "p10-mcp-r1-AAVE-4",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 2,
+      "symbol": "ENA",
+      "index": 0,
+      "sessionId": "p10-mcp-r2-ENA",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 2,
+      "symbol": "DOGE",
+      "index": 0,
+      "sessionId": "p10-mcp-r2-DOGE",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 2,
+      "symbol": "AAVE",
+      "index": 0,
+      "sessionId": "p10-mcp-r2-AAVE",
+      "mcpOk": false,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    }
+  ]
+}

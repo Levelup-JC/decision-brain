@@ -1,0 +1,609 @@
+{
+  "meta": {
+    "version": "IX-1.0",
+    "mode": "http",
+    "http_base": "http://localhost:4177",
+    "ruleOnly": true,
+    "started_at": "2026-06-27T00:18:22.374Z",
+    "total_cases": 10
+  },
+  "results": [
+    {
+      "id": "p8-dc-01",
+      "dimension": "数据正确性",
+      "description": "BTC 是什么 — 返回真实市值/价格，量级万亿级",
+      "passed": true,
+      "tookMs": 3963,
+      "input": "BTC 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "BTC",
+      "replyPreview": "根据当前实时数据，BTC（Bitcoin）价格为$60023，市值和完全稀释估值均为$1203.5B，市场数据来源可靠。建议投资者关注比特币作为核心数字资产的长期价值，其高流动性和成熟市场地位是主要优势。下一步可结合个人风险偏好，考虑在现有价位分批建仓或持有观察。",
+      "replyFull": "根据当前实时数据，BTC（Bitcoin）价格为$60023，市值和完全稀释估值均为$1203.5B，市场数据来源可靠。建议投资者关注比特币作为核心数字资产的长期价值，其高流动性和成熟市场地位是主要优势。下一步可结合个人风险偏好，考虑在现有价位分批建仓或持有观察。",
+      "tracePreview": [
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "{\"coins\": [{\"id\": \"bitcoin\", \"name\": \"Bitcoin\", \"api_symbol\": \"bitcoin\", \"symbol\": \"BTC\", \"market_cap_rank\": 1, \"thumb\": \"https://coin-images.coingecko.com/coins/images/1/thumb/bitcoin.png\", \"large\": "
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "global_assets",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "{\"symbol\": \"BTC-USD\", \"price\": 59985.859375}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_derivatives",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "{\"symbol\": \"BTC/USDT\", \"last\": 60081.99, \"high\": 60759.99, \"low\": 58337.0, \"volume\": 27298.46002, \"quote_volume\": 1629847924.5655224, \"change_pct\": 0.398, \"timestamp\": 1782519463013}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "sentiment_index",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "{\"value\": \"15\", \"classification\": \"Extreme Fear\", \"timestamp\": \"1782518400\", \"realtime_value\": null, \"btc_price\": null}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "derivatives_sentiment",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "[{\"symbol\": \"BTCUSDT\", \"longAccount\": \"0.6779\", \"longShortRatio\": \"2.1046\", \"shortAccount\": \"0.3221\", \"timestamp\": 1782244800000}, {\"symbol\": \"BTCUSDT\", \"longAccount\": \"0.6742\", \"longShortRatio\": \"2.0"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "{\"bitcoin\": {\"usd\": 60023, \"usd_market_cap\": 1203545623565.4194, \"usd_24h_vol\": 39850506437.892555, \"usd_24h_change\": 0.4879537052231455}}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "dex_market",
+          "ok": true,
+          "cached": true,
+          "rawSnippet": "[{\"chainId\": \"tron\", \"dexId\": \"sunswap\", \"url\": \"https://dexscreener.com/tron/ttqpjqqujmjjf3mavwwvurn3yrrxg2qutm\", \"pairAddress\": \"TTQpjqQUjMJjF3MAvWWVURn3YrRxg2quTM\", \"baseToken\": {\"address\": \"TN3W4H"
+        }
+      ],
+      "traceHasMcp": true,
+      "traceCount": 7,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-02",
+      "dimension": "数据正确性",
+      "description": "ETH 是什么 — 返回真实市值/价格",
+      "passed": true,
+      "tookMs": 10487,
+      "input": "ETH 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ETH",
+      "replyPreview": "**首席投资官决策：**  \n根据实时市场数据，以太坊当前价格为 **$1576.96**，市值与完全稀释估值均为 **$190.3B**，数据来源可靠。结合资产信息报告，以太坊基本面稳健，当前估值处于合理区间。**建议下一步：** 若用户有配置意向，可基于当前价格区间制定分批建仓计划，并持续监控链上活动与宏观流动性变化。",
+      "replyFull": "**首席投资官决策：**  \n根据实时市场数据，以太坊当前价格为 **$1576.96**，市值与完全稀释估值均为 **$190.3B**，数据来源可靠。结合资产信息报告，以太坊基本面稳健，当前估值处于合理区间。**建议下一步：** 若用户有配置意向，可基于当前价格区间制定分批建仓计划，并持续监控链上活动与宏观流动性变化。",
+      "tracePreview": [
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "{\"coins\": [{\"id\": \"ethereum\", \"name\": \"Ethereum\", \"api_symbol\": \"ethereum\", \"symbol\": \"ETH\", \"market_cap_rank\": 2, \"thumb\": \"https://coin-images.coingecko.com/coins/images/279/thumb/ethereum.png\", \"la"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "{\"ethereum\": {\"usd\": 1576.96, \"usd_market_cap\": 190335357749.71588, \"usd_24h_vol\": 14660774392.480614, \"usd_24h_change\": 0.6190535379581746}}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "dex_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "[{\"chainId\": \"solana\", \"dexId\": \"raydium\", \"url\": \"https://dexscreener.com/solana/7j8ah2hekywr4agetlvhoikuxkbhanecbqvxw7iasmwc\", \"pairAddress\": \"7j8ah2heKywr4ageTLvHoiKUXkbHaNecBQVXW7iASmWc\", \"labels\""
+        }
+      ],
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-03",
+      "dimension": "数据正确性",
+      "description": "SOL 是什么 — 返回真实市值/价格",
+      "passed": true,
+      "tookMs": 10202,
+      "input": "SOL 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "SOL",
+      "replyPreview": "**首席投资官决策：**  \n根据实时市场数据，Solana（SOL）当前价格为 **$72.26**，市值与完全稀释估值均为 **$42.0B**，数据来源可靠。结合资产信息报告，SOL目前估值处于合理区间，链上生态活跃度需进一步观察。建议：**短期关注$70支撑位，若放量突破$75可轻仓试探，否则保持观望；长期投资者可逢低分批建仓，目标仓位不超过组合5%。**",
+      "replyFull": "**首席投资官决策：**  \n根据实时市场数据，Solana（SOL）当前价格为 **$72.26**，市值与完全稀释估值均为 **$42.0B**，数据来源可靠。结合资产信息报告，SOL目前估值处于合理区间，链上生态活跃度需进一步观察。建议：**短期关注$70支撑位，若放量突破$75可轻仓试探，否则保持观望；长期投资者可逢低分批建仓，目标仓位不超过组合5%。**",
+      "tracePreview": [
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "{\"coins\": [{\"id\": \"solana\", \"name\": \"Solana\", \"api_symbol\": \"solana\", \"symbol\": \"SOL\", \"market_cap_rank\": 7, \"thumb\": \"https://coin-images.coingecko.com/coins/images/4128/thumb/solana.png\", \"large\": \""
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "{\"solana\": {\"usd\": 72.26, \"usd_market_cap\": 41963979472.244225, \"usd_24h_vol\": 4418129555.0889635, \"usd_24h_change\": 6.591157883732435}}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "dex_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "[{\"chainId\": \"base\", \"dexId\": \"aerodrome\", \"url\": \"https://dexscreener.com/base/0x1131db5977242a03ebead1acd18f80a9a29e5922\", \"pairAddress\": \"0x1131DB5977242a03eBeaD1aCD18F80A9A29e5922\", \"baseToken\": {"
+        }
+      ],
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": true,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "mcapInRange": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-04",
+      "dimension": "数据正确性",
+      "description": "ENA 的 FDV 是多少 — FDV 非 0，可追溯，无额外目标价/回调价",
+      "passed": false,
+      "tookMs": 8959,
+      "input": "ENA 的 FDV 是多少",
+      "intent": "lookup_asset_info",
+      "assetQuery": "ENA",
+      "replyPreview": "委员会成员尚未返回意见",
+      "replyFull": "委员会成员尚未返回意见",
+      "tracePreview": [
+        {
+          "agentRole": "asset_info",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        }
+      ],
+      "traceHasMcp": false,
+      "traceCount": 1,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "intentCorrect": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasMcp": {
+          "passed": false,
+          "error": null
+        },
+        "numbersTraceable": {
+          "passed": true,
+          "error": null
+        },
+        "noFabrication": {
+          "passed": true,
+          "error": null
+        },
+        "noExtraTargetNumbers": {
+          "passed": true,
+          "error": null
+        },
+        "fdvNonZero": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-dc-05",
+      "dimension": "数据正确性",
+      "description": "大盘怎么样 — 误触防护：不应命中 lookup_asset_info",
+      "passed": true,
+      "tookMs": 9158,
+      "input": "今天大盘怎么样",
+      "intent": "refresh_research",
+      "assetQuery": "BTC",
+      "replyPreview": "BTC 研究数据已刷新。委员会成员尚未返回意见",
+      "replyFull": "BTC 研究数据已刷新。委员会成员尚未返回意见",
+      "tracePreview": [
+        {
+          "agentRole": "macro",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "onchain",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "sentiment",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "technical",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "news",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        }
+      ],
+      "traceHasMcp": false,
+      "traceCount": 5,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "notAssetLookup": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-01",
+      "dimension": "可观测性",
+      "description": "response.trace 非空 — 任意资产查询产生 trace",
+      "passed": false,
+      "tookMs": 30009,
+      "input": "AAVE 是什么",
+      "intent": null,
+      "assetQuery": null,
+      "replyPreview": "This operation was aborted",
+      "replyFull": "This operation was aborted",
+      "tracePreview": [],
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": null,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "traceNonEmpty": {
+          "passed": false,
+          "error": null
+        },
+        "traceHasFields": {
+          "passed": false,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-02",
+      "dimension": "可观测性",
+      "description": "trace 含真实 MCP 工具调用 + DOGE 链归属不自相矛盾",
+      "passed": false,
+      "tookMs": 22822,
+      "input": "DOGE 是什么",
+      "intent": "lookup_asset_info",
+      "assetQuery": "DOGE",
+      "replyPreview": "委员会成员尚未返回意见",
+      "replyFull": "委员会成员尚未返回意见",
+      "tracePreview": [
+        {
+          "agentRole": "asset_info",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        }
+      ],
+      "traceHasMcp": false,
+      "traceCount": 1,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "traceHasRealMcp": {
+          "passed": false,
+          "error": null
+        },
+        "atLeastOneOk": {
+          "passed": false,
+          "error": null
+        },
+        "noFalseChainClaim": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p9-ob-timeout-trace",
+      "dimension": "可观测性",
+      "description": "超时场景 — fanout 超时必须回传 degraded + timeout trace + 非空回复",
+      "passed": true,
+      "tookMs": 9005,
+      "input": "全面分析一下 BTC 是否值得重仓买入并给出详细估值模型和风险评估",
+      "intent": "evaluate_candidate",
+      "assetQuery": "BTC",
+      "replyPreview": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+      "replyFull": "委员会已对 BTC 完成调研。委员会成员尚未返回意见。综合来看，建议先完成估值模型再决定是否建仓。",
+      "tracePreview": [
+        {
+          "agentRole": "memory",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "macro",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "onchain",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "sentiment",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "technical",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "news",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        },
+        {
+          "agentRole": "valuation",
+          "tool": "unknown",
+          "ok": false,
+          "cached": false,
+          "rawSnippet": ""
+        }
+      ],
+      "traceHasMcp": false,
+      "traceCount": 7,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "timeoutTrace": {
+          "passed": true,
+          "error": null
+        },
+        "degradedTrue": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p8-ob-04",
+      "dimension": "可观测性",
+      "description": "ruleOnly 字段存在 — API response 暴露诊断标志",
+      "passed": true,
+      "tookMs": 1834,
+      "input": "你好",
+      "intent": "smalltalk",
+      "assetQuery": "BTC",
+      "replyPreview": "抱歉，目前没有可用的代理报告来提供BTC的实时市场数据（如价格、市值和FDV）。由于缺少关键信息，无法给出具体的投资建议。建议您先获取最新的市场数据，再重新提交查询。",
+      "replyFull": "抱歉，目前没有可用的代理报告来提供BTC的实时市场数据（如价格、市值和FDV）。由于缺少关键信息，无法给出具体的投资建议。建议您先获取最新的市场数据，再重新提交查询。",
+      "tracePreview": [],
+      "traceHasMcp": false,
+      "traceCount": 0,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "ruleOnlyExposed": {
+          "passed": true,
+          "error": null
+        },
+        "hasReply": {
+          "passed": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "p9-ob-disconnect",
+      "dimension": "可观测性",
+      "description": "断网反例 — 数据源断开时不得编造数字，必须明确说明无法获取",
+      "passed": true,
+      "tookMs": 7597,
+      "input": "BTC 市值多少",
+      "intent": "lookup_asset_info",
+      "assetQuery": "BTC",
+      "replyPreview": "根据当前实时数据，BTC（Bitcoin）价格为$60014，市值和FDV均为$1203.2B，市场数据可靠。建议投资者关注BTC作为核心数字资产的长期价值，短期可结合技术面支撑位进行波段操作。下一步可深入分析链上活跃地址及大额持仓变动，以验证当前价格区间的资金流向。",
+      "replyFull": "根据当前实时数据，BTC（Bitcoin）价格为$60014，市值和FDV均为$1203.2B，市场数据可靠。建议投资者关注BTC作为核心数字资产的长期价值，短期可结合技术面支撑位进行波段操作。下一步可深入分析链上活跃地址及大额持仓变动，以验证当前价格区间的资金流向。",
+      "tracePreview": [
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "{\"coins\": [{\"id\": \"bitcoin\", \"name\": \"Bitcoin\", \"api_symbol\": \"bitcoin\", \"symbol\": \"BTC\", \"market_cap_rank\": 1, \"thumb\": \"https://coin-images.coingecko.com/coins/images/1/thumb/bitcoin.png\", \"large\": "
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "crypto_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "{\"bitcoin\": {\"usd\": 60014, \"usd_market_cap\": 1203155444051.6008, \"usd_24h_vol\": 39106943940.191734, \"usd_24h_change\": 0.47413958926377414}}"
+        },
+        {
+          "agentRole": "asset_info",
+          "tool": "dex_market",
+          "ok": true,
+          "cached": false,
+          "rawSnippet": "[{\"chainId\": \"tron\", \"dexId\": \"sunswap\", \"url\": \"https://dexscreener.com/tron/ttqpjqqujmjjf3mavwwvurn3yrrxg2qutm\", \"pairAddress\": \"TTQpjqQUjMJjF3MAvWWVURn3YrRxg2quTM\", \"baseToken\": {\"address\": \"TN3W4H"
+        }
+      ],
+      "traceHasMcp": true,
+      "traceCount": 3,
+      "ruleOnly": false,
+      "transportError": false,
+      "businessEvaluated": true,
+      "retryCount": 0,
+      "assertions": {
+        "hasReply": {
+          "passed": true,
+          "error": null
+        },
+        "noDollarNumbers": {
+          "passed": true,
+          "error": null
+        },
+        "hasUnavailableText": {
+          "passed": true,
+          "error": null
+        },
+        "traceHasFailure": {
+          "passed": true,
+          "error": null
+        }
+      }
+    }
+  ],
+  "summary": {
+    "dimension_data": {
+      "pass": 4,
+      "fail": 1
+    },
+    "dimension_obs": {
+      "pass": 2,
+      "fail": 2
+    },
+    "dimension_degraded": {
+      "pass": 1,
+      "fail": 0
+    },
+    "total_assertions": 37,
+    "passed_assertions": 31,
+    "completed_at": "2026-06-27T00:20:21.422Z",
+    "pass_rate": 0.8378378378378378,
+    "transportErrors": 0,
+    "totalRetries": 0,
+    "ruleOnly": true
+  }
+}

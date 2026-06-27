@@ -71,6 +71,64 @@ export async function getStateSummary() {
   return stateSummary(state);
 }
 
+export async function getPortfolioSummary() {
+  const state = await store.load();
+  const positions = Object.values(state.positions || {});
+
+  const result = positions.map((pos) => {
+    const plan = state.plans[pos.assetId] || null;
+    const valuationModel = state.valuationModels[pos.assetId] || null;
+    const asset = state.assets[pos.assetId] || null;
+
+    let valuationTiers = null;
+    if (plan?.valuationTiers) {
+      valuationTiers = plan.valuationTiers;
+    } else if (valuationModel?.scenarios) {
+      valuationTiers = {
+        conservative: valuationModel.scenarios[0]?.targetFdvRange || null,
+        base: valuationModel.scenarios[1]?.targetFdvRange || null,
+        aggressive: valuationModel.scenarios[2]?.targetFdvRange || null,
+      };
+    }
+
+    return {
+      symbol: pos.assetSymbol || asset?.symbol || "unknown",
+      assetId: pos.assetId,
+      units: pos.units,
+      averageCost: pos.averageCost,
+      currentPrice: pos.currentPrice,
+      currentValue: pos.currentValue,
+      costBasisTotal: pos.costBasisTotal,
+      plan: plan
+        ? {
+            id: plan.id,
+            status: plan.status,
+            confirmedAt: plan.confirmedAt || null,
+            valuationTiers,
+            nextReviewAt: plan.nextReviewAt || null,
+            monitoringPolicy: plan.monitoringPolicy || null,
+          }
+        : null,
+      valuationZone: valuationModel ? detectValuationZone(valuationModel) : null,
+      latestMetrics: {
+        marketCap: pos.marketCap || null,
+        fdv: pos.fdv || null,
+        dailyVolumeUsd: pos.dailyVolumeUsd || null,
+      },
+      portfolioPct: pos.portfolioPct || null,
+      updatedAt: pos.updatedAt || null,
+    };
+  });
+
+  return {
+    ok: true,
+    positions: result,
+    totalCount: result.length,
+    activeCount: result.filter((p) => p.plan?.status === "active").length,
+    draftCount: result.filter((p) => p.plan?.status === "draft").length,
+  };
+}
+
 export async function lookupPortfolioMemoryApi(body) {
   requireField(body.assetQuery, "assetQuery");
   const state = await store.load();

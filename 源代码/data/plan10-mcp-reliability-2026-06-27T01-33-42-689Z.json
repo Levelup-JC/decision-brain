@@ -1,0 +1,247 @@
+{
+  "test": "plan10-mcp-reliability",
+  "mode": "HTTP (http://localhost:4177)",
+  "timestamp": "2026-06-27T01:33:42.688Z",
+  "totalElapsedMs": 16089,
+  "symbols": [
+    "ENA",
+    "DOGE",
+    "AAVE"
+  ],
+  "roundsPerSymbol": 5,
+  "round1": {
+    "total": 15,
+    "mcpSuccess": 15,
+    "successRate": "100.0%",
+    "avgTookMs": 0,
+    "errors": 0
+  },
+  "round2": {
+    "total": 3,
+    "mcpSuccess": 3,
+    "cachedHits": 3,
+    "cacheHitRate": "100.0%"
+  },
+  "retries": {
+    "totalCallsWithRetries": 0,
+    "details": []
+  },
+  "results": [
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 0,
+      "sessionId": "p10-mcp-r1-ENA-0",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 0,
+      "sessionId": "p10-mcp-r1-DOGE-0",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 0,
+      "sessionId": "p10-mcp-r1-AAVE-0",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 1,
+      "sessionId": "p10-mcp-r1-ENA-1",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 1,
+      "sessionId": "p10-mcp-r1-DOGE-1",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 1,
+      "sessionId": "p10-mcp-r1-AAVE-1",
+      "mcpOk": true,
+      "cached": false,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 2,
+      "sessionId": "p10-mcp-r1-ENA-2",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 2,
+      "sessionId": "p10-mcp-r1-DOGE-2",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 2,
+      "sessionId": "p10-mcp-r1-AAVE-2",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 3,
+      "sessionId": "p10-mcp-r1-ENA-3",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 3,
+      "sessionId": "p10-mcp-r1-DOGE-3",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 3,
+      "sessionId": "p10-mcp-r1-AAVE-3",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "ENA",
+      "index": 4,
+      "sessionId": "p10-mcp-r1-ENA-4",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "DOGE",
+      "index": 4,
+      "sessionId": "p10-mcp-r1-DOGE-4",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 1,
+      "symbol": "AAVE",
+      "index": 4,
+      "sessionId": "p10-mcp-r1-AAVE-4",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 2,
+      "symbol": "ENA",
+      "index": 0,
+      "sessionId": "p10-mcp-r2-ENA",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 2,
+      "symbol": "DOGE",
+      "index": 0,
+      "sessionId": "p10-mcp-r2-DOGE",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    },
+    {
+      "round": 2,
+      "symbol": "AAVE",
+      "index": 0,
+      "sessionId": "p10-mcp-r2-AAVE",
+      "mcpOk": true,
+      "cached": true,
+      "retryCounts": [],
+      "tookMs": 0,
+      "intent": "lookup_asset_info",
+      "error": null
+    }
+  ]
+}
