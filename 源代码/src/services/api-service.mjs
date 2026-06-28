@@ -99,6 +99,7 @@ export async function getPortfolioSummary() {
       currentPrice: pos.currentPrice,
       currentValue: pos.currentValue,
       costBasisTotal: pos.costBasisTotal,
+      reason: pos.reason || null,
       plan: plan
         ? {
             id: plan.id,
@@ -360,6 +361,7 @@ export async function managePosition(body) {
     const portfolioPct = portfolioValue > 0 ? currentValue / portfolioValue : Number(existingPosition?.portfolioPct || 0);
     const peakUnits = Math.max(Number(existingPosition?.peakUnits || 0), units);
 
+    const reason = body.reason || existingPosition?.reason || "";
     const position = {
       assetId: asset.id,
       assetSymbol: asset.symbol,
@@ -378,6 +380,7 @@ export async function managePosition(body) {
       fdv: Number(body.fdv || existingResearchReport?.currentMetrics?.fdv || existingPosition?.fdv || 0),
       liquidityUsd: Number(body.liquidityUsd || existingPosition?.liquidityUsd || 0),
       dailyVolumeUsd: Number(body.dailyVolumeUsd || existingPosition?.dailyVolumeUsd || 0),
+      reason,
       updatedAt: nowIso()
     };
     const enrichedPosition = applyEnrichmentToPosition(position, resolved.enrichment);
@@ -441,7 +444,7 @@ export async function refreshResearch(body) {
     const adapters = getAdapters({ offline: Boolean(process.env.DECISION_BRAIN_OFFLINE) });
     const asset = await resolveAssetIdentity(body.assetQuery, state.assets, adapters);
     state.assets[asset.id] = asset;
-    const bitgetResult = await adapters.bitget.refreshResearch(asset);
+    const bitgetResult = await adapters.bitget.refreshResearch(asset, undefined, body.skillKey);
     const createdSources = [];
 
     for (const source of bitgetResult.sources || []) {
@@ -776,4 +779,10 @@ export async function archiveAsset(body) {
       plan
     };
   });
+}
+
+export async function fetchOhlcvData(assetSymbol, days = 30) {
+  const adapters = getAdapters({ offline: Boolean(process.env.DECISION_BRAIN_OFFLINE) });
+  if (typeof adapters.bitget?.fetchOhlcv !== "function") return null;
+  return adapters.bitget.fetchOhlcv(assetSymbol, days);
 }

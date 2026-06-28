@@ -1,0 +1,88 @@
+{
+  "demo": true,
+  "counts": { "assets": 3, "positions": 3, "plans": 3, "traces": 9 },
+  "assets": [
+    { "id": "btc", "symbol": "BTC", "name": "Bitcoin", "assetType": "token", "chain": "Bitcoin" },
+    { "id": "eth", "symbol": "ETH", "name": "Ethereum", "assetType": "token", "chain": "Ethereum" },
+    { "id": "sol", "symbol": "SOL", "name": "Solana", "assetType": "token", "chain": "Solana" }
+  ],
+  "positions": [
+    { "assetId": "btc", "units": 0.15, "averageCost": 87500, "currentPrice": 91200, "peakUnits": 0.15, "portfolioValue": 13680 },
+    { "assetId": "eth", "units": 2.5, "averageCost": 3800, "currentPrice": 4150, "peakUnits": 2.5, "portfolioValue": 10375 },
+    { "assetId": "sol", "units": 50, "averageCost": 142, "currentPrice": 168, "peakUnits": 50, "portfolioValue": 8400 }
+  ],
+  "plans": [
+    { "assetId": "btc", "status": "active", "sellZone": "基准区上沿分批止盈 30%，底仓保护 $85,000" },
+    { "assetId": "eth", "status": "active", "sellZone": "基准区内持有，突破 $4,500 加仓 20%" },
+    { "assetId": "sol", "status": "draft", "sellZone": "保守区上沿建仓，突破 $200 确认上升趋势后加仓" }
+  ],
+  "valuationModels": [
+    {
+      "assetId": "btc",
+      "currentMetrics": { "fdv": 1920000000000, "marketCap": 1920000000000 },
+      "scenarios": [
+        { "name": "conservative", "targetFdvRange": [1200000000000, 1600000000000] },
+        { "name": "base", "targetFdvRange": [1600000000000, 2500000000000] },
+        { "name": "aggressive", "targetFdvRange": [2500000000000, 4000000000000] }
+      ]
+    },
+    {
+      "assetId": "eth",
+      "currentMetrics": { "fdv": 498000000000, "marketCap": 498000000000 },
+      "scenarios": [
+        { "name": "conservative", "targetFdvRange": [300000000000, 420000000000] },
+        { "name": "base", "targetFdvRange": [420000000000, 650000000000] },
+        { "name": "aggressive", "targetFdvRange": [650000000000, 1000000000000] }
+      ]
+    },
+    {
+      "assetId": "sol",
+      "currentMetrics": { "fdv": 96000000000, "marketCap": 96000000000 },
+      "scenarios": [
+        { "name": "conservative", "targetFdvRange": [60000000000, 100000000000] },
+        { "name": "base", "targetFdvRange": [100000000000, 180000000000] },
+        { "name": "aggressive", "targetFdvRange": [180000000000, 350000000000] }
+      ]
+    }
+  ],
+  "researchReports": [
+    {
+      "assetId": "btc",
+      "comparablesDraft": { "status": "ready", "summary": "数字黄金定位明确，对标黄金 $13T 市值，当前渗透率 14.8%" },
+      "listingPathDraft": { "status": "ready", "summary": "全球主流交易所已上线，ETF 已获批，机构入场合规" },
+      "fundingUnlockDraft": { "status": "ready", "summary": "无大额解锁风险，日发行量约 450 BTC，年通胀率 0.85%" }
+    },
+    {
+      "assetId": "eth",
+      "comparablesDraft": { "status": "partial", "summary": "智能合约平台龙头，对标 SOL/AVAX/APTOS 等 L1" },
+      "listingPathDraft": { "status": "ready", "summary": "全球主流交易所已上线，ETH ETF 已获批" },
+      "fundingUnlockDraft": { "status": "partial", "summary": "质押解锁持续，日均解锁约 20K ETH，短期无集中抛压" }
+    },
+    {
+      "assetId": "sol",
+      "comparablesDraft": { "status": "partial", "summary": "高性能 L1，对标 ETH/SUI/APTOS，TPS 领先" },
+      "listingPathDraft": { "status": "ready", "summary": "全球主流交易所已上线，SOL ETF 申请中" },
+      "fundingUnlockDraft": { "status": "partial", "summary": "FTX 遗产清算可能带来短期卖压，需关注 3 月解锁事件" }
+    }
+  ],
+  "recentEvents": [
+    { "assetId": "btc", "title": "BTC ETF 周净流入 $2.1B", "type": "flow", "summary": "机构持续增持，ETF 总规模突破 $120B，贝莱德占比 38%", "createdAt": "2026-06-26 09:30" },
+    { "assetId": "btc", "title": "美国 CPI 低于预期 3.1%", "type": "macro", "summary": "通胀持续回落，市场定价 9 月降息概率 72%", "createdAt": "2026-06-25 08:00" },
+    { "assetId": "eth", "title": "ETH L2 生态 TVL 创新高 $52B", "type": "ecosystem", "summary": "Arbitrum + Optimism 合计 TVL 突破 $52B，Base 增长 240% QoQ", "createdAt": "2026-06-25 18:00" },
+    { "assetId": "sol", "title": "Solana Firedancer 客户端正式上线主网", "type": "tech", "summary": "Jump Crypto 开发的新验证者客户端，TPS 理论峰值提升至 1M", "createdAt": "2026-06-24 14:00" },
+    { "assetId": "sol", "title": "Solana 日活跃地址突破 2.5M", "type": "onchain", "summary": "生态活跃度持续增长，DEX 日交易量 $3.2B 创历史新高", "createdAt": "2026-06-23 10:00" }
+  ],
+  "recentTraces": [
+    { "userIntent": "研究 BTC 当前估值", "finalRecommendation": "基准区，持有", "reasons": ["ETF 持续流入", "基准区估值合理", "宏观环境有利"], "createdAt": "2026-06-26 10:15" },
+    { "userIntent": "ETH 能加仓吗", "finalRecommendation": "基准区下沿，可考虑分批加仓", "reasons": ["L2 生态增长强劲", "估值相对 BTC 不贵", "ETF 资金流入持续"], "createdAt": "2026-06-25 16:30" },
+    { "userIntent": "研究 SOL 投资价值", "finalRecommendation": "保守区上沿，等待确认上升趋势", "reasons": ["Firedancer 利好部分已定价", "FTX 清算卖压风险", "生态活跃度增长"], "createdAt": "2026-06-24 15:00" }
+  ],
+  "sources": [
+    { "assetId": "btc", "type": "onchain", "url": "https://www.blockchain.com/explorer" },
+    { "assetId": "btc", "type": "fund_flow", "url": "https://farside.co.uk/btc" },
+    { "assetId": "eth", "type": "onchain", "url": "https://etherscan.io" },
+    { "assetId": "eth", "type": "defi", "url": "https://defillama.com/chain/Ethereum" },
+    { "assetId": "sol", "type": "onchain", "url": "https://solscan.io" },
+    { "assetId": "sol", "type": "defi", "url": "https://defillama.com/chain/Solana" }
+  ]
+}

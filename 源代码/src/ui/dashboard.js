@@ -1,10 +1,38 @@
 import { addChatBubble, renderSuggestions, onChatSend, initChat } from "./chat.js";
 import { initCommittee, fanoutAgents, agentArrived, synthesizeChief, setDegraded, markAgentTimeout } from "./committee.js";
-import { initPortfolio, startPolling, setStateCache, renderPortfolio } from "./portfolio.js";
-import { renderValuationChart, renderPortfolioChart } from "./charts.js";
+import { initPortfolio, startPolling, setStateCache, renderPortfolio, stopPolling } from "./portfolio.js";
+import { renderKlineChart, hideKlineChart, renderPortfolioChart } from "./charts.js";
 import { mockChatAPI, mockStateAPI } from "./mock-data.js";
 
-const USE_MOCK = false;
+const USE_MOCK = (() => {
+  const p = new URLSearchParams(window.location.search);
+  return p.get("mock") === "1" || p.get("mock") === "true";
+})();
+
+const USE_DEMO = (() => {
+  const p = new URLSearchParams(window.location.search);
+  return p.get("demo") === "1" || p.get("demo") === "true";
+})();
+
+// Last known good state cache for offline resilience
+let lastGoodState = null;
+
+// Preloaded demo state (loaded from demo-state.json)
+let demoStateCache = null;
+
+async function loadDemoState() {
+  if (demoStateCache) return demoStateCache;
+  try {
+    const r = await fetch("/demo-state.json");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    demoStateCache = await r.json();
+    return demoStateCache;
+  } catch (err) {
+    console.error("loadDemoState failed:", err);
+    // Fall back to mock data
+    return mockStateAPI();
+  }
+}
 
 // Session context maintained across requests for context continuity
 const sessionContext = {
@@ -12,6 +40,7 @@ const sessionContext = {
   lastIntent: null,
   lastPrice: null,
   recentTurns: [],
+  pendingPosition: null,
 };
 const MAX_RECENT_TURNS = 10;
 
@@ -19,6 +48,10 @@ function updateSessionContext(message, resp) {
   sessionContext.lastIntent = resp.intent || sessionContext.lastIntent;
   if (resp.assetQuery) {
     sessionContext.lastAsset = resp.assetQuery;
+  }
+  // Track pending position for confirmation flow
+  if (resp.pendingPosition !== undefined) {
+    sessionContext.pendingPosition = resp.pendingPosition;
   }
   sessionContext.recentTurns.push({
     role: "user",
@@ -32,15 +65,133 @@ function updateSessionContext(message, resp) {
 }
 
 async function fetchState() {
+  if (USE_DEMO) return loadDemoState();
   if (USE_MOCK) return mockStateAPI();
-  const r = await fetch("/api/state");
-  return r.json();
+  try {
+    const r = await fetch("/api/state");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const state = await r.json();
+    lastGoodState = state;
+    return state;
+  } catch (err) {
+    console.error("fetchState failed, using cache:", err.message);
+    if (lastGoodState) {
+      setDegraded(true);
+      return lastGoodState;
+    }
+    throw err;
+  }
+}
+
+async function fetchPortfolioSummary() {
+  if (USE_DEMO || USE_MOCK) return null;
+  try {
+    const r = await fetch("/api/portfolio-summary");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch (err) {
+    console.error("fetchPortfolioSummary failed:", err.message);
+    return null;
+  }
+}
+
+function updateStatusLabel() {
+  const label = document.getElementById("statusLabel");
+  const badge = document.getElementById("modeBadge");
+  if (USE_DEMO) {
+    label.textContent = "Demo 模式";
+    badge.textContent = "DEMO";
+    badge.className = "mode-badge";
+  } else if (USE_MOCK) {
+    label.textContent = "Mock 模式";
+    badge.textContent = "MOCK";
+    badge.className = "mode-badge rule";
+  } else {
+    label.textContent = "已连接";
+    badge.textContent = "LIVE";
+    badge.className = "mode-badge";
+  }
+}
+
+// Connection flow animation: particle from dispatch area to agent cards
+function animateFlowToAgents(roles) {
+  const grid = document.getElementById("agentGrid");
+  roles.forEach((role, i) => {
+    setTimeout(() => {
+      const card = grid.querySelector(`.agent-card[data-role="${role}"]`);
+      if (!card) return;
+      const cardRect = card.getBoundingClientRect();
+      const dot = document.createElement("div");
+      dot.className = "flow-dot";
+      dot.style.left = "50%";
+      dot.style.top = (cardRect.top + cardRect.height / 2) + "px";
+      document.body.appendChild(dot);
+      setTimeout(() => dot.remove(), 800);
+    }, 80 + i * 60);
+  });
+}
+
+// Reset demo to initial state
+async function resetDemo() {
+  stopPolling();
+  sessionContext.lastAsset = null;
+  sessionContext.lastIntent = null;
+  sessionContext.lastPrice = null;
+  sessionContext.recentTurns = [];
+  sessionContext.pendingPosition = null;
+  lastGoodState = null;
+
+  document.getElementById("chatList").innerHTML = `
+    <div class="chat-msg chief">
+      我是 Chief 决策官。我能帮你研究资产、记录持仓、生成估值计划，并持续监控你的投资组合。
+    </div>
+    <div class="onboarding-hint" id="onboardingHint">
+      <div class="oh-title">你可以这样开始</div>
+      <span class="oh-cmd">研究 BTC</span>
+      <span class="oh-cmd">查看我的持仓</span>
+      <span class="oh-cmd">SOL 值得买吗</span>
+    </div>`;
+  document.getElementById("suggestionsRow").innerHTML = "";
+
+  // Re-wire onboarding chips
+  document.querySelectorAll(".onboarding-hint .oh-cmd").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      document.getElementById("chatInput").value = chip.textContent;
+      document.getElementById("chatSendBtn").click();
+    });
+  });
+
+  initCommittee();
+  document.getElementById("dispatchLog").innerHTML =
+    '<h3>Chief 调度日志</h3><div class="dispatch-entry"><span class="dl-dot"></span><span class="muted">等待首轮派发...</span></div>';
+  setDegraded(false);
+
+  // Re-enable chat input
+  document.getElementById("chatInput").disabled = false;
+  document.getElementById("chatSendBtn").disabled = false;
+  document.getElementById("chatSendBtn").textContent = "发送";
+
+  try {
+    const state = await fetchState();
+    const portfolioSummary = await fetchPortfolioSummary();
+    setStateCache(state);
+    renderPortfolio(state, portfolioSummary);
+    renderPortfolioChart(state.positions || []);
+    const firstPos = Object.values(state.positions || {})[0];
+    if (firstPos) renderKlineChart(firstPos.assetSymbol || firstPos.assetId); else hideKlineChart();
+  } catch (err) {
+    console.error("reset fetchState failed:", err);
+  }
+
+  startPolling(fetchState, fetchPortfolioSummary, 5000);
+  updateStatusLabel();
 }
 
 async function sendChat(message) {
   const ABORT_MS = 25000;
+  const t0 = performance.now();
   let resp;
-  if (USE_MOCK) {
+  if (USE_MOCK || USE_DEMO) {
     resp = await mockChatAPI(message);
   } else {
     const ctrl = new AbortController();
@@ -57,6 +208,7 @@ async function sendChat(message) {
             lastIntent: sessionContext.lastIntent,
             lastPrice: sessionContext.lastPrice,
             recentTurns: sessionContext.recentTurns,
+            pendingPosition: sessionContext.pendingPosition,
           },
         }),
         signal: ctrl.signal,
@@ -77,12 +229,15 @@ async function sendChat(message) {
     }
   }
 
+  const latencyMs = Math.round(performance.now() - t0);
+
   // Update session context from response
   updateSessionContext(message, resp);
 
   // F8: Chief dispatch
   if (resp.fanout && resp.fanout.length) {
-    fanoutAgents(resp.fanout);
+    fanoutAgents(resp.fanout, resp.dispatchPlan || []);
+    animateFlowToAgents(resp.fanout);
 
     if (resp.agentResults && resp.agentResults.length) {
       staggerAgentArrivals(resp.agentResults, resp.trace || []);
@@ -98,7 +253,7 @@ async function sendChat(message) {
   // Chief's synthesized reply + suggestions
   const reply = resp.reply || "(未获取到回复)";
   const suggestions = resp.suggestions || [];
-  addChatBubble("chief", reply, suggestions);
+  addChatBubble("chief", reply, suggestions, latencyMs);
 
   synthesizeChief(reply);
   setDegraded(!!resp.degraded);
@@ -106,12 +261,13 @@ async function sendChat(message) {
   // Refresh state & charts (best-effort, don't block on failure)
   try {
     const state = await fetchState();
+    const portfolioSummary = await fetchPortfolioSummary();
     setStateCache(state);
     setTimeout(() => {
-      renderPortfolio(state);
-      const valn = (state.valuationModels || [])[0];
-      if (valn) renderValuationChart(valn);
+      renderPortfolio(state, portfolioSummary);
       renderPortfolioChart(state.positions || []);
+      const asset = sessionContext.lastAsset || (Object.values(state.positions || {})[0]?.assetSymbol);
+      if (asset) renderKlineChart(asset); else hideKlineChart();
     }, 600);
   } catch (err) {
     console.error("fetchState failed:", err);
@@ -143,19 +299,41 @@ async function boot() {
 
   onChatSend(sendChat);
 
+  // Wire up onboarding hint chips
+  document.querySelectorAll(".onboarding-hint .oh-cmd").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      document.getElementById("chatInput").value = chip.textContent;
+      document.getElementById("chatSendBtn").click();
+    });
+  });
+
   // Initial state
   const state = await fetchState();
+  const portfolioSummary = await fetchPortfolioSummary();
   setStateCache(state);
-  renderPortfolio(state);
+  renderPortfolio(state, portfolioSummary);
 
-  const valn = (state.valuationModels || [])[0];
-  if (valn) renderValuationChart(valn);
   renderPortfolioChart(state.positions || []);
+  const asset = sessionContext.lastAsset || (Object.values(state.positions || {})[0]?.assetSymbol);
+  if (asset) renderKlineChart(asset); else hideKlineChart();
 
   // F3: Live polling
-  startPolling(fetchState, 5000);
+  startPolling(fetchState, fetchPortfolioSummary, 5000);
 
-  document.getElementById("statusLabel").textContent = USE_MOCK ? "Mock 模式" : "已连接";
+  document.getElementById("statusLabel").textContent = USE_DEMO ? "Demo 模式" : (USE_MOCK ? "Mock 模式" : "已连接");
+  const badge = document.getElementById("modeBadge");
+  if (USE_DEMO) {
+    badge.textContent = "DEMO";
+    badge.className = "mode-badge";
+  } else if (USE_MOCK) {
+    badge.textContent = "MOCK";
+    badge.className = "mode-badge rule";
+  }
+
+  // Reset button
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (confirm("确定要重置 Demo 状态吗？")) resetDemo();
+  });
 }
 
 boot();

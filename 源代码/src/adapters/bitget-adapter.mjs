@@ -71,6 +71,7 @@ let marketDataClient = null;
 let marketDataAvailable = false;
 let marketDataTools = [];
 let connectionChecked = false;
+let connectionPromise = null; // prevent concurrent connection races
 
 const MARKET_DATA_DEFAULT_URL = "https://datahub.noxiaohao.com/mcp";
 const MARKET_DATA_DEFAULT_TIMEOUT_MS = 20000;
@@ -124,24 +125,43 @@ export function createBitgetAdapter() {
         return { connected: true, tools: marketDataTools };
       }
 
-      const url = getMarketDataUrl();
-      connectionChecked = true;
-
-      try {
-        marketDataClient = new HttpMcpClient({
-          url,
-          timeoutMs: getMarketDataTimeoutMs(),
-          retryCount: getMarketDataRetryCount(),
-        });
-        await marketDataClient.start();
-        marketDataTools = await marketDataClient.listTools();
-        marketDataAvailable = marketDataTools.length > 0;
-        return { connected: true, tools: marketDataTools };
-      } catch (err) {
-        marketDataAvailable = false;
-        marketDataClient = null;
-        return { connected: false, error: err.message };
+      // If a connection is already in progress, wait for it
+      if (connectionPromise) {
+        await connectionPromise;
+        if (marketDataAvailable) {
+          return { connected: true, tools: marketDataTools };
+        }
+        return { connected: false, error: "connection failed" };
       }
+
+      const url = getMarketDataUrl();
+
+      // Create a shared promise so concurrent callers wait on the same attempt
+      connectionPromise = (async () => {
+        try {
+          marketDataClient = new HttpMcpClient({
+            url,
+            timeoutMs: getMarketDataTimeoutMs(),
+            retryCount: getMarketDataRetryCount(),
+          });
+          await marketDataClient.start();
+          marketDataTools = await marketDataClient.listTools();
+          marketDataAvailable = marketDataTools.length > 0;
+        } catch (err) {
+          marketDataAvailable = false;
+          marketDataClient = null;
+        } finally {
+          connectionChecked = true;
+          connectionPromise = null;
+        }
+      })();
+
+      await connectionPromise;
+
+      if (marketDataAvailable) {
+        return { connected: true, tools: marketDataTools };
+      }
+      return { connected: false, error: "connection failed" };
     },
 
     getConnectionStatus() {
@@ -181,16 +201,19 @@ export function createBitgetAdapter() {
 
     // ── Research refresh (called by agent or refresh_research tool) ─────
 
-    async refreshResearch(asset, traceCollector) {
+    async refreshResearch(asset, traceCollector, skillKey) {
       const { connected, error } = await this.ensureConnected();
 
       if (!connected) {
+        const skills = skillKey
+          ? BITGET_SKILLS.filter((s) => s.key === skillKey)
+          : BITGET_SKILLS;
         return {
           ok: false,
           sourceType: "market_data_not_connected",
           connectionStatus: this.getConnectionStatus(),
           error,
-          sources: BITGET_SKILLS.map((skill) => ({
+          sources: skills.map((skill) => ({
             sourceType: "not_connected",
             skill: skill.skill,
             roleInDecision: skill.roleInDecision,
@@ -203,12 +226,17 @@ export function createBitgetAdapter() {
       // Build tool name set for quick lookup
       const toolNames = new Set(marketDataTools.map((t) => t.name));
 
+      // If skillKey provided, only run that skill's queries
+      const skillsToRun = skillKey
+        ? BITGET_SKILLS.filter((s) => s.key === skillKey)
+        : BITGET_SKILLS;
+
       // Run default calls for each skill in parallel (limit concurrency)
       const sources = [];
-      const CONCURRENCY = 3;
+      const CONCURRENCY = skillKey ? 1 : 3; // no batching needed for single skill
 
-      for (let i = 0; i < BITGET_SKILLS.length; i += CONCURRENCY) {
-        const batch = BITGET_SKILLS.slice(i, i + CONCURRENCY);
+      for (let i = 0; i < skillsToRun.length; i += CONCURRENCY) {
+        const batch = skillsToRun.slice(i, i + CONCURRENCY);
         const results = await Promise.allSettled(
           batch.map((skill) => this._runSkillQueries(skill, toolNames, asset, traceCollector))
         );
@@ -233,6 +261,38 @@ export function createBitgetAdapter() {
         availableTools: marketDataTools.map((t) => t.name),
         sources,
       };
+    },
+
+    async fetchOhlcv(assetSymbol, days = 30) {
+      const { connected } = await this.ensureConnected();
+      if (!connected || !marketDataClient) return null;
+
+      const pair = assetSymbol.toUpperCase().includes("/")
+        ? assetSymbol.toUpperCase()
+        : `${assetSymbol.toUpperCase()}/USDT`;
+
+      const limit = Math.min(days, 180);
+
+      try {
+        const result = await marketDataClient.callTool("crypto_derivatives", {
+          action: "klines",
+          symbol: pair,
+          timeframe: "1d",
+          limit,
+        });
+        // MCP wraps result in content array: [{ type: "text", text: "[...]" }]
+        const content = result?.raw?.content;
+        if (Array.isArray(content)) {
+          const first = content[0];
+          if (first?.type === "text" && first.text) {
+            const inner = JSON.parse(first.text);
+            if (Array.isArray(inner)) return inner;
+          }
+        }
+        return null;
+      } catch {
+        return null;
+      }
     },
 
     async resolveSymbol(symbol, traceCollector) {

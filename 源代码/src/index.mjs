@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { createServer } from "./server.mjs";
 
 const port = Number(process.env.PORT || 4177);

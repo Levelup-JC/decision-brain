@@ -1,132 +1,167 @@
-let valuationChartInst = null;
+let klineChartInst = null;
+let klineCandleSeries = null;
+let klineVolumeSeries = null;
+let klineEmaSeries = null;
 let portfolioChartInst = null;
 
+// Google Dark Theme palette
 const C = {
-  accent: "#00F0FF",
-  accent2: "#00C8D6",
-  gold: "#F7931A",
-  ink: "#1A2332",
-  ink2: "#4A5568",
-  muted: "#94A3B8",
-  line: "#E4E8EE",
-  ok: "#00C853",
-  risk: "#FF5252",
-  greenZone: "rgba(0,200,83,0.18)",
-  yellowZone: "rgba(247,147,26,0.16)",
-  redZone: "rgba(255,82,82,0.14)"
+  bg: "#202124",
+  surface: "#2d2e31",
+  elevated: "#303134",
+  textPrimary: "#e8eaed",
+  textSecondary: "#9aa0a6",
+  textMuted: "#6e7681",
+  border: "#3c4043",
+  accent: "#8ab4f8",
+  accentGlow: "#a8c7fa",
+  green: "#34a853",
+  greenGlow: "#4ade80",
+  red: "#ea4335",
+  redGlow: "#f87168",
+  yellow: "#fbbc04",
+  cyan: "#78d9ec",
 };
 
-export function renderValuationChart(valuation) {
-  if (!valuation?.scenarios?.length || !valuation.currentMetrics?.fdv) {
-    document.getElementById("valuationChartBox").style.display = "none";
-    return;
+function ema(data, period) {
+  const k = 2 / (period + 1);
+  const result = [];
+  let prev = data[0]?.close || 0;
+  for (const d of data) {
+    prev = d.close * k + prev * (1 - k);
+    result.push({ time: d.time, value: prev });
+  }
+  return result;
+}
+
+export async function renderKlineChart(asset, days = 30) {
+  const box = document.getElementById("klineChartBox");
+  if (!box) return;
+
+  box.style.display = "block";
+
+  const symbol = (asset || "BTC").toUpperCase();
+  const container = document.getElementById("klineChart");
+  container.innerHTML = "";
+
+  if (klineChartInst) {
+    klineChartInst.remove();
+    klineChartInst = null;
+    klineCandleSeries = null;
+    klineVolumeSeries = null;
+    klineEmaSeries = null;
   }
 
-  document.getElementById("valuationChartBox").style.display = "block";
-  const ctx = document.getElementById("valuationChart").getContext("2d");
-
-  if (valuationChartInst) valuationChartInst.destroy();
-
-  const fdv = Number(valuation.currentMetrics.fdv);
-  const cons = valuation.scenarios.find(s => s.name === "conservative");
-  const base = valuation.scenarios.find(s => s.name === "base");
-  const aggr = valuation.scenarios.find(s => s.name === "aggressive");
-
-  const labels = [];
-  const data = [];
-  const bgColors = [];
-  const borderColors = [];
-
-  if (cons) {
-    labels.push("保守区");
-    data.push([cons.targetFdvRange[0] / 1e6, cons.targetFdvRange[1] / 1e6]);
-    bgColors.push(C.greenZone);
-    borderColors.push("rgba(0,200,83,0.5)");
-  }
-  if (base) {
-    labels.push("基准区");
-    data.push([base.targetFdvRange[0] / 1e6, base.targetFdvRange[1] / 1e6]);
-    bgColors.push(C.yellowZone);
-    borderColors.push("rgba(247,147,26,0.5)");
-  }
-  if (aggr) {
-    labels.push("高估值区");
-    data.push([aggr.targetFdvRange[0] / 1e6, aggr.targetFdvRange[1] / 1e6]);
-    bgColors.push(C.redZone);
-    borderColors.push("rgba(255,82,82,0.5)");
-  }
-
-  const currentFdvM = fdv / 1e6;
-
-  valuationChartInst = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "估值区间 ($M FDV)",
-        data: data.map(d => d[1] - d[0]),
-        backgroundColor: bgColors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 4,
-        barThickness: 32,
-        base: data.map(d => d[0])
-      }]
+  klineChartInst = LightweightCharts.createChart(container, {
+    layout: {
+      background: { color: C.bg },
+      textColor: C.textSecondary,
     },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 600, easing: "easeOutQuart" },
-      plugins: { legend: { display: false } },
-      scales: {
-        x: {
-          title: { text: "FDV ($M)", color: C.muted, display: true },
-          ticks: { color: C.muted, font: { size: 10 } },
-          grid: { color: C.line }
-        },
-        y: {
-          ticks: { color: C.ink, font: { size: 11, weight: 500 } },
-          grid: { display: false }
-        }
-      }
+    grid: {
+      vertLines: { color: C.border, style: 3 },
+      horzLines: { color: C.border, style: 3 },
     },
-    plugins: [{
-      id: "fdvLine",
-      afterDraw(chart) {
-        const xScale = chart.scales.x;
-        const yScale = chart.scales.y;
-        const x = xScale.getPixelForValue(currentFdvM);
-        if (x < xScale.left || x > xScale.right) return;
-
-        chart.ctx.save();
-        chart.ctx.beginPath();
-        chart.ctx.moveTo(x, yScale.top);
-        chart.ctx.lineTo(x, yScale.bottom);
-        chart.ctx.strokeStyle = C.accent;
-        chart.ctx.lineWidth = 2.5;
-        chart.ctx.setLineDash([5, 4]);
-        chart.ctx.stroke();
-
-        // Current FDV label badge
-        const label = `当前 $${currentFdvM.toFixed(1)}M`;
-        const textW = chart.ctx.measureText(label).width + 14;
-        const bx = x - textW / 2;
-        const by = yScale.top - 22;
-
-        chart.ctx.fillStyle = C.accent;
-        chart.ctx.beginPath();
-        chart.ctx.roundRect(bx, by, textW, 18, 4);
-        chart.ctx.fill();
-
-        chart.ctx.fillStyle = "#FFFFFF";
-        chart.ctx.font = "bold 10px monospace";
-        chart.ctx.textAlign = "center";
-        chart.ctx.fillText(label, x, by + 13);
-        chart.ctx.restore();
-      }
-    }]
+    crosshair: {
+      mode: 1,
+      vertLine: { color: C.accent, style: 2, width: 1, labelBackgroundColor: C.surface },
+      horzLine: { color: C.accent, style: 2, width: 1, labelBackgroundColor: C.surface },
+    },
+    rightPriceScale: {
+      borderColor: C.border,
+      scaleMargins: { top: 0.05, bottom: 0.25 },
+      autoScale: true,
+    },
+    timeScale: {
+      borderColor: C.border,
+      timeVisible: true,
+    },
+    handleScroll: { vertTouchDrag: false },
+    width: container.clientWidth,
+    height: 420,
   });
+
+  klineCandleSeries = klineChartInst.addCandlestickSeries({
+    upColor: C.greenGlow,
+    downColor: C.redGlow,
+    borderUpColor: C.greenGlow,
+    borderDownColor: C.redGlow,
+    wickUpColor: C.greenGlow,
+    wickDownColor: C.redGlow,
+  });
+
+  klineVolumeSeries = klineChartInst.addHistogramSeries({
+    priceFormat: { type: "volume" },
+    priceScaleId: "volume",
+  });
+
+  klineChartInst.priceScale("volume").applyOptions({
+    scaleMargins: { top: 0.78, bottom: 0 },
+  });
+
+  klineEmaSeries = klineChartInst.addLineSeries({
+    color: C.accent,
+    lineWidth: 1.5,
+    priceLineVisible: false,
+    lastValueVisible: false,
+    crosshairMarkerVisible: false,
+  });
+
+  try {
+    const resp = await fetch(`/api/ohlcv?asset=${encodeURIComponent(symbol)}&days=${days}`);
+    const json = await resp.json();
+    if (!json.ok || !json.data?.length) {
+      container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:${C.textMuted};font-size:13px;">${symbol} K线数据暂不可用</div>`;
+      return;
+    }
+
+    const ohlcv = json.data.map((d) => ({
+      time: Math.floor(new Date(d.timestamp).getTime() / 1000),
+      open: d.open, high: d.high, low: d.low, close: d.close,
+      volume: d.volume || 0,
+    }));
+
+    klineCandleSeries.setData(ohlcv);
+
+    const volumeData = ohlcv.map((d, i) => {
+      const prev = i > 0 ? ohlcv[i - 1].close : d.open;
+      const isUp = d.close >= prev;
+      return {
+        time: d.time,
+        value: d.volume,
+        color: isUp ? C.green + "44" : C.red + "44",
+      };
+    });
+    klineVolumeSeries.setData(volumeData);
+
+    klineEmaSeries.setData(ema(ohlcv, 9));
+
+    klineChartInst.timeScale().fitContent();
+
+    // Mark last price
+    const last = ohlcv[ohlcv.length - 1];
+    if (last) {
+      klineCandleSeries.createPriceLine({
+        price: last.close,
+        color: C.textSecondary,
+        lineWidth: 1,
+        lineStyle: 2,
+        axisLabelVisible: true,
+        title: symbol,
+      });
+    }
+  } catch {
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:${C.red};font-size:13px;">K线数据加载失败</div>`;
+  }
+}
+
+export function hideKlineChart() {
+  const box = document.getElementById("klineChartBox");
+  if (box) box.style.display = "none";
+}
+
+export function renderValuationChart() {
+  // replaced by renderKlineChart
+  hideKlineChart();
 }
 
 export function renderPortfolioChart(positions) {
@@ -149,8 +184,8 @@ export function renderPortfolioChart(positions) {
   const values = positions.map(p => Number(p.portfolioValue) || 0);
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 160);
-  gradient.addColorStop(0, "rgba(0,240,255,0.18)");
-  gradient.addColorStop(1, "rgba(0,240,255,0.01)");
+  gradient.addColorStop(0, "rgba(138,180,248,0.3)");
+  gradient.addColorStop(1, "rgba(138,180,248,0.02)");
 
   portfolioChartInst = new Chart(ctx, {
     type: "line",
@@ -165,24 +200,34 @@ export function renderPortfolioChart(positions) {
         tension: 0.35,
         pointRadius: 3,
         pointBackgroundColor: C.accent,
-        pointBorderColor: "#FFFFFF",
+        pointBorderColor: C.bg,
         pointBorderWidth: 1.5,
-        pointHoverRadius: 6
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: C.accentGlow,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       animation: { duration: 500, easing: "easeOutQuart" },
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: C.muted, font: { size: 9 } }, grid: { display: false } },
-        y: {
-          ticks: { color: C.muted, font: { size: 9 }, callback: v => "$" + v.toLocaleString() },
-          grid: { color: C.line }
-        }
+      plugins: {
+        legend: { display: false },
       },
-      interaction: { intersect: false, mode: "index" }
-    }
+      scales: {
+        x: {
+          ticks: { color: C.textMuted, font: { size: 9 } },
+          grid: { color: C.border },
+        },
+        y: {
+          ticks: {
+            color: C.textMuted,
+            font: { size: 9 },
+            callback: v => "$" + v.toLocaleString(),
+          },
+          grid: { color: C.border },
+        },
+      },
+      interaction: { intersect: false, mode: "index" },
+    },
   });
 }

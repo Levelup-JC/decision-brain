@@ -137,7 +137,7 @@ export async function runAgent(role, assetQuery) {
   const bitgetKey = ROLE_TO_BITGET_KEY[role];
   if (bitgetKey) {
     try {
-      const result = await refreshResearch({ assetQuery });
+      const result = await refreshResearch({ assetQuery, skillKey: bitgetKey });
       const skill = BITGET_ROLE_MAP[bitgetKey];
       const relevantSources = (result.createdSources || []).filter(
         (s) => s.author && s.author.includes(skill?.skill || bitgetKey)
@@ -180,10 +180,12 @@ export async function runFanoutAgents(fanout, assetQuery, context = {}) {
   if (!fanout.length) return { agentResults: [], trace: [] };
   const focusedAsset = assetQuery || context.lastAsset;
 
-  // Per-agent timeout varies by fanout width; asset_info gets longer for MCP calls
+  // Per-agent timeout varies by fanout width; asset_info and Bitget roles get longer for MCP calls
   const baseTimeoutMs = fanout.length <= 2 ? 4000 : 5000;
   function agentTimeoutMs(role) {
     if (role === "asset_info") return 8000; // MCP calls take 4-7s
+    if (["macro", "onchain", "sentiment", "technical", "news"].includes(role)) return 15000; // refreshResearch runs multiple MCP tools per agent
+    if (role === "valuation") return 15000; // evaluateCandidate calls enrichAsset (MCP) + compute
     return baseTimeoutMs;
   }
 
@@ -196,7 +198,11 @@ export async function runFanoutAgents(fanout, assetQuery, context = {}) {
         const agentPromise = runAgent(role, focusedAsset || assetQuery);
         const timeoutMs = agentTimeoutMs(role);
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("agent_timeout")), timeoutMs)
+          setTimeout(() => {
+            const err = new Error("agent_timeout");
+            err.agentRole = role;
+            reject(err);
+          }, timeoutMs)
         );
         try {
           const result = await Promise.race([agentPromise, timeoutPromise]);
@@ -208,7 +214,9 @@ export async function runFanoutAgents(fanout, assetQuery, context = {}) {
           }
           return result;
         } catch (err) {
-          tc.pushTimeout(role, err.message === "agent_timeout" ? role : "unknown");
+          const roleName = err.agentRole || role;
+          const toolName = err.agentRole || (err.message === "agent_timeout" ? role : "unknown");
+          tc.pushTimeout(roleName, toolName);
           allTraces.push(...tc.drain());
           throw err;
         }
@@ -216,17 +224,22 @@ export async function runFanoutAgents(fanout, assetQuery, context = {}) {
     })
   );
 
-  const agentResults = results.map((r) =>
-    r.status === "fulfilled"
-      ? r.value
-      : {
-          role: "unknown",
-          status: "error",
-          headline: String(r.reason?.message || r.reason),
-          data: {},
-          tookMs: 0,
-        }
-  );
+  const agentResults = results.map((r) => {
+    if (r.status === "fulfilled") return r.value;
+    const reason = r.reason || {};
+    const role = reason.agentRole || "unknown";
+    const msg = reason.message || String(reason);
+    const headline = msg === "agent_timeout"
+      ? `${role}: 超时未返回`
+      : msg;
+    return {
+      role,
+      status: "error",
+      headline,
+      data: {},
+      tookMs: 0,
+    };
+  });
 
   return { agentResults, trace: allTraces };
 }

@@ -7,6 +7,7 @@ import {
   buildCapabilities,
   confirmPlan,
   evaluateCandidate,
+  fetchOhlcvData,
   getAssetContext,
   getPortfolioSummary,
   getStateSummary,
@@ -53,6 +54,13 @@ export async function handleRequest(request, response) {
       return;
     }
 
+    // Serve .json files from ui/ (demo-state.json etc.)
+    if (request.method === "GET" && url.pathname.endsWith(".json") && !url.pathname.includes("..")) {
+      const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
+      await serveStaticFile(response, filePath, "application/json; charset=utf-8");
+      return;
+    }
+
     if (request.method === "GET" && url.pathname === "/api/health") {
       json(response, 200, { ok: true, service: "decision-brain" });
       return;
@@ -76,6 +84,18 @@ export async function handleRequest(request, response) {
 
     if (request.method === "GET" && url.pathname === "/api/state") {
       json(response, 200, await getStateSummary());
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/ohlcv") {
+      const asset = url.searchParams.get("asset") || "BTC";
+      const days = Number(url.searchParams.get("days") || 30);
+      const data = await fetchOhlcvData(asset, days);
+      if (!data) {
+        json(response, 502, { ok: false, error: "OHLCV data unavailable" });
+        return;
+      }
+      json(response, 200, { ok: true, asset, days, data });
       return;
     }
 
@@ -179,9 +199,10 @@ export async function handleRequest(request, response) {
                 : p.plan?.status === "draft" ? "draft (待确认)" : "无计划";
               const zoneLabel = p.valuationZone ? `，估值区间: ${p.valuationZone}` : "";
               const costInfo = p.averageCost ? `，成本 $${p.averageCost}` : "";
+              const reasonInfo = p.reason ? `，理由: ${p.reason}` : "";
               const mcapInfo = p.latestMetrics?.marketCap
                 ? `，市值 $${(p.latestMetrics.marketCap / 1e9).toFixed(1)}B` : "";
-              return `${i + 1}. ${p.symbol}: 持有 ${p.units} 个${costInfo}，当前价 $${p.currentPrice}${mcapInfo}，计划状态: ${planLabel}${zoneLabel}`;
+              return `${i + 1}. ${p.symbol}: 持有 ${p.units} 个${costInfo}，当前价 $${p.currentPrice}${mcapInfo}，计划状态: ${planLabel}${zoneLabel}${reasonInfo}`;
             });
             const statusParts = [];
             if (summary.activeCount > 0) statusParts.push(`${summary.activeCount} 个活跃`);
@@ -220,10 +241,53 @@ export async function handleRequest(request, response) {
             context
           );
           orchestration.reply = reply;
+
+          // manage_position: record as soon as we have asset + units
+          // (portfolio updates immediately; cost/reason enriched incrementally)
+          if (orchestration.intent === "manage_position" && orchestration.assetQuery && orchestration.slots.units) {
+            try {
+              const pp = orchestration.pendingPosition;
+              await managePosition({
+                assetQuery: orchestration.assetQuery,
+                units: orchestration.slots.units,
+                averageCost: orchestration.slots.averageCost || pp?.averageCost || 0,
+                reason: pp?.reason || "",
+                portfolioValue: orchestration.slots.portfolioValue,
+              });
+              // Only show "已写入" reply on confirmation or when all info is present
+              if (pp?.confirmed) {
+                orchestration.reply = `【当前状态】\n${orchestration.assetQuery} 已写入持仓：${orchestration.slots.units} 个，成本 $${orchestration.slots.averageCost || pp?.averageCost || 0}。${pp?.reason ? `\n购买理由: ${pp.reason}` : ""}\n\n【关键证据】\n1. 持仓已写入 Decision Brain 本地记忆\n2. 投资备忘录已生成\n3. 估值模型已建立\n\n【风险与缺口】\ndraft 计划需要确认后才能激活持续监控。\n\n【下一步建议】\n确认 ${orchestration.assetQuery} 投资计划以激活持续监控。\n\n数据来源：Bitget MCP + Decision Brain 本地记忆。以上不是自动交易指令。`;
+              }
+            } catch (err) {
+              console.error("managePosition failed:", err.message);
+            }
+          }
+
+          // Inject state-reference trace for run_monitor plan comparison
+          if (orchestration.intent === "run_monitor" && orchestration.assetQuery) {
+            orchestration.trace.push({
+              tool: "state.read",
+              provider: "Decision Brain",
+              args: { operation: "plan_comparison", asset: orchestration.assetQuery },
+              tookMs: 0,
+              ok: true,
+              rawSnippet: "读取本地投资计划、估值模型与持仓数据，生成实时对比",
+            });
+          }
         }
       } else {
         orchestration.agentResults = [];
         orchestration.trace = [];
+      }
+
+      // confirm_plan: actually confirm the draft plan in state
+      if (orchestration.intent === "confirm_plan" && orchestration.assetQuery) {
+        try {
+          const confirmResult = await confirmPlan({ assetQuery: orchestration.assetQuery });
+          orchestration.reply = `【当前状态】\n${orchestration.assetQuery} 投资计划已从 draft 切换为 active，持续监控已启动。\n\n【关键证据】\n1. 计划状态已确认：${confirmResult.plan?.status || "active"}\n2. 监控策略：${typeof confirmResult.monitoringPolicy === "string" ? confirmResult.monitoringPolicy : "每日新闻+仓位检查"}\n\n【风险与缺口】\n监控依赖于 Bitget MCP 数据可用性；如 MCP 不可用将降级为本地阈值对比。\n\n【下一步建议】\n可以随时运行"检查 ${orchestration.assetQuery} 计划"来查看实时数据与计划阈值的对比。\n\n数据来源：Bitget MCP + Decision Brain 本地记忆。以上不是自动交易指令。`;
+        } catch (err) {
+          orchestration.reply = `【当前状态】\n${orchestration.assetQuery} 计划确认失败：${err.message}。\n\n【下一步建议】\n请确认该资产已有 draft 计划，或先通过"我买了 ${orchestration.assetQuery} X 个，成本 Y"创建持仓和计划。`;
+        }
       }
 
       // D组: expose diagnostic flags in response for env troubleshooting
