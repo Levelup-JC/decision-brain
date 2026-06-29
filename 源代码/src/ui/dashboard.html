@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Decision Brain — AI Investment Committee</title>
+  <link rel="icon" href="decision-brain-logo.png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <style>
@@ -72,6 +73,7 @@
       font-weight: 500;
       letter-spacing: 0.01em;
     }
+    .topbar .topbar-logo-icon { width: 28px; height: 28px; margin-right: 10px; object-fit: contain; }
     .topbar .logo { font-size: 15px; color: var(--text-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; }
     .topbar .logo span { color: var(--blue-primary); }
     .topbar .mode-badge {
@@ -679,6 +681,7 @@
 <body>
 
 <div class="topbar" id="topbar">
+  <img class="topbar-logo-icon" src="decision-brain-logo.png" alt="Decision Brain" />
   <span class="logo">DECISION <span>BRAIN</span></span>
   <span class="mode-badge" id="modeBadge">LIVE</span>
   <div class="branding">
