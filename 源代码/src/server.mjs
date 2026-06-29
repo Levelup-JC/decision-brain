@@ -32,6 +32,26 @@ import { logTurn, getSessionLog, exportMarkdown, listSessions } from "./services
 
 const uiDir = resolveProjectPath("src", "ui");
 
+const FALLBACK_LOGIN = `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>升级实验室 — 你的投资 Agent 团队</title>
+<link rel="icon" href="decision-brain-logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#202124;color:#e8eaed;font-family:"Google Sans","Roboto",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center}
+.hero-logo{width:80px;height:auto;margin-bottom:24px}
+h1{font-size:3rem;font-weight:900;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
+h1 span{color:#8ab4f8}
+.sub{font-size:12px;color:#8ab4f8;text-transform:uppercase;letter-spacing:.3em;margin-bottom:48px;opacity:.8}
+.btn{background:transparent;border:1px solid #8ab4f8;color:#8ab4f8;padding:16px 48px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.25em;cursor:pointer;transition:all .3s}
+.btn:hover{background:#8ab4f8;color:#202124;box-shadow:0 0 40px rgba(138,180,248,.1)}
+</style></head><body>
+<img class="hero-logo" src="decision-brain-logo.png" alt="Decision Brain">
+<h1>你的投资<span> Agent </span>团队</h1>
+<div class="sub">升级实验室出品</div>
+<button class="btn" onclick="location.href='/app'">立即体验</button>
+</body></html>`;
+
 function lookupAssetIdInState(assetQuery, state) {
   const normalized = String(assetQuery || "").toUpperCase().trim();
   if (!normalized) return null;
@@ -62,8 +82,12 @@ export async function handleRequest(request, response) {
     const url = new URL(request.url || "/", "http://127.0.0.1");
 
     if (request.method === "GET" && url.pathname === "/") {
-      const html = await readFile(join(uiDir, "login.html"), "utf8");
-      sendHtml(response, html);
+      try {
+        const html = await readFile(join(uiDir, "login.html"), "utf8");
+        sendHtml(response, html);
+      } catch {
+        sendHtml(response, FALLBACK_LOGIN);
+      }
       return;
     }
 
