@@ -60,10 +60,10 @@ async function withTempState(testContext, callback) {
   return callback(dataDir);
 }
 
-test("buildDraftPlan parses multiple targets and floor ratio", () => {
+test("buildDraftPlan parses multiple targets and floor ratio", async () => {
   const asset = { id: "asset_sol", symbol: "SOL", assetType: "major_crypto" };
   const position = { peakUnits: 100, averageCost: 100, costBasisTotal: 10000, currentPrice: 140 };
-  const research = buildResearchReport(asset);
+  const research = await buildResearchReport(asset);
   const valuation = buildValuationModel(asset, position, research);
   const plan = buildDraftPlan(
     asset,

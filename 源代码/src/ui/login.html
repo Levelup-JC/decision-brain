@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>升级实验室 — 你的投资 Agent 团队</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+           Google Material Dark — 赛博终端风格
+           ============================================================ */
+
+        :root {
+            --bg:        #202124;
+            --accent:    #8ab4f8;
+            --accent-10: rgba(138, 180, 248, 0.10);
+            --accent-5:  rgba(138, 180, 248, 0.05);
+            --text:      #e8eaed;
+            --dim:       #9aa0a6;
+            --border:    #3c4043;
+            --font:      "Google Sans", "Roboto", "Segoe UI", system-ui, -apple-system, sans-serif;
+            --mono:      'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            height: 100vh;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        /* ── 网格背景 ── */
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(to right,  var(--accent-5) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--accent-5) 1px, transparent 1px);
+            background-size: 100px 100px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* ── 3D 容器 ── */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ── HUD 四角 ── */
+        .hud {
+            position: fixed;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--dim);
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        .hud-tl {
+            top: 30px; left: 30px;
+            border-left: 2px solid var(--accent);
+            padding-left: 10px;
+        }
+        .hud-tr {
+            top: 30px; right: 30px;
+            text-align: right;
+            border-right: 2px solid var(--accent);
+            padding-right: 10px;
+        }
+        .hud-bl {
+            bottom: 30px; left: 30px;
+        }
+        .hud-br {
+            bottom: 30px; right: 30px;
+            text-align: right;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-right: 5px;
+            box-shadow: 0 0 10px var(--accent);
+            animation: dot-pulse 2s infinite;
+        }
+        @keyframes dot-pulse {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.3; }
+        }
+
+        .vertical-label {
+            position: fixed;
+            left: 30px;
+            top: 50%;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: left top;
+            font-family: var(--font);
+            font-weight: 800;
+            font-size: 12px;
+            color: var(--accent);
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        /* ── 中央首屏 ── */
+        .hero {
+            position: relative;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .hero h1 .accent-char {
+            color: var(--accent);
+        }
+
+        .hero .subtitle {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            margin-bottom: 48px;
+            opacity: 0.8;
+        }
+
+        /* ── 按钮 ── */
+        .btn-enter {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 16px 48px;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s,
+                        color 0.3s,
+                        transform 0.3s,
+                        box-shadow 0.3s;
+        }
+
+        .btn-enter:hover {
+            background: var(--accent);
+            color: var(--bg);
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px var(--accent-10);
+        }
+
+        .btn-enter::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 1px;
+            background: #FFFFFF;
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .btn-enter:hover::before {
+            transform: translateX(0);
+        }
+
+        /* ── 底部日志 ── */
+        .logs {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--dim);
+            text-transform: uppercase;
+            text-align: center;
+            height: 80px;
+            overflow: hidden;
+            z-index: 20;
+            pointer-events: none;
+            mask-image: linear-gradient(to bottom, white, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, white, transparent);
+        }
+        .log-line {
+            margin-bottom: 4px;
+            opacity: 0.6;
+            transition: opacity 0.6s;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- HUD 四角 -->
+    <div class="hud hud-tl">
+        AGENT FLEET V1.0<br>
+        <span style="color:var(--text)">MULTI-AGENT MESH</span><br>
+        NODE: UPGRADE-01
+    </div>
+
+    <div class="hud hud-tr">
+        <span class="status-dot"></span> NETWORK: STABLE<br>
+        LATENCY: 14MS<br>
+        SYS_TIME: <span id="clock">00:00:00:00</span>
+    </div>
+
+    <div class="hud hud-bl">
+        22.5431° N, 114.0579° E<br>
+        <span style="color:var(--accent)">AGENT_MESH: ONLINE</span>
+    </div>
+
+    <div class="hud hud-br">
+        [ MULTI-AGENT ]<br>
+        [ DECISION ENGINE ]<br>
+        [ DEEP RESEARCH ]
+    </div>
+
+    <div class="vertical-label">UPGRADE LAB // AGENT PROTOCOL</div>
+
+    <!-- 中央首屏 -->
+    <div class="hero">
+        <h1>你的投资<span class="accent-char"> Agent </span>团队</h1>
+        <div class="subtitle">升级实验室出品</div>
+        <button class="btn-enter" id="btn-enter">立即体验</button>
+    </div>
+
+    <!-- 底部日志 -->
+    <div class="logs" id="logs">
+        <div class="log-line">&gt; INITIALIZING NEURAL BUFFER...</div>
+        <div class="log-line">&gt; SCANNING DECISION NODES...</div>
+        <div class="log-line">&gt; SYNAPSE CALIBRATION COMPLETE</div>
+        <div class="log-line">&gt; AGENT FLEET AWAITING COMMAND</div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+    /* ============================================================
+       Brain Wireframe — 3D 线框脑模型
+       ============================================================ */
+    (function() {
+        const accent = getComputedStyle(document.documentElement)
+            .getPropertyValue('--accent').trim() || '#8ab4f8';
+
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1, 1000
+        );
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // 外层八面体
+        const outerGeo = new THREE.OctahedronGeometry(2, 0);
+        const outerMat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(accent),
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3,
+        });
+        const outer = new THREE.Mesh(outerGeo, outerMat);
+        scene.add(outer);
+
+        // 内层二十面体
+        const innerGeo = new THREE.IcosahedronGeometry(1, 0);
+        const innerMat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(accent),
+            wireframe: true,
+            transparent: true,
+            opacity: 0.7,
+        });
+        const inner = new THREE.Mesh(innerGeo, innerMat);
+        scene.add(inner);
+
+        let mouseX = 0, mouseY = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            outer.rotation.y += 0.005;
+            outer.rotation.z += 0.002;
+            inner.rotation.y -= 0.01;
+
+            outer.rotation.x += (mouseY * 0.05 - outer.rotation.x) * 0.1;
+            outer.rotation.y += (mouseX * 0.05 - outer.rotation.y) * 0.1;
+            inner.rotation.x += (mouseY * -0.025 - inner.rotation.x) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('mousemove', function(e) {
+            mouseX = (e.clientX - window.innerWidth / 2) / 100;
+            mouseY = (e.clientY - window.innerHeight / 2) / 100;
+        });
+
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    })();
+
+    /* ── 实时时钟 ── */
+    (function clock() {
+        var now = new Date();
+        document.getElementById('clock').textContent =
+            String(now.getHours()).padStart(2,'0') + ':' +
+            String(now.getMinutes()).padStart(2,'0') + ':' +
+            String(now.getSeconds()).padStart(2,'0') + ':' +
+            String(Math.floor(now.getMilliseconds()/10)).padStart(2,'0');
+        requestAnimationFrame(clock);
+    })();
+
+    /* ── 动态日志 ── */
+    (function logs() {
+        var entries = [
+            '> DECRYPTING QUERY PACKETS...',
+            '> TRACING DECISION GEOMETRY...',
+            '> BUFFERING NEURAL RESPONSE...',
+            '> SYSTEM_LOAD: 12.4%',
+            '> SYNAPTIC LINK ESTABLISHED',
+            '> SIGNAL_STRENGTH: NOMINAL',
+            '> CALCULATING BRANCHING REALITIES...',
+            '> ACCESSING QUANTUM NODE 01...',
+            '> AGENT CONSENSUS: 87.3%',
+            '> MULTI-AGENT ORCHESTRATION READY',
+            '> RISK ENGINE: CALIBRATED',
+            '> PORTFOLIO SIGNAL: GREEN',
+        ];
+        var box = document.getElementById('logs');
+        setInterval(function() {
+            var line = document.createElement('div');
+            line.className = 'log-line';
+            line.textContent = entries[Math.floor(Math.random() * entries.length)];
+            box.prepend(line);
+            if (box.children.length > 8) box.removeChild(box.lastChild);
+        }, 2000);
+    })();
+
+    /* ── 按钮点击 → 进入主站 ── */
+    document.getElementById('btn-enter').addEventListener('click', function() {
+        window.location.href = '/app';
+    });
+    </script>
+</body>
+</html>

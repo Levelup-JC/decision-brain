@@ -227,6 +227,7 @@ export function fanoutAgents(roles, dispatchPlan) {
 
   round.textContent = `派出 ${roles.length} 位`;
   addDispatchEntry("dispatch", `Chief 派出 ${roles.length} 位 Agent：${roles.join("、")}`);
+  addDynamicTraceEntry("dispatch", `Chief 派出 ${roles.length} 位 Agent`);
 }
 
 function pulseDataFlow(card) {
@@ -321,6 +322,7 @@ export function agentArrived(role, headline, tookMs, agentStatus, traceEntries) 
   }
 
   addDispatchEntry("arrive", `${role} 返回 · ${elapsed(tookMs)}`);
+  addDynamicTraceEntry("arrive", `${ROLE_LABEL[role] || role} 返回 · ${elapsed(tookMs)}`);
 }
 
 function renderTraceEntries(entries, agentRole) {
@@ -389,10 +391,13 @@ export function markAgentTimeout(role) {
   status.textContent = "超时";
   card.querySelector(".agent-headline").textContent = "未在时限内返回";
   setBitgetChipStatus(role, false);
+  addDispatchEntry("arrive", `${role} 超时`);
+  addDynamicTraceEntry("error", `${ROLE_LABEL[role] || role} 超时未返回`);
 }
 
 export function synthesizeChief(reply) {
   addDispatchEntry("synthesize", `Chief 综合委员会意见`);
+  addDynamicTraceEntry("synthesize", `Chief 综合委员会意见`);
 }
 
 export function addDispatchEntry(type, text) {
@@ -402,8 +407,22 @@ export function addDispatchEntry(type, text) {
   entry.className = "dispatch-entry";
   entry.innerHTML = `<span class="dl-dot ${type}"></span><span>${text}</span>`;
   log.appendChild(entry);
-  const body = document.getElementById("committeeBody");
-  if (body) body.scrollTop = body.scrollHeight;
+  log.scrollTop = log.scrollHeight;
+}
+
+function addDynamicTraceEntry(type, text) {
+  const feed = document.getElementById("traceFeed");
+  if (!feed) return;
+  const placeholder = feed.querySelector(".trace-feed-entry.muted");
+  if (placeholder) placeholder.remove();
+
+  const entry = document.createElement("div");
+  entry.className = `trace-feed-entry ${type}`;
+  const now = new Date();
+  const ts = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
+  entry.textContent = `[${ts}] ${text}`;
+  feed.appendChild(entry);
+  feed.scrollTop = feed.scrollHeight;
 }
 
 export function setDegraded(flag) {

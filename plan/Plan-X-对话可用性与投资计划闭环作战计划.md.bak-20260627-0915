@@ -1,0 +1,471 @@
+# Plan X — 对话可用性与投资计划闭环作战计划
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 让官网 Demo 的对话框真正可用：用户能快速查清代币详情，系统能理解用户过去的投资设计，引导用户完成第一次投资方案，并在方案确认后持续监控策略执行状态。
+
+**Architecture:** 把现有“所有请求都等作战委员会 fanout 完成”的模式，改为“主对话快路径 + 必要工具直查 + 后台委员会补充 + 计划状态机”的模式。官网对话 3 秒内先给可用答案；复杂 agent 只做异步证据补充，不阻塞第一回复。
+
+**Tech Stack:** Node.js ESM, HTTP `/api/chat`, local JSON state, MCP/Bitget market-data, Decision Brain UI dashboard, node:test, Playwright, Vercel gray deployment.
+
+---
+
+## 0. Plan IX 当前验收状态核对
+
+### 0.1 文件与汇报是否齐全
+
+| 项目 | 状态 | 证据 |
+|------|------|------|
+| Plan IX 总计划 | 已存在 | `plan/Plan-IX-验收收敛与可信度修复作战计划.md` |
+| A 组汇报 | 已存在 | `plan/Plan-IX-A组-任务汇报.md` |
+| B 组汇报 | 已存在 | `plan/Plan-IX-B组-任务汇报.md` |
+| C 组汇报 | 已存在 | `plan/Plan-IX-C组-任务汇报.md` |
+| C 组三态截图 | 已存在 | `plan/Plan-IX-C组-截图/C-IX-1-btc-asset-info-trace.png`、`C-IX-2-mcp-fail-red-card.png`、`C-IX-3-timeout-red-card.png` |
+| D 组汇报 | 已存在 | `plan/Plan-IX-D组-任务汇报.md` |
+| D 组验收 JSON | 已存在 | `data/plan9-acceptance-2026-06-27T00-19-43-704Z.json`、`data/plan9-acceptance-2026-06-27T00-25-10-566Z.json` 等 |
+| E 组汇报 | 已存在 | `plan/Plan-IX-E组-任务汇报.md` |
+
+### 0.2 Plan IX 后仍然暴露的问题
+
+用户在官网实测时发现两个关键问题：
+
+1. **对话框不能很好回应用户**
+   - 事实查询有时能跑通，但对话不像一个投资顾问产品。
+   - 用户问“这个币是什么 / 我过去的投资设计是什么 / 下一步怎么制定方案”时，系统没有稳定引导。
+   - smalltalk、上下文、计划状态、资产事实没有被组织成一个清晰的会话流程。
+
+2. **作战委员会 agent 超时**
+   - 当前 `/api/chat` fanout timeout 是 7s。
+   - `evaluate_candidate` 默认派出 7 个 agent：memory / macro / onchain / sentiment / technical / news / valuation。
+   - 官网交互中，用户先看到的是超时和空泛总结，而不是有用答案。
+
+### 0.3 Plan X 核心判断
+
+黑客松 MVP 不应该继续追求“所有 agent 同步返回”。应该改成：
+
+- **事实查询走快路径**：单币详情只需要 `asset_info`，3 秒内可答。
+- **投资设计走记忆快路径**：先读用户已有 position / plan / trace，不等外部市场数据。
+- **首次方案走向导**：缺成本、数量、组合规模、目标收益时，系统主动问下一步，而不是直接给大而空的建议。
+- **作战委员会后台化**：复杂宏观/链上/新闻 agent 作为证据补充，不阻塞主回复。
+- **监控闭环产品化**：plan active 后，系统每天/每次手动触发只检查“有没有触发计划规则”，不是泛泛刷新研究。
+
+---
+
+## 1. Plan X 产品目标
+
+### 1.1 官网 Demo 要达成的 4 条主路径
+
+| 路径 | 用户输入 | 系统必须做到 |
+|------|----------|--------------|
+| Token 详情查询 | `BTC 是什么` / `ENA 的 FDV 是多少` | 3 秒内先返回价格、市值、FDV、数据来源；页面 trace 可展开 |
+| 读取投资设计 | `我之前 SOL 的投资计划是什么` | 返回当前持仓、draft/active plan、目标价/卖出规则/底仓规则/监控状态 |
+| 首次投资方案 | `我想买 SOL，帮我做一个计划` | 如果信息不足，按步骤问成本、预算、目标、底仓；信息齐后生成 draft plan |
+| 持续监控策略 | `检查一下我的 SOL 计划` | 对照 active plan 判断：未触发、需要复盘、需要提醒、需要确认变更 |
+
+### 1.2 对话体验指标
+
+| 指标 | 标准 |
+|------|------|
+| 首包/首答时间 | 普通 token 查询和计划查询 <= 3 秒 |
+| 复杂分析兜底 | 7 秒内必须有可用回复，不允许只显示“委员会成员尚未返回意见” |
+| 超时体验 | agent 超时只影响证据面板，不影响主回复 |
+| 追问能力 | 用户说“它呢 / 这个计划呢 / 能加仓吗”时，能正确继承最近资产和计划 |
+| 引导能力 | 信息不足时最多问 1 个下一步问题，不一次性抛 6 个问题 |
+
+---
+
+## 2. 分组与职责
+
+| 组 | 目标 | 主要文件 |
+|----|------|----------|
+| A 组 — 对话路由与快路径 | 把官网常见问法稳定路由到 token 查询、投资设计查询、首次方案向导、计划监控 | `src/chat-orchestrator.mjs`, `src/server.mjs`, `test/chat-orchestrator-context.test.mjs` |
+| B 组 — Token Detail Service | 做出稳定的代币详情回答，不依赖 7-agent fanout | `src/services/asset-info-service.mjs`, `src/agent-runner.mjs`, `src/chat-orchestrator.mjs`, `tests/plan10-dialog-acceptance.mjs` |
+| C 组 — 投资方案向导 | 引导用户从“想买”到 draft plan，信息不足时逐步追问 | `src/services/api-service.mjs`, `src/services/plan-service.mjs`, `src/chat-orchestrator.mjs`, `test/plan-wizard.test.mjs` |
+| D 组 — 计划监控闭环 | active plan 后能按规则检查策略状态，并返回行动建议 | `src/services/monitor-service.mjs`, `src/services/recommendation-service.mjs`, `src/services/api-service.mjs`, `test/monitor-plan.test.mjs` |
+| E 组 — 官网 UI 与作战委员会降噪 | 主回复快、agent 后台补充、超时不阻塞；页面能展示 plan 状态和下一步问题 | `src/ui/dashboard.js`, `src/ui/committee.js`, `src/ui/portfolio.js`, `src/ui/dashboard.html`, `tests/plan10-ui-smoke.mjs` |
+| F 组 — 验收与汇报守门 | 定义 Plan X 验收脚本、官网连续复跑、汇总每组证据 | `tests/plan10-dialog-acceptance.mjs`, `plan/Plan-X-F组-任务汇报.md`, `data/plan10-acceptance-*.json` |
+
+---
+
+## 3. A 组 — 对话路由与快路径
+
+**目标:** 用户自然输入时，系统先判断“用户现在要什么”，并走最短链路，不再默认触发大规模 agent。
+
+### 3.1 新增/稳定意图
+
+| 意图 | 示例 | fanout |
+|------|------|--------|
+| `lookup_asset_info` | `BTC 是什么`、`ENA FDV 多少` | `["asset_info"]` |
+| `lookup_investment_plan` | `我之前 SOL 的投资计划是什么`、`我的 BTC 计划呢` | `["memory"]` 或无 fanout 直接读 state |
+| `start_plan_wizard` | `我想买 SOL，帮我做计划` | 无外部 fanout，进入向导 |
+| `answer_plan_question` | `这个计划风险在哪`、`下一步要做什么` | 读 state + plan |
+| `check_plan_monitor` | `检查一下 SOL 计划` | 走 monitor service |
+
+### 3.2 必做任务
+
+- [ ] 在 `VALID_INTENTS` 增加 `lookup_investment_plan`, `start_plan_wizard`, `answer_plan_question`, `check_plan_monitor`。
+- [ ] 在 `classifyIntentRule` 加入中文规则：
+  - `计划是什么|投资设计|之前怎么设计|我的.*计划` -> `lookup_investment_plan`
+  - `我想买|准备买|帮我做.*计划|制定.*方案` -> `start_plan_wizard`
+  - `检查.*计划|监控.*策略|有没有触发|该不该执行` -> `check_plan_monitor`
+- [ ] 所有新意图必须优先于 `evaluate_candidate`，避免被“分析/计划”泛规则抢走。
+- [ ] 若输入没有资产但最近有 active/draft plan，可继承最近资产；smalltalk 不继承。
+
+### 3.3 A 组自测
+
+新增或扩展 `test/chat-orchestrator-context.test.mjs`：
+
+```js
+test("routes plan lookup without triggering full research fanout", () => {
+  const r = classifyIntent("我之前 SOL 的投资计划是什么", {});
+  assert.equal(r.intent, "lookup_investment_plan");
+  assert.equal(r.slots.assetQuery, "SOL");
+});
+
+test("routes first buy plan request into plan wizard", () => {
+  const r = classifyIntent("我想买 SOL，帮我做一个投资计划", {});
+  assert.equal(r.intent, "start_plan_wizard");
+  assert.equal(r.slots.assetQuery, "SOL");
+});
+
+test("routes active plan monitoring request", () => {
+  const r = classifyIntent("检查一下我的 SOL 计划有没有触发", {});
+  assert.equal(r.intent, "check_plan_monitor");
+  assert.equal(r.slots.assetQuery, "SOL");
+});
+```
+
+### 3.4 A 组提交标准
+
+- `Plan-X-A组-任务汇报.md` 必须列出 12 条自然语言输入的 intent / assetQuery / fanout。
+- `lookup_investment_plan` 和 `start_plan_wizard` 不得触发 7-agent fanout。
+- `npm test` 必须全绿。
+
+---
+
+## 4. B 组 — Token Detail Service
+
+**目标:** 官网对话框问 token 时，先返回清楚、稳定、可追溯的代币详情；复杂研究可以随后补充。
+
+### 4.1 回答格式
+
+`BTC 是什么` 的主回复必须包含：
+
+```text
+BTC 是 Bitcoin。
+当前价格：$...
+市值：$...
+FDV：$...
+数据来源：本轮 asset_info trace（crypto_market / dex_market）
+一句话判断：这是高流动性核心资产；如果要做投资计划，我需要知道你的预算、成本和目标。
+```
+
+不可包含：
+
+- 没有 trace 来源的目标价。
+- 没有来源的链归属断言。
+- “委员会成员尚未返回意见”。
+
+### 4.2 必做任务
+
+- [ ] 新增 `buildAssetInfoReply(assetInfoResult)`，以规则模板生成 token detail 主回复。
+- [ ] `lookup_asset_info` 默认不走 LLM 主回复，除非规则模板缺失字段。
+- [ ] `asset_info` 如果 MCP 超时，必须返回明确降级文案：
+
+```text
+当前暂无法获取 BTC 的实时价格、市值和 FDV；本轮不会编造数字。你可以稍后重试，或先继续录入你的持仓/计划。
+```
+
+- [ ] 对 BTC / ETH / SOL / ENA 做 60s 缓存，缓存命中也要带 trace `cached:true`。
+
+### 4.3 B 组自测
+
+新增 `tests/plan10-dialog-acceptance.mjs` 中 token detail cases：
+
+| 输入 | 断言 |
+|------|------|
+| `BTC 是什么` | <= 3s, intent=`lookup_asset_info`, reply 含价格/市值/FDV, trace 有 MCP |
+| `ENA FDV 多少` | reply 只出现可追溯数字，不出现目标价/回调价 |
+| MCP bad URL + `BTC 是什么` | reply 无 `$...`，包含“暂无法获取”，trace 有失败 |
+
+### 4.4 B 组提交标准
+
+- `Plan-X-B组-任务汇报.md` 必须贴出 3 条输入的完整 reply 和 tracePreview。
+- 必须说明首答耗时 p50 / max。
+- 不允许把 token detail 交给 7-agent fanout。
+
+---
+
+## 5. C 组 — 首次投资方案向导
+
+**目标:** 用户说“我想买 SOL，帮我做计划”时，系统不直接输出空泛建议，而是引导用户补齐计划所需字段，并最终生成 draft plan。
+
+### 5.1 向导状态机
+
+| 阶段 | 缺什么 | 系统应该问 |
+|------|--------|------------|
+| `need_budget` | 没有预算/仓位规模 | `你准备用多少钱或多少比例买 SOL？` |
+| `need_cost` | 没有计划成本/买入价 | `你的预期买入价或当前成本是多少？` |
+| `need_goal` | 没有目标收益/卖出规则 | `你希望按什么规则止盈？例如 2x 回本金，3x 卖 30%。` |
+| `need_floor` | 没有底仓规则 | `你是否要保留底仓？例如保留最高持仓 20%。` |
+| `ready_to_draft` | 信息齐全 | 生成 draft plan，等待确认 |
+
+### 5.2 必做任务
+
+- [ ] 新增 `src/services/plan-wizard-service.mjs`。
+- [ ] 从自然语言提取字段：资产、预算、成本、目标规则、底仓比例。
+- [ ] 将向导状态写入 state，按 session / asset 保存。
+- [ ] 每次回复最多问一个问题。
+- [ ] 字段齐全后调用现有 `managePosition` / `buildDraftPlan` 生成 draft plan。
+
+### 5.3 C 组自测
+
+新增 `test/plan-wizard.test.mjs`：
+
+```js
+test("plan wizard asks for budget first when user wants to buy without details", async () => {
+  const result = await runOrchestrator("我想买 SOL，帮我做一个计划", "wizard-1", {});
+  assert.equal(result.intent, "start_plan_wizard");
+  assert.match(result.reply, /多少钱|预算|比例/);
+});
+
+test("plan wizard generates draft when all fields are present", async () => {
+  const result = await runPlanWizard({
+    assetQuery: "SOL",
+    budgetUsd: 5000,
+    averageCost: 120,
+    naturalLanguagePlan: "2x 回本金，3x 卖 30%，保留 20% 底仓"
+  });
+  assert.equal(result.plan.status, "draft");
+});
+```
+
+### 5.4 C 组提交标准
+
+- `Plan-X-C组-任务汇报.md` 必须给出一段完整对话 transcript：
+  1. 用户想买 SOL。
+  2. 系统问预算。
+  3. 用户补预算和成本。
+  4. 系统问目标规则。
+  5. 用户补目标。
+  6. 系统生成 draft plan。
+- 必须贴出最终 plan JSON。
+
+---
+
+## 6. D 组 — 投资设计读取与监控闭环
+
+**目标:** 系统能回答“我之前怎么设计的”，并能按 active plan 判断当前是否需要提醒用户行动。
+
+### 6.1 投资设计读取
+
+输入：
+
+```text
+我之前 SOL 的投资计划是什么？
+```
+
+输出必须包含：
+
+- 当前持仓数量和成本。
+- plan 状态：draft / active / needs_review / archived。
+- 止盈目标。
+- 底仓规则。
+- 最近一次监控结果。
+- 下一步建议：确认计划 / 继续等待 / 需要复盘。
+
+### 6.2 监控闭环
+
+`check_plan_monitor` 必须返回结构化状态：
+
+```json
+{
+  "assetSymbol": "SOL",
+  "planStatus": "active",
+  "monitorStatus": "no_trigger | target_hit | risk_review | stale_data | missing_plan",
+  "matchedRule": "3x sell 30%",
+  "requiresUserConfirmation": true,
+  "recommendedNextQuestion": "是否按计划卖出 30%？"
+}
+```
+
+### 6.3 必做任务
+
+- [ ] 新增 `getInvestmentPlanSummary(assetQuery)`。
+- [ ] 新增 `checkPlanAgainstCurrentState(assetQuery)`。
+- [ ] `lookup_investment_plan` 直接读本地 state，不等 MCP。
+- [ ] `check_plan_monitor` 可以使用最近价格；没有价格时返回 `stale_data`，不编造。
+- [ ] 将 monitor result 写入 trace / event log，供 UI 展示。
+
+### 6.4 D 组自测
+
+新增 `test/investment-plan-summary.test.mjs`：
+
+```js
+test("lookup investment plan returns active plan summary", async () => {
+  // seed SOL position + active plan
+  const result = await getInvestmentPlanSummary("SOL");
+  assert.equal(result.assetSymbol, "SOL");
+  assert.equal(result.planStatus, "active");
+  assert.ok(result.targets.length > 0);
+  assert.ok(result.floorRule);
+});
+
+test("monitor returns stale_data when no fresh price exists", async () => {
+  const result = await checkPlanAgainstCurrentState("SOL");
+  assert.equal(result.monitorStatus, "stale_data");
+  assert.equal(result.requiresUserConfirmation, false);
+});
+```
+
+### 6.5 D 组提交标准
+
+- `Plan-X-D组-任务汇报.md` 必须包含：
+  - 一个 active plan summary JSON。
+  - 一个 no_trigger monitor JSON。
+  - 一个 stale_data monitor JSON。
+  - 一个 target_hit 或 risk_review 模拟 JSON。
+
+---
+
+## 7. E 组 — 官网 UI 与作战委员会降噪
+
+**目标:** 官网页面上，主对话不再被 agent 超时拖垮。用户先得到主回复，委员会作为证据面板逐步补充。
+
+### 7.1 UI 行为改造
+
+| 场景 | 当前问题 | Plan X 行为 |
+|------|----------|-------------|
+| Token 查询 | 等 fanout / trace，偶发慢 | 主回复先出现，trace 卡片随后更新 |
+| 复杂研究 | 7-agent 超时导致空泛回复 | 先给“已记录问题 + 正在补证据 + 初步建议”，超时 agent 标红但不影响主回复 |
+| 投资计划查询 | 缺少 plan summary 区块 | 在右侧/下方显示 plan 状态、目标、底仓、下一步 |
+| 首次计划向导 | 用户不知道该输入什么 | chat 中出现下一步问题和快捷按钮 |
+
+### 7.2 必做任务
+
+- [ ] `sendChat` 支持 `resp.reply` 先渲染，再渲染 agent 卡片。
+- [ ] 对 `fanout_timeout` 不再把整体模式标成失败，只将具体 agent 标红。
+- [ ] 新增 plan summary UI：显示 `plan.status`, `targets`, `floorRule`, `monitorStatus`。
+- [ ] 建议按钮从通用“刷新全部研究”改为上下文相关：
+  - token detail 后：`帮我做投资计划`
+  - draft plan 后：`确认计划`
+  - active plan 后：`检查计划`
+  - monitor target_hit 后：`按计划处理` / `暂不处理`
+
+### 7.3 E 组自测
+
+新增 `tests/plan10-ui-smoke.mjs`：
+
+| 测试 | 输入 | 截图 |
+|------|------|------|
+| token detail 快答 | `BTC 是什么` | `Plan-X-E组-截图/E-X-1-token-detail-fast-reply.png` |
+| plan wizard | `我想买 SOL，帮我做计划` | `E-X-2-plan-wizard-next-question.png` |
+| plan summary | `我之前 SOL 的投资计划是什么` | `E-X-3-plan-summary.png` |
+| monitor | `检查一下 SOL 计划` | `E-X-4-monitor-result.png` |
+| timeout degrade | 复杂分析 BTC | `E-X-5-agent-timeout-nonblocking.png` |
+
+### 7.4 E 组提交标准
+
+- `Plan-X-E组-任务汇报.md` 必须包含 5 张截图路径。
+- 每张截图必须说明输入、耗时、response intent、是否有 timeout。
+- UI 主回复区域不得只显示“委员会成员尚未返回意见”。
+
+---
+
+## 8. F 组 — Plan X 验收守门
+
+**目标:** 用脚本证明官网对话真正可用，而不是只证明 API 能返回 200。
+
+### 8.1 新增验收脚本
+
+创建 `tests/plan10-dialog-acceptance.mjs`。
+
+必须覆盖：
+
+| Case | 输入 | 断言 |
+|------|------|------|
+| X-01 | `BTC 是什么` | <=3s 或有 fastReply 标记；reply 含 price/mcap/fdv；trace 可追溯 |
+| X-02 | `ENA FDV 多少` | 无额外交易价位 |
+| X-03 | `我想买 SOL，帮我做计划` | intent=`start_plan_wizard`；reply 问预算/成本之一 |
+| X-04 | 补齐 SOL 计划信息 | 生成 draft plan |
+| X-05 | `确认 SOL 计划` | plan.status=`active` |
+| X-06 | `我之前 SOL 的投资计划是什么` | 返回 plan summary |
+| X-07 | `检查一下 SOL 计划` | 返回 monitorStatus |
+| X-08 | MCP bad URL + `BTC 是什么` | 不编数字，说明数据不可用 |
+| X-09 | 复杂分析 BTC | 主回复非空，timeout agent 不阻塞 |
+
+### 8.2 汇报格式
+
+每组最终汇报给我的格式统一如下：
+
+```markdown
+# Plan X — X组任务汇报
+
+## 1. 目标
+
+## 2. 修改文件
+
+## 3. 失败复现 / 现状问题
+
+## 4. 实现内容
+
+## 5. 自测命令与结果
+
+## 6. 证据
+- JSON 报告:
+- 截图:
+- 日志:
+
+## 7. 是否达到验收指标
+
+## 8. 剩余风险
+```
+
+### 8.3 F 组提交标准
+
+- `Plan-X-F组-任务汇报.md` 必须列出所有组的 PASS/FAIL。
+- 必须生成至少两份报告：
+  - `data/plan10-acceptance-local-*.json`
+  - `data/plan10-acceptance-public-*.json`
+- 公网连续 2 次通过率必须 >= 95%，且 X-01 / X-03 / X-06 / X-07 / X-08 必须 100% 通过。
+- 如果 agent 超时，但主回复可用且 timeout 卡片正确展示，可判为 PASS；如果主回复空泛，则 FAIL。
+
+---
+
+## 9. Plan X 最终放行标准
+
+Plan X 只有在以下全部满足时才能宣布完成：
+
+- `npm test` 全绿。
+- `tests/plan10-dialog-acceptance.mjs --http=http://localhost:4177` 通过率 100%。
+- 公网 Plan X 验收连续 2 次 >= 95%。
+- 官网截图证明 5 条主路径可用。
+- `BTC 是什么` 这种 token detail 首答可用，不依赖 7-agent fanout。
+- `我之前 SOL 的投资计划是什么` 能读出真实 plan summary。
+- `我想买 SOL，帮我做计划` 能进入向导并生成 draft plan。
+- `检查一下 SOL 计划` 能返回 monitorStatus。
+- 复杂 agent 超时不阻塞主回复。
+- 所有组员按 Plan X 汇报格式提交，证据齐全。
+
+---
+
+## 10. 优先级与执行顺序
+
+1. **A + B 先做**：对话路由和 token detail 快路径必须先稳定。
+2. **C + D 并行**：计划向导和监控闭环可以并行开发。
+3. **E 后接入 UI**：等 A-D response 结构稳定后再做页面。
+4. **F 最后守门**：写 Plan X acceptance，跑本地和公网。
+
+如果时间不足，砍掉：
+
+- 宏观/新闻/技术多 agent 同步分析。
+- 公网 OpenClaw/Lobster 深度展示。
+- 高级图表。
+
+不能砍：
+
+- token detail 快答。
+- 投资计划读取。
+- 首次计划向导。
+- active plan 监控状态。
+- 失败时不编造。

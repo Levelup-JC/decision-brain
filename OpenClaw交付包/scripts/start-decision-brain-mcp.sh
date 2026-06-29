@@ -6,4 +6,4 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../runtime/decision-brain" && pwd)"
 
 export DECISION_BRAIN_DATA_DIR="${DECISION_BRAIN_DATA_DIR:-$HOME/.decision-brain-lobster}"
 
-exec "/Users/jasoncong/.trae/binaries/node/versions/24.12.0/bin/node" "$PROJECT_ROOT/src/mcp-server.mjs"
+exec "${NODE_BIN:-node}" "$PROJECT_ROOT/src/mcp-server.mjs"

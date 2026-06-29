@@ -284,10 +284,10 @@ function buildEnrichedSources(asset, existingReport, enrichment, surfDossier, pr
   ];
 }
 
-export function buildResearchReport(asset, existingReport, enrichment = null) {
+export async function buildResearchReport(asset, existingReport, enrichment = null) {
   const adapters = getAdapters();
   const skillNotes = adapters.bitget.getSkillNotes(asset);
-  const surfDossier = adapters.surf.buildProjectDossier(asset);
+  const surfDossier = await adapters.surf.buildProjectDossier(asset);
   const profile = mockProfiles[asset.symbol] || buildFallbackProfile(asset);
   const reportId = stableId("research", { assetId: asset.id, symbol: asset.symbol });
   const usesEnrichment = Boolean(enrichment?.ok);

@@ -8,4 +8,4 @@ export DECISION_BRAIN_DATA_DIR="${DECISION_BRAIN_DATA_DIR:-$HOME/.decision-brain
 export HOST="${HOST:-127.0.0.1}"
 export PORT="${PORT:-4177}"
 
-exec "/Users/jasoncong/.trae/binaries/node/versions/24.12.0/bin/node" "$PROJECT_ROOT/src/index.mjs"
+exec "${NODE_BIN:-node}" "$PROJECT_ROOT/src/index.mjs"

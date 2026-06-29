@@ -24,8 +24,19 @@ const ROLE_TO_BITGET_KEY = {
 function headlineFromMemory(result) {
   const p = result.portfolioMemoryProfile || {};
   const assetLabel = result.asset?.symbol || result.asset || null;
+  // Map internal intent classes to neutral display labels to avoid biasing Chief
+  const intentLabelMap = {
+    add_to_existing: "状态: 持有中",
+    review_sell_position: "状态: 持有中 (卖出评估)",
+    resume_archived_watch: "状态: 已归档 (恢复关注)",
+    rebuild_after_exit: "状态: 历史仓位 (重新评估)",
+    unknown: null,
+  };
+  const intentLabel = p.suggestedIntentClass
+    ? (intentLabelMap[p.suggestedIntentClass] || `状态: ${p.suggestedIntentClass}`)
+    : null;
   return [
-    p.suggestedIntentClass ? `意图: ${p.suggestedIntentClass}` : null,
+    intentLabel,
     assetLabel ? `资产: ${assetLabel}` : null,
   ]
     .filter(Boolean)
@@ -143,16 +154,32 @@ export async function runAgent(role, assetQuery) {
         (s) => s.author && s.author.includes(skill?.skill || bitgetKey)
       );
 
+      // Extract key findings from sources for meaningful headline + data
+      const findings = relevantSources
+        .map((s) => s.keyClaim)
+        .filter(Boolean)
+        .slice(0, 3);
+
+      // Extract URLs from sources for clickable links in Chief responses
+      const sourceUrls = relevantSources
+        .filter((s) => s.url)
+        .map((s) => ({ url: s.url, title: s.keyClaim?.slice(0, 80) || s.title || "" }))
+        .slice(0, 5);
+
       const allSourcesOk = result.bitget?.ok;
       return {
         role,
         status: allSourcesOk ? "ok" : "degraded",
-        headline: allSourcesOk
-          ? `${skill?.title || role}: 数据已刷新 (${relevantSources.length} 条来源)`
-          : `${skill?.title || role}: 数据源未连接`,
+        headline: findings.length > 0
+          ? `${skill?.title || role}: ${findings.join(" | ").slice(0, 150)}`
+          : (allSourcesOk
+            ? `${skill?.title || role}: 数据已刷新 (${relevantSources.length} 条来源)`
+            : `${skill?.title || role}: 数据源未连接`),
         data: {
           bitgetStatus: result.bitget,
           sources: relevantSources,
+          findings,
+          sourceUrls,
         },
         tookMs: Date.now() - startedAt,
       };

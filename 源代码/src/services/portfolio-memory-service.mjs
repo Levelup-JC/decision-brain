@@ -172,12 +172,19 @@ async function readCsvPortfolioFiles(asset) {
   return matches;
 }
 
-function classifyIntentFromMatches(matches) {
+const SELL_INTENTS = new Set([
+  "review_sell", "review_sell_position", "sell_review",
+  "panic_sell_review", "planned_sell_review", "sell_execute",
+]);
+
+function classifyIntentFromMatches(matches, contextIntent = null) {
   const current = matches.find((match) => match.positionSnapshot && match.status !== "archived");
   const archived = matches.find((match) => match.status === "archived");
   const historical = matches.find((match) => !match.positionSnapshot && match.status !== "unknown");
 
   if (current) {
+    // In sell contexts, report position existence rather than prescribing "add"
+    if (contextIntent && SELL_INTENTS.has(contextIntent)) return "review_sell_position";
     return "add_to_existing";
   }
   if (archived) {
@@ -207,7 +214,7 @@ export async function lookupPortfolioMemory(assetQuery, state, options = {}) {
   const stateMatches = collectAssetMatches(asset, state);
   const externalMatches = options.includeExternalSources === false ? [] : await readCsvPortfolioFiles(asset);
   const matches = [...stateMatches, ...externalMatches];
-  const suggestedIntentClass = classifyIntentFromMatches(matches);
+  const suggestedIntentClass = classifyIntentFromMatches(matches, options.contextIntent || null);
   const hasCurrentPosition = matches.some((match) => Boolean(match.positionSnapshot) && match.status !== "archived");
   const hasHistoricalPosition = matches.some((match) => match.sourceType !== "decision_brain_asset" || match.status !== "unknown");
   const isArchived = matches.some((match) => match.status === "archived");

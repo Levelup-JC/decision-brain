@@ -4,6 +4,7 @@ import {
   confirmPlan,
   evaluateCandidate,
   getAssetContext,
+  getPortfolioSummary,
   getStateSummary,
   lookupPortfolioMemoryApi,
   logSource,
@@ -13,6 +14,7 @@ import {
   reviewSellIntent,
   runDailyMonitor
 } from "./services/api-service.mjs";
+import { exportMarkdown, getSessionLog } from "./services/conversation-log-service.mjs";
 
 export async function callTool(name, args = {}) {
   switch (name) {
@@ -22,16 +24,52 @@ export async function callTool(name, args = {}) {
       return buildCapabilities();
     case "state":
       return getStateSummary();
+    case "get_portfolio_summary":
+      return getPortfolioSummary();
     case "lookup_portfolio_memory":
       return lookupPortfolioMemoryApi(args);
+    case "get_position_memory":
+      return getAssetContext(args.assetQuery || args.asset);
     case "evaluate_candidate":
       return evaluateCandidate(args);
     case "manage_position":
       return managePosition(args);
+    case "record_sell_execution":
+      return managePosition({ ...args, action: "sell" });
     case "refresh_research":
       return refreshResearch(args);
     case "confirm_plan":
       return confirmPlan(args);
+    case "confirm_investment_thesis": {
+      const ctx = await getAssetContext(args.assetQuery || args.asset);
+      if (!ctx.position) throw new Error(`No position found for ${args.assetQuery}`);
+      return managePosition({
+        assetQuery: args.assetQuery,
+        units: ctx.position.units,
+        averageCost: ctx.position.averageCost,
+        originalThesis: args.thesis || ctx.memorySummary.originalThesis,
+        investmentGoal: args.investmentGoal || ctx.memorySummary.investmentGoal,
+        targetUnits: args.targetUnits ?? ctx.memorySummary.targetUnits,
+      });
+    }
+    case "review_panic_sell": {
+      const ctx = await getAssetContext(args.assetQuery || args.asset);
+      return {
+        ok: true,
+        asset: args.assetQuery,
+        panicDetected: true,
+        goalProgress: ctx.memorySummary.goalProgress,
+        originalThesis: ctx.memorySummary.originalThesis,
+        floorRule: ctx.memorySummary.floorRule,
+        recommendation: "回看投资初心和计划边界后再决定",
+      };
+    }
+    case "export_decision_context":
+      return {
+        ok: true,
+        sessionLog: getSessionLog(args.sessionId || "demo-001"),
+        markdown: exportMarkdown(args.sessionId || "demo-001"),
+      };
     case "get_asset_context":
       return getAssetContext(args.assetQuery || args.asset);
     case "review_add_intent":
@@ -198,6 +236,73 @@ export function listTools() {
           assetQuery: { type: "string" }
         },
         required: ["assetQuery"]
+      }
+    },
+    {
+      name: "get_portfolio_summary",
+      description: "返回完整组合摘要，包含仓位、计划、目标进度和投资目标字段",
+      inputSchema: {
+        type: "object",
+        properties: {}
+      }
+    },
+    {
+      name: "get_position_memory",
+      description: "返回某个资产的完整仓位记忆，包含目标、thesis、底仓规则和进度",
+      inputSchema: {
+        type: "object",
+        properties: {
+          assetQuery: { type: "string" }
+        },
+        required: ["assetQuery"]
+      }
+    },
+    {
+      name: "confirm_investment_thesis",
+      description: "确认/更新投资 thesis 和目标，写入仓位记忆并绑定到计划",
+      inputSchema: {
+        type: "object",
+        properties: {
+          assetQuery: { type: "string" },
+          thesis: { type: "string" },
+          investmentGoal: { type: "string" },
+          targetUnits: { type: "number" }
+        },
+        required: ["assetQuery"]
+      }
+    },
+    {
+      name: "review_panic_sell",
+      description: "恐慌卖出护栏：回看投资初心、目标进度、thesis 是否失效，给出克制选项",
+      inputSchema: {
+        type: "object",
+        properties: {
+          assetQuery: { type: "string" }
+        },
+        required: ["assetQuery"]
+      }
+    },
+    {
+      name: "record_sell_execution",
+      description: "记录已执行的卖出，更新仓位和记忆",
+      inputSchema: {
+        type: "object",
+        properties: {
+          assetQuery: { type: "string" },
+          units: { type: "number" },
+          price: { type: "number" }
+        },
+        required: ["assetQuery"]
+      }
+    },
+    {
+      name: "export_decision_context",
+      description: "导出会话日志和决策上下文为 Markdown，用于复盘和 trace",
+      inputSchema: {
+        type: "object",
+        properties: {
+          sessionId: { type: "string" }
+        }
       }
     }
   ];

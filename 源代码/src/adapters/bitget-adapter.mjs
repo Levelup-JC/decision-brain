@@ -3,6 +3,42 @@ import { McpClient } from "./mcp-client.mjs";
 import { parseCryptoMarket, parseDexMarket } from "./market-data-parse.mjs";
 import { getCurrentCollector } from "../trace-collector.mjs";
 
+function summarizeMcpText(text, toolName) {
+  if (!text) return `${toolName}: 无数据返回`;
+  const cleaned = text.trim();
+  // JSON blob — extract top-level keys/values into a readable one-liner
+  if (cleaned.startsWith("{")) {
+    try {
+      const obj = JSON.parse(cleaned);
+      const keys = Object.keys(obj).slice(0, 6);
+      const parts = keys.map((k) => {
+        const v = obj[k];
+        if (typeof v === "string") return `${k}: ${v.slice(0, 40)}`;
+        if (typeof v === "number") return `${k}: ${Number.isInteger(v) ? v : v.toFixed(2)}`;
+        if (typeof v === "object" && v && typeof v.latest_value === "string") return `${k}: ${v.latest_value.slice(0, 30)}`;
+        if (typeof v === "object" && v && v.latest_value != null) return `${k}: ${v.latest_value}`;
+        return k;
+      });
+      return parts.length > 0 ? parts.join(" | ") : `${toolName}: 数据已获取`;
+    } catch {
+      // Not valid JSON despite starting with { — fall through
+    }
+  }
+  if (cleaned.startsWith("[")) {
+    try {
+      const arr = JSON.parse(cleaned);
+      if (Array.isArray(arr)) {
+        return `${toolName}: ${arr.length} 条记录`;
+      }
+    } catch {
+      // fall through
+    }
+  }
+  // Plain text — use directly, keep it brief
+  const firstLine = cleaned.split("\n")[0];
+  return firstLine.length > 200 ? firstLine.slice(0, 200) + "…" : firstLine;
+}
+
 // ── 5 Bitget Skills → market-data MCP tool mapping ──────────────────────
 
 export const BITGET_SKILLS = [
@@ -350,11 +386,12 @@ export function createBitgetAdapter() {
       }
 
       try {
-        const lookup = await lookupAssetMarketData(marketDataClient, asset, traceCollector);
+        const tc = traceCollector || getCurrentCollector();
+        const lookup = await lookupAssetMarketData(marketDataClient, asset, tc);
         const identity = buildResolvedIdentity(lookup);
         const dexCandidate = lookup.dexCandidate || null;
         const dexParsed = lookup.dexParsed || {};
-        const currentMetrics = {
+        let currentMetrics = {
           marketCap: firstFinite([
             identity.marketCap,
             readNumber(dexCandidate?.marketCap),
@@ -370,6 +407,80 @@ export function createBitgetAdapter() {
             dexParsed.price,
           ]),
         };
+
+        // ── Silent fallback: try global_assets (Yahoo Finance) when primary data is thin ──
+        if (currentMetrics.price == null || currentMetrics.marketCap == null) {
+          try {
+            const yahooSymbol = asset.symbol?.includes("-")
+              ? asset.symbol
+              : `${asset.symbol || identity.symbol || ""}-USD`;
+            let yahooResponse;
+            if (tc) {
+              [yahooResponse] = await tc.call("global_assets",
+                { action: "ohlcv", symbol: yahooSymbol, period: "1mo", interval: "1d" },
+                () => marketDataClient.callTool("global_assets", { action: "ohlcv", symbol: yahooSymbol, period: "1mo", interval: "1d" })
+              );
+            } else {
+              yahooResponse = await marketDataClient.callTool("global_assets", { action: "ohlcv", symbol: yahooSymbol, period: "1mo", interval: "1d" });
+            }
+            const yahooPayload = safeJsonParse(yahooResponse.text);
+            const yahooData = yahooPayload?.data || yahooPayload;
+            const yahooPrices = Array.isArray(yahooData) ? yahooData : (yahooData?.candles || yahooData?.close || []);
+            const lastPrice = Array.isArray(yahooPrices) && yahooPrices.length > 0
+              ? (typeof yahooPrices[yahooPrices.length - 1] === "object"
+                  ? yahooPrices[yahooPrices.length - 1].close
+                  : yahooPrices[yahooPrices.length - 1])
+              : null;
+
+            if (lastPrice != null) {
+              currentMetrics.price = firstFinite([currentMetrics.price, Number(lastPrice)]);
+            }
+
+            // Also try getting market cap from global_assets price endpoint
+            let priceResponse;
+            try {
+              if (tc) {
+                [priceResponse] = await tc.call("global_assets",
+                  { action: "price", symbol: yahooSymbol },
+                  () => marketDataClient.callTool("global_assets", { action: "price", symbol: yahooSymbol })
+                );
+              } else {
+                priceResponse = await marketDataClient.callTool("global_assets", { action: "price", symbol: yahooSymbol });
+              }
+              const pricePayload2 = safeJsonParse(priceResponse.text);
+              if (pricePayload2?.marketCap) {
+                currentMetrics.marketCap = firstFinite([currentMetrics.marketCap, Number(pricePayload2.marketCap)]);
+              }
+            } catch {
+              // global_assets price fetch is best-effort
+            }
+          } catch {
+            // global_assets fallback is silent; primary data remains
+          }
+        }
+
+        // ── Silent fallback: try crypto_derivatives with OKX for additional price verification ──
+        if (currentMetrics.price == null) {
+          try {
+            const okxSymbol = `${asset.symbol || identity.symbol || ""}/USDT`;
+            let okxResponse;
+            if (tc) {
+              [okxResponse] = await tc.call("crypto_derivatives",
+                { action: "price", symbol: okxSymbol, exchange: "okx" },
+                () => marketDataClient.callTool("crypto_derivatives", { action: "price", symbol: okxSymbol, exchange: "okx" })
+              );
+            } else {
+              okxResponse = await marketDataClient.callTool("crypto_derivatives", { action: "price", symbol: okxSymbol, exchange: "okx" });
+            }
+            const okxPayload = safeJsonParse(okxResponse.text);
+            if (okxPayload?.price != null) {
+              currentMetrics.price = firstFinite([currentMetrics.price, Number(okxPayload.price)]);
+            }
+          } catch {
+            // OKX fallback is silent
+          }
+        }
+
         const listedExchanges = uniqueStrings(identity.listedExchanges || []);
 
         return {
@@ -429,12 +540,16 @@ export function createBitgetAdapter() {
           }
 
           const result = await retryMcpCall(marketDataClient, call.tool, args, tc, 2);
+          const text = result.text || "";
+          const extractedUrls = extractUrlsFromMcpText(text, call.tool);
           results.push({
             tool: call.tool,
             available: true,
             sourceType: "market_data_mcp",
-            keyClaim: result.text?.slice(0, 500) || JSON.stringify(result.raw).slice(0, 500),
-            fullResult: result.text,
+            keyClaim: summarizeMcpText(text, call.tool),
+            fullResult: text,
+            url: extractedUrls.length > 0 ? extractedUrls[0].url : null,
+            urls: extractedUrls,
           });
         } catch (err) {
           results.push({
@@ -1109,6 +1224,78 @@ function buildLiquidityNote(dexCandidate, parsedDex, identity) {
     parts.push(`FDV ${formatCompactUsd(fdv)}`);
   }
   return parts.join(", ");
+}
+
+function extractUrlsFromMcpText(text, tool) {
+  if (!text) return [];
+  const urls = [];
+
+  try {
+    const parsed = JSON.parse(text);
+
+    // news_feed: { articles: [{ link, title }] } or { data: { articles: [...] } }
+    if (tool === "news_feed" || tool === "tradfi_news") {
+      const articles = parsed.articles || parsed.data?.articles || parsed.results || [];
+      if (Array.isArray(articles)) {
+        for (const a of articles) {
+          const link = a.link || a.url;
+          if (link && typeof link === "string" && link.startsWith("http")) {
+            urls.push({ url: link, title: (a.title || "").slice(0, 120) });
+          }
+        }
+      }
+    }
+
+    // social_trending: items with url/link
+    if (tool === "social_trending") {
+      const items = parsed.items || parsed.data || parsed.results || [];
+      if (Array.isArray(items)) {
+        for (const item of items) {
+          const link = item.url || item.link || item.source_url;
+          if (link && typeof link === "string" && link.startsWith("http")) {
+            urls.push({ url: link, title: (item.title || item.name || "").slice(0, 120) });
+          }
+        }
+      }
+    }
+
+    // Generic: scan any array field for url/link properties
+    if (urls.length === 0) {
+      for (const key of Object.keys(parsed)) {
+        const val = parsed[key];
+        if (Array.isArray(val)) {
+          for (const item of val) {
+            if (typeof item === "object" && item !== null) {
+              const link = item.url || item.link || item.source_url || item.href;
+              if (link && typeof link === "string" && link.startsWith("http")) {
+                urls.push({ url: link, title: (item.title || item.name || "").slice(0, 120) });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Also check top-level url/link
+    if (urls.length === 0) {
+      const topLink = parsed.url || parsed.link;
+      if (topLink && typeof topLink === "string" && topLink.startsWith("http")) {
+        urls.push({ url: topLink, title: "" });
+      }
+    }
+  } catch {
+    // Not valid JSON — try regex fallback
+    const urlRegex = /https?:\/\/[^\s<>"'\]]+/g;
+    const matches = text.match(urlRegex) || [];
+    for (const url of matches) {
+      const cleaned = url.replace(/[.,;:!?)]+$/, "");
+      if (cleaned.length > 12) {
+        urls.push({ url: cleaned, title: "" });
+      }
+    }
+  }
+
+  return urls.slice(0, 5);
 }
 
 function buildLookupSources(lookup) {

@@ -73,9 +73,15 @@ export async function getStateSummary() {
 
 export async function getPortfolioSummary() {
   const state = await store.load();
-  const positions = Object.values(state.positions || {});
+  const allPositions = Object.values(state.positions || {});
 
-  const result = positions.map((pos) => {
+  const activePositions = allPositions.filter((pos) => {
+    if (pos.status === "archived") return false;
+    const plan = state.plans[pos.assetId];
+    return !plan || plan.status !== "archived";
+  });
+
+  const result = activePositions.map((pos) => {
     const plan = state.plans[pos.assetId] || null;
     const valuationModel = state.valuationModels[pos.assetId] || null;
     const asset = state.assets[pos.assetId] || null;
@@ -97,9 +103,10 @@ export async function getPortfolioSummary() {
       units: pos.units,
       averageCost: pos.averageCost,
       currentPrice: pos.currentPrice,
-      currentValue: pos.currentValue,
-      costBasisTotal: pos.costBasisTotal,
+      currentValue: Number(pos.currentValue || 0),
+      costBasisTotal: Number(pos.costBasisTotal || 0),
       reason: pos.reason || null,
+      status: plan?.status || "unmanaged",
       plan: plan
         ? {
             id: plan.id,
@@ -108,6 +115,17 @@ export async function getPortfolioSummary() {
             valuationTiers,
             nextReviewAt: plan.nextReviewAt || null,
             monitoringPolicy: plan.monitoringPolicy || null,
+            // Plan XVI: investment goal fields
+            investmentGoal: plan.investmentGoal || null,
+            targetUnits: plan.targetUnits ?? null,
+            originalThesis: plan.originalThesis || null,
+            timeHorizon: plan.timeHorizon || null,
+            goalProgress: (plan.targetUnits != null)
+              ? { current: pos.units, target: plan.targetUnits, label: `${pos.units} / ${plan.targetUnits}` }
+              : null,
+            floorRule: plan.userFloorRule || plan.floorRule || null,
+            sellRules: plan.sellRules || [],
+            panicGuard: plan.panicGuard || { enabled: true, lastTriggeredAt: null },
           }
         : null,
       valuationZone: valuationModel ? detectValuationZone(valuationModel) : null,
@@ -116,14 +134,26 @@ export async function getPortfolioSummary() {
         fdv: pos.fdv || null,
         dailyVolumeUsd: pos.dailyVolumeUsd || null,
       },
+      portfolioValue: Number(pos.portfolioValue || 0),
       portfolioPct: pos.portfolioPct || null,
       updatedAt: pos.updatedAt || null,
     };
   });
 
+  const totalPositionValue = result.reduce((sum, p) => sum + p.currentValue, 0);
+  const totalCostBasis = result.reduce((sum, p) => sum + p.costBasisTotal, 0);
+  const unrealizedPnl = Number((totalPositionValue - totalCostBasis).toFixed(2));
+  const unrealizedPnlPct = totalCostBasis > 0
+    ? Number(((unrealizedPnl / totalCostBasis) * 100).toFixed(2))
+    : 0;
+
   return {
     ok: true,
     positions: result,
+    totalPositionValue,
+    totalCostBasis,
+    unrealizedPnl,
+    unrealizedPnlPct,
     totalCount: result.length,
     activeCount: result.filter((p) => p.plan?.status === "active").length,
     draftCount: result.filter((p) => p.plan?.status === "draft").length,
@@ -197,7 +227,16 @@ export async function getAssetContext(assetQuery) {
       lastNewsUpdateAt: monitorState?.lastNewsUpdateAt || null,
       lastPositionUpdateAt: monitorState?.lastPositionUpdateAt || null,
       portfolioContextComplete: Boolean(position?.portfolioContextComplete),
-      latestEventTitle: recentEvents[recentEvents.length - 1]?.title || null
+      latestEventTitle: recentEvents[recentEvents.length - 1]?.title || null,
+      // Plan XVI: investment goal fields
+      investmentGoal: plan?.investmentGoal || null,
+      targetUnits: plan?.targetUnits ?? null,
+      originalThesis: plan?.originalThesis || position?.reason || null,
+      timeHorizon: plan?.timeHorizon || null,
+      goalProgress: (plan?.targetUnits != null && position?.units != null)
+        ? { current: position.units, target: plan.targetUnits, label: `${position.units} / ${plan.targetUnits}` }
+        : null,
+      floorRule: plan?.userFloorRule || plan?.floorRule || null,
     }
   };
 }
@@ -324,7 +363,7 @@ export async function evaluateCandidate(body) {
     const asset = resolved.asset;
     state.assets[asset.id] = asset;
 
-    return evaluateCandidateState({
+    return await evaluateCandidateState({
       asset,
       state,
       portfolioMemoryProfile: lookup.portfolioMemoryProfile,
@@ -347,10 +386,81 @@ export async function managePosition(body) {
     state.assets[asset.id] = asset;
     const existingResearchReport = state.researchReports[asset.id];
 
+    // Plan XVI: block position write when asset identity is unconfirmed
+    // Unknown tickers (e.g. "BTW") must be confirmed by user before writing
+    const identityUnconfirmed =
+      asset.assetType === "unclassified_asset" &&
+      asset.identityConfidence !== "high" &&
+      !existingResearchReport;
+    if (identityUnconfirmed && !body.allowUnconfirmedAsset) {
+      return {
+        ok: false,
+        error: `无法确认 ${body.assetQuery} 的资产身份。请补充项目全称、合约地址或链，系统确认后再记录仓位。`,
+        code: "IDENTITY_UNCONFIRMED",
+        asset,
+        identity: {
+          inputSymbol: initialLookup.asset?.symbol || body.assetQuery,
+          resolvedSymbol: asset.symbol,
+          identityConfidence: asset.identityConfidence || "low",
+          needsUserConfirmation: true,
+        },
+      };
+    }
+
     const existingPosition = state.positions[asset.id];
-    const units = Number(body.units ?? existingPosition?.units ?? 0);
-    const averageCost = Number(body.averageCost ?? existingPosition?.averageCost ?? 0);
-    const currentPrice = Number(body.currentPrice ?? averageCost);
+
+    // "sell" action: reduce units from existing position. Keep averageCost unchanged.
+    // "add" action: merge additional units into existing position with weighted average cost.
+    // Default (no action): absolute replace — units and cost are the new totals.
+    const shouldSell =
+      body.action === "sell" &&
+      existingPosition &&
+      existingPosition.units > 0 &&
+      body.units !== undefined && body.units !== null;
+
+    const shouldAddToExisting =
+      body.action === "add" &&
+      existingPosition &&
+      existingPosition.units > 0 &&
+      body.units !== undefined && body.units !== null;
+
+    let units;
+    let averageCost;
+    let actualCostBasisTotal;
+
+    if (shouldSell) {
+      const soldUnits = Number(body.units || 0);
+      if (soldUnits > Number(existingPosition.units)) {
+        return {
+          ok: false,
+          error: `卖出数量 (${soldUnits}) 超过当前持仓 (${existingPosition.units})，无法执行。请检查卖出数量。`,
+          code: "OVERSELL"
+        };
+      }
+      units = Number(existingPosition.units) - soldUnits;
+      averageCost = Number(existingPosition.averageCost || 0);
+      actualCostBasisTotal = Number((units * averageCost).toFixed(2));
+    } else if (shouldAddToExisting) {
+      const additionalUnits = Number(body.units || 0);
+      const additionalCostEach = body.averageCost !== undefined && body.averageCost !== null
+        ? Number(body.averageCost)
+        : Number(existingPosition.averageCost || 0);
+      const existingCostBasis = Number(existingPosition.costBasisTotal
+        || existingPosition.units * existingPosition.averageCost
+        || 0);
+
+      units = Number(existingPosition.units) + additionalUnits;
+      actualCostBasisTotal = Number((existingCostBasis + additionalUnits * additionalCostEach).toFixed(2));
+      averageCost = units > 0
+        ? Number((actualCostBasisTotal / units).toFixed(4))
+        : Number(existingPosition.averageCost || 0);
+    } else {
+      units = Number(body.units ?? existingPosition?.units ?? 0);
+      averageCost = Number(body.averageCost ?? existingPosition?.averageCost ?? 0);
+      actualCostBasisTotal = Number((units * averageCost).toFixed(2));
+    }
+
+    const currentPrice = Number(body.currentPrice ?? existingPosition?.currentPrice ?? averageCost);
     const currentValue = Number((units * currentPrice).toFixed(2));
     const portfolioValueExplicitlyProvided = body.portfolioValue !== undefined && body.portfolioValue !== null;
     const portfolioValue = Number(
@@ -361,13 +471,18 @@ export async function managePosition(body) {
     const portfolioPct = portfolioValue > 0 ? currentValue / portfolioValue : Number(existingPosition?.portfolioPct || 0);
     const peakUnits = Math.max(Number(existingPosition?.peakUnits || 0), units);
 
-    const reason = body.reason || existingPosition?.reason || "";
+    // Append reason when adding to existing position; otherwise replace
+    const reason = body.reason
+      ? (existingPosition?.reason && shouldAddToExisting
+          ? existingPosition.reason + "；追加：" + body.reason
+          : body.reason)
+      : (existingPosition?.reason || "");
     const position = {
       assetId: asset.id,
       assetSymbol: asset.symbol,
       units,
       averageCost,
-      costBasisTotal: Number((units * averageCost).toFixed(2)),
+      costBasisTotal: actualCostBasisTotal,
       currentPrice,
       currentValue,
       portfolioValue,
@@ -386,15 +501,26 @@ export async function managePosition(body) {
     const enrichedPosition = applyEnrichmentToPosition(position, resolved.enrichment);
     state.positions[asset.id] = enrichedPosition;
     const lookup = await lookupPortfolioMemory(body.assetQuery, state, {
-      allowUnconfirmedHistoryFlow: true
+      allowUnconfirmedHistoryFlow: true,
+      contextIntent: shouldSell ? "review_sell" : null,
     });
-    const evaluated = evaluateCandidateState({
+    // Plan XVI: extract investment goal fields from body
+    const investmentGoalOverrides = {};
+    if (body.investmentGoal) investmentGoalOverrides.investmentGoal = body.investmentGoal;
+    if (body.targetUnits != null) investmentGoalOverrides.targetUnits = Number(body.targetUnits);
+    if (body.originalThesis) investmentGoalOverrides.originalThesis = body.originalThesis;
+    if (body.timeHorizon) investmentGoalOverrides.timeHorizon = body.timeHorizon;
+    if (body.floorRule) investmentGoalOverrides.floorRule = body.floorRule;
+    if (body.sellRules) investmentGoalOverrides.sellRules = body.sellRules;
+
+    const evaluated = await evaluateCandidateState({
       asset,
       state,
       portfolioMemoryProfile: lookup.portfolioMemoryProfile,
       body,
       options: {
-        allowDegradedPlanForPosition: true
+        allowDegradedPlanForPosition: true,
+        investmentGoalOverrides,
       },
       enrichment: resolved.enrichment
     });
@@ -432,6 +558,12 @@ export async function managePosition(body) {
       plan,
       requiresUserConfirmation: evaluated.requiresUserConfirmation,
       confirmationPrompt: evaluated.confirmationPrompt,
+      identity: {
+        inputSymbol: initialLookup.asset?.symbol || body.assetQuery,
+        resolvedSymbol: asset.symbol,
+        identityConfidence: asset.symbol === body.assetQuery.toUpperCase() ? "high" : "low",
+        needsUserConfirmation: asset.symbol !== body.assetQuery.toUpperCase(),
+      },
       message: `${asset.symbol} 已经进入管理流程，当前计划状态为 ${plan?.status || "not_ready"}`
     };
   });
@@ -487,7 +619,7 @@ export async function refreshResearch(body) {
       }
     }
 
-    const researchReport = state.researchReports[asset.id] || buildResearchReport(asset);
+    const researchReport = state.researchReports[asset.id] || await buildResearchReport(asset);
     state.researchReports[asset.id] = researchReport;
     const recentSources = Object.values(state.sources || {})
       .filter((source) => source.assetId === asset.id)
@@ -605,7 +737,7 @@ export async function reviewAddIntent(body) {
     }
 
     if (!position || !valuationModel || !plan) {
-      const evaluated = evaluateCandidateState({
+      const evaluated = await evaluateCandidateState({
         asset,
         state,
         portfolioMemoryProfile: lookup.portfolioMemoryProfile,
@@ -659,7 +791,7 @@ export async function reviewSellIntent(body) {
   requireField(body.requestedSellPct, "requestedSellPct");
 
   return store.update(async (state) => {
-    const lookup = await lookupPortfolioMemory(body.assetQuery, state);
+    const lookup = await lookupPortfolioMemory(body.assetQuery, state, { contextIntent: "review_sell" });
     const asset = lookup.asset;
     const position = state.positions[asset.id];
     const valuationModel = state.valuationModels[asset.id];
@@ -777,6 +909,55 @@ export async function archiveAsset(body) {
       ok: true,
       asset,
       plan
+    };
+  });
+}
+
+export async function removePosition(body) {
+  requireField(body.assetQuery, "assetQuery");
+
+  return store.update(async (state) => {
+    const asset = resolveAssetFromQuery(body.assetQuery, state.assets);
+    const position = state.positions[asset.id];
+    const plan = state.plans[asset.id];
+
+    if (position) {
+      position.status = "archived";
+      position.archivedAt = nowIso();
+      position.updatedAt = nowIso();
+      state.positions[asset.id] = position;
+    }
+
+    if (plan) {
+      plan.status = "archived";
+      plan.updatedAt = nowIso();
+      state.plans[asset.id] = plan;
+    }
+
+    if (state.monitorState[asset.id]) {
+      delete state.monitorState[asset.id];
+    }
+
+    state.traces[entityId("trace")] = {
+      id: entityId("trace"),
+      assetId: asset.id,
+      userIntent: "remove_position",
+      finalRecommendation: `${asset.symbol} 已从当前资产面板移除（软归档），可随时恢复。`,
+      reasons: [
+        position ? "仓位已标记为 archived" : "未找到活跃仓位",
+        plan ? "投资计划已归档" : "未找到活跃计划",
+        "每日监测状态已清理",
+      ],
+      createdAt: nowIso()
+    };
+
+    return {
+      ok: true,
+      asset,
+      removed: Boolean(position || plan),
+      message: position
+        ? `${asset.symbol} 已从资产面板移除，相关记录已归档保留。`
+        : `${asset.symbol} 未找到活跃仓位，无需移除。`,
     };
   });
 }

@@ -163,9 +163,9 @@ function buildInvestmentMemo({
   };
 }
 
-export function evaluateCandidateState({ asset, state, portfolioMemoryProfile, body = {}, options = {}, enrichment = null }) {
+export async function evaluateCandidateState({ asset, state, portfolioMemoryProfile, body = {}, options = {}, enrichment = null }) {
   const existingResearchReport = state.researchReports[asset.id];
-  const researchReport = buildResearchReport(asset, existingResearchReport, enrichment);
+  const researchReport = await buildResearchReport(asset, existingResearchReport, enrichment);
   state.researchReports[asset.id] = researchReport;
 
   for (const source of researchReport.sources || []) {
@@ -219,7 +219,7 @@ export function evaluateCandidateState({ asset, state, portfolioMemoryProfile, b
 
     valuationModel = buildValuationModel(asset, pseudoPosition, researchReport, state.valuationModels[asset.id]);
     state.valuationModels[asset.id] = valuationModel;
-    positionPlaybook = buildDraftPlan(asset, pseudoPosition, valuationModel, body.naturalLanguagePlan, state.plans[asset.id]);
+    positionPlaybook = buildDraftPlan(asset, pseudoPosition, valuationModel, body.naturalLanguagePlan, state.plans[asset.id], options.investmentGoalOverrides || {});
     state.plans[asset.id] = positionPlaybook;
   }
 

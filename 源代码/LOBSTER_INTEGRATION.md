@@ -109,8 +109,8 @@ npm run mcp:lobster
 
 可直接参考的样例文件：
 
-- [examples/lobster-mcp.config.example.json](/Users/jasoncong/Documents/New%20project/decision-brain/examples/lobster-mcp.config.example.json)
-- [examples/http-demo.sh](/Users/jasoncong/Documents/New%20project/decision-brain/examples/http-demo.sh)
+- [examples/lobster-mcp.config.example.json](examples/lobster-mcp.config.example.json)
+- [examples/http-demo.sh](examples/http-demo.sh)
 
 如果你不想手工改路径，直接执行：
 

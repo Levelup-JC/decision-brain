@@ -2,12 +2,12 @@
   "servers": {
     "decision-brain": {
       "type": "stdio",
-      "command": "/Users/jasoncong/.trae/binaries/node/versions/24.12.0/bin/node",
+      "command": "/ABSOLUTE/PATH/TO/node",
       "args": [
-        "/Users/jasoncong/Documents/New project/decision-brain-openclaw-handoff/runtime/decision-brain/src/mcp-server.mjs"
+        "/ABSOLUTE/PATH/TO/decision-brain-openclaw-handoff/runtime/decision-brain/src/mcp-server.mjs"
       ],
       "env": {
-        "DECISION_BRAIN_DATA_DIR": "/Users/jasoncong/.decision-brain-lobster"
+        "DECISION_BRAIN_DATA_DIR": "/ABSOLUTE/PATH/TO/decision-brain-data"
       }
     }
   }

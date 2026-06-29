@@ -143,6 +143,10 @@ export function resolveAssetFromQuery(assetQuery, existingAssets) {
 }
 
 export async function resolveAssetIdentity(assetQueryOrAsset, existingAssets = {}, adapters = {}, opts = {}) {
+  const rawInput = typeof assetQueryOrAsset === "string"
+    ? String(assetQueryOrAsset).trim()
+    : String(assetQueryOrAsset?.symbol || assetQueryOrAsset?.contractAddress || "").trim();
+
   const baseAsset =
     typeof assetQueryOrAsset === "string"
       ? resolveAssetFromQuery(assetQueryOrAsset, existingAssets)
@@ -161,6 +165,8 @@ export async function resolveAssetIdentity(assetQueryOrAsset, existingAssets = {
           ),
         };
 
+  const userInputSymbol = /^0x[a-fA-F0-9]{40}$/.test(rawInput) ? baseAsset.symbol : rawInput.toUpperCase();
+
   const shouldEnrichIdentity =
     opts.forceEnrich === true ||
     baseAsset.assetType === "unclassified_asset" ||
@@ -169,6 +175,10 @@ export async function resolveAssetIdentity(assetQueryOrAsset, existingAssets = {
   if (!shouldEnrichIdentity || typeof adapters?.bitget?.resolveSymbol !== "function") {
     return {
       ...baseAsset,
+      inputSymbol: userInputSymbol,
+      identityConfidence: knownAssets[rawInput.toLowerCase()] ? "high" : "medium",
+      needsUserConfirmation: !knownAssets[rawInput.toLowerCase()] && baseAsset.assetType === "unclassified_asset",
+      identityMismatchReason: null,
       updatedAt: nowIso(),
     };
   }
@@ -181,6 +191,27 @@ export async function resolveAssetIdentity(assetQueryOrAsset, existingAssets = {
     if (!resolved?.ok) {
       return {
         ...baseAsset,
+        inputSymbol: userInputSymbol,
+        identityConfidence: knownAssets[rawInput.toLowerCase()] ? "high" : "low",
+        needsUserConfirmation: !knownAssets[rawInput.toLowerCase()],
+        identityMismatchReason: null,
+        updatedAt: nowIso(),
+      };
+    }
+
+    const resolvedSymbol = String(resolved.symbol || "").toUpperCase().trim();
+    const baseSymbol = String(baseAsset.symbol || "").toUpperCase().trim();
+    const symbolsDiffer = resolvedSymbol && baseSymbol && resolvedSymbol !== baseSymbol;
+
+    if (symbolsDiffer && !knownAssets[rawInput.toLowerCase()]) {
+      return {
+        ...baseAsset,
+        inputSymbol: userInputSymbol,
+        resolvedSymbol: resolvedSymbol,
+        identityConfidence: "low",
+        needsUserConfirmation: true,
+        identityMismatchReason: `用户输入 ${userInputSymbol}，外部解析返回 ${resolvedSymbol}，两者不一致，需要用户确认`,
+        tags: mergeTags(baseAsset.tags || [], ["manual-review", "identity-mismatch"]),
         updatedAt: nowIso(),
       };
     }
@@ -213,11 +244,20 @@ export async function resolveAssetIdentity(assetQueryOrAsset, existingAssets = {
         slugify(resolved.name || ""),
         resolved.contractAddress || null
       ),
+      inputSymbol: userInputSymbol,
+      resolvedSymbol: resolvedSymbol || resolved.symbol || null,
+      identityConfidence: knownAssets[rawInput.toLowerCase()] ? "high" : "medium",
+      needsUserConfirmation: !knownAssets[rawInput.toLowerCase()] && baseAsset.assetType === "unclassified_asset",
+      identityMismatchReason: null,
       updatedAt: nowIso(),
     };
   } catch {
     return {
       ...baseAsset,
+      inputSymbol: userInputSymbol,
+      identityConfidence: knownAssets[rawInput.toLowerCase()] ? "high" : "medium",
+      needsUserConfirmation: !knownAssets[rawInput.toLowerCase()],
+      identityMismatchReason: null,
       updatedAt: nowIso(),
     };
   }

@@ -1,5 +1,36 @@
+# Runtime state — never commit real portfolio data
 data/state.json
 data/state.json.tmp
+Lobster状态/state.json
+Lobster状态/state.json.tmp
+
+# Test output artifacts
+源代码/data/*.json
+
+# Logs and OS
 *.log
 .DS_Store
+
+# Dependencies
 node_modules/
+plan/*/node_modules/
+
+# Build outputs
+.vercel
+
+# Secrets — never commit any .env variant
+.env
+.env.*
+.env*.local
+.env*.production
+
+# IDE
+.vscode/
+.idea/
+
+# Sensitive file patterns
+*.pem
+*.key
+credentials.json
+*_secret*
+*_token*

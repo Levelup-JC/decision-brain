@@ -26,7 +26,13 @@ test("service contract exposes lobster-facing tools", async () => {
       "review_sell_intent",
       "run_daily_monitor",
       "log_source",
-      "archive_asset"
+      "archive_asset",
+      "get_portfolio_summary",
+      "get_position_memory",
+      "confirm_investment_thesis",
+      "review_panic_sell",
+      "record_sell_execution",
+      "export_decision_context"
     ]
   );
 

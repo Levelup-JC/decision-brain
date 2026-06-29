@@ -92,32 +92,50 @@ export async function mockChatAPI(message) {
     return "BTC";
   };
 
+  // ── intent classification via keyword + structure matching ──
+  // Note: in LIVE mode the LLM classifier handles ambiguous phrasing naturally.
+  // This mock approximates LLM intent detection for offline/local testing.
+
+  // Research / evaluate
   if (lowered.includes("研究") || lowered.includes("research") || lowered.includes("评估") || lowered.includes("analyze") || lowered.includes("分析")) {
     intent = "evaluate_candidate";
     assetQuery = detectAsset();
     fanout = ["memory", "onchain", "sentiment", "technical", "news", "valuation"];
     const headlines = assetHeadlines(assetQuery);
     reply = `委员会意见：${assetQuery} 身份已确认。${headlines.valuation}。${headlines.sentiment}。综合建议：${assetQuery === "BTC" ? "基准区持有，ETF 持续流入提供支撑，建议继续观察。" : assetQuery === "ETH" ? "基准区下沿，L2 生态增长强劲，可考虑分批加仓。" : "保守区上沿，Firedancer 上线是长期利好，等待确认上升趋势。"}`;
+
+  // Portfolio overview / lookup
   } else if (lowered.includes("持仓") || lowered.includes("总览") || lowered.includes("portfolio") || lowered.includes("我的")) {
     intent = "portfolio_overview";
     fanout = ["memory", "valuation"];
     assetQuery = null;
     reply = "当前持仓总览：BTC 0.15 个 (成本 $87,500，现价 $91,200)，ETH 2.5 个 (成本 $3,800，现价 $4,150)，SOL 50 个 (成本 $142，现价 $168)。组合总估值约 $32,455。BTC/ETH 计划 active，SOL 计划 draft。";
-  } else if (lowered.includes("持有") || lowered.includes("position") || lowered.includes("买了") || lowered.includes("仓位") || lowered.includes("成本") || lowered.includes("bought")) {
+
+  // Manage position: past-tense buys, holds, cost mentions, casual口语 buys
+  } else if (lowered.includes("买了") || lowered.includes("买入") || lowered.includes("持有")
+      || lowered.includes("仓位") || lowered.includes("成本") || lowered.includes("bought")
+      || lowered.includes("hodl")
+      || /买.*[个只枚\d一二两三四五六七八九十]/.test(lowered)) {
     intent = "manage_position";
     assetQuery = detectAsset();
     fanout = ["memory", "valuation"];
     reply = `已记录仓位。${assetQuery} 已纳入持仓。与现有组合整合完毕，draft 计划已生成。`;
+
+  // Confirm / plan
   } else if (lowered.includes("确认") || lowered.includes("confirm") || lowered.includes("计划") || lowered.includes("plan")) {
     intent = "confirm_plan";
     assetQuery = detectAsset();
     fanout = ["memory", "valuation"];
     reply = `${assetQuery} 计划已确认，draft 转 active。按计划执行即可。`;
+
+  // Review add / increase
   } else if (lowered.includes("加仓") || lowered.includes("add") || lowered.includes("增持") || lowered.includes("more")) {
     intent = "review_add";
     assetQuery = detectAsset();
     fanout = ["memory", "valuation", "sentiment"];
     reply = `加仓建议 (${assetQuery})：${assetQuery === "SOL" ? "当前处于保守区上沿，F&G 恐惧区 + Firedancer 利好未完全定价。若突破 $200 确认上升趋势，可考虑分批加仓。核心风险：FTX 遗产清算卖压、Solana 网络稳定性。" : assetQuery === "BTC" ? "当前基准区估值合理，ETF 持续流入。$85,000 以下可考虑加仓。核心风险：宏观流动性收紧、美元走强。" : "当前基准区下沿，L2 生态 TVL 创新高。$3,800 以下可考虑加仓。核心风险：质押解锁抛压、L1 竞争加剧。"}`;
+
+  // Review sell
   } else if (lowered.includes("卖") || lowered.includes("sell") || lowered.includes("减仓") || lowered.includes("reduce")) {
     intent = "review_sell";
     assetQuery = detectAsset();

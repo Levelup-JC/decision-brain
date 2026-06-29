@@ -17,7 +17,7 @@
   - 示例配置与测试
 - `configs/`
   - 可直接参考的 MCP 配置
-  - 当前机器可用的 bundle 配置
+  - 可替换路径的 bundle 配置
   - 可改路径的模板配置
 - `prompts/`
   - 给 OpenClaw 的推荐系统提示词
@@ -61,7 +61,7 @@
 1. 启动：
 
 ```bash
-/Users/jasoncong/Documents/New\ project/decision-brain-openclaw-handoff/scripts/start-decision-brain-http.sh
+./scripts/start-decision-brain-http.sh
 ```
 
 2. 让 OpenClaw 走本地 HTTP 调用：
@@ -76,21 +76,25 @@
 - `POST http://127.0.0.1:4177/api/log-source`
 - `POST http://127.0.0.1:4177/api/archive-asset`
 
-## 4. 当前机器可直接使用的配置
+## 4. 配置路径说明
 
-如果这个交接包不移动路径，优先使用：
+优先使用：
 
 - `configs/decision-brain.bundle.mcpServers.json`
 - `configs/decision-brain.bundle.servers.json`
 
-这两份配置已经指向当前机器上的真实路径。
+这两份配置使用占位路径，接入前必须把下面字段替换成本机真实路径：
 
-如果你把整个包移动到了别的位置，改用：
+- `command`
+- `args[0]`
+- `DECISION_BRAIN_DATA_DIR`
+
+也可以直接参考：
 
 - `configs/decision-brain.template.mcpServers.json`
 - `configs/decision-brain.template.servers.json`
 
-把其中的绝对路径替换掉即可。
+不要把个人机器的完整 home 路径、私人配置路径、API key、token 或钱包信息提交到公开仓库。
 
 ## 5. OpenClaw 应该怎么调用
 

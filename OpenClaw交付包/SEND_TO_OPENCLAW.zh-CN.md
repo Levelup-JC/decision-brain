@@ -76,7 +76,7 @@ OpenClaw 输出时必须如实说明：
 
 - `configs/decision-brain.bundle.mcpServers.json`
 
-如果这个包被移动到了别的位置，改用：
+合并前需要把配置里的占位路径替换成你的本机真实路径。也可以改用：
 
 - `configs/decision-brain.template.mcpServers.json`
 
@@ -88,7 +88,7 @@ OpenClaw 输出时必须如实说明：
 
 - `configs/decision-brain.bundle.servers.json`
 
-如果路径变了，改用：
+合并前需要把配置里的占位路径替换成你的本机真实路径。也可以改用：
 
 - `configs/decision-brain.template.servers.json`
 

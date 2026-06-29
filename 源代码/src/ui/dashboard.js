@@ -1,6 +1,6 @@
 import { addChatBubble, renderSuggestions, onChatSend, initChat } from "./chat.js";
 import { initCommittee, fanoutAgents, agentArrived, synthesizeChief, setDegraded, markAgentTimeout } from "./committee.js";
-import { initPortfolio, startPolling, setStateCache, renderPortfolio, stopPolling } from "./portfolio.js";
+import { initPortfolio, startPolling, setStateCache, setRefreshCallback, renderPortfolio, stopPolling } from "./portfolio.js";
 import { renderKlineChart, hideKlineChart, renderPortfolioChart } from "./charts.js";
 import { mockChatAPI, mockStateAPI } from "./mock-data.js";
 
@@ -41,6 +41,9 @@ const sessionContext = {
   lastPrice: null,
   recentTurns: [],
   pendingPosition: null,
+  pendingAssetConfirmation: null,
+  pendingResetConfirmation: null,
+  lastResearchSummary: null,
 };
 const MAX_RECENT_TURNS = 10;
 
@@ -49,9 +52,25 @@ function updateSessionContext(message, resp) {
   if (resp.assetQuery) {
     sessionContext.lastAsset = resp.assetQuery;
   }
+  // Track last known price for dialog continuity (e.g., "现在的价格就是我的成本")
+  if (resp.lastKnownPrice != null) {
+    sessionContext.lastPrice = resp.lastKnownPrice;
+  }
   // Track pending position for confirmation flow
   if (resp.pendingPosition !== undefined) {
     sessionContext.pendingPosition = resp.pendingPosition;
+  }
+  // Track pending asset confirmation for identity verification flow
+  if (resp.pendingAssetConfirmation !== undefined) {
+    sessionContext.pendingAssetConfirmation = resp.pendingAssetConfirmation;
+  }
+  // Track pending reset confirmation
+  if (resp.pendingResetConfirmation !== undefined) {
+    sessionContext.pendingResetConfirmation = resp.pendingResetConfirmation;
+  }
+  // Track last research summary for dedup (Plan XV)
+  if (resp.lastResearchSummary) {
+    sessionContext.lastResearchSummary = resp.lastResearchSummary;
   }
   sessionContext.recentTurns.push({
     role: "user",
@@ -139,6 +158,9 @@ async function resetDemo() {
   sessionContext.lastPrice = null;
   sessionContext.recentTurns = [];
   sessionContext.pendingPosition = null;
+  sessionContext.pendingAssetConfirmation = null;
+  sessionContext.pendingResetConfirmation = null;
+  sessionContext.lastResearchSummary = null;
   lastGoodState = null;
 
   document.getElementById("chatList").innerHTML = `
@@ -164,6 +186,10 @@ async function resetDemo() {
   initCommittee();
   document.getElementById("dispatchLog").innerHTML =
     '<h3>Chief 调度日志</h3><div class="dispatch-entry"><span class="dl-dot"></span><span class="muted">等待首轮派发...</span></div>';
+  const traceFeed = document.getElementById("traceFeed");
+  if (traceFeed) {
+    traceFeed.innerHTML = '<div class="trace-feed-entry muted">等待 Agent 调度...</div>';
+  }
   setDegraded(false);
 
   // Re-enable chat input
@@ -172,19 +198,34 @@ async function resetDemo() {
   document.getElementById("chatSendBtn").textContent = "发送";
 
   try {
-    const state = await fetchState();
-    const portfolioSummary = await fetchPortfolioSummary();
-    setStateCache(state);
-    renderPortfolio(state, portfolioSummary);
-    renderPortfolioChart(state.positions || []);
-    const firstPos = Object.values(state.positions || {})[0];
-    if (firstPos) renderKlineChart(firstPos.assetSymbol || firstPos.assetId); else hideKlineChart();
+    await refreshPortfolioViews();
   } catch (err) {
-    console.error("reset fetchState failed:", err);
+    console.error("reset refreshPortfolioViews failed:", err);
   }
 
   startPolling(fetchState, fetchPortfolioSummary, 5000);
   updateStatusLabel();
+}
+
+// Unified refresh: fetches state + portfolio summary, updates all views.
+// Used by sendChat, boot, resetDemo, and portfolio submitTrade callback.
+async function refreshPortfolioViews(preferredAsset) {
+  try {
+    const state = await fetchState();
+    const portfolioSummary = await fetchPortfolioSummary();
+    setStateCache(state);
+    renderPortfolio(state, portfolioSummary);
+    renderPortfolioChart(portfolioSummary?.positions || Object.values(state.positions || {}));
+    const asset =
+      preferredAsset ||
+      sessionContext.lastAsset ||
+      portfolioSummary?.positions?.[0]?.symbol ||
+      (Object.values(state.positions || {})[0]?.assetSymbol);
+    if (asset) renderKlineChart(asset);
+    else hideKlineChart();
+  } catch (err) {
+    console.error("refreshPortfolioViews failed:", err);
+  }
 }
 
 async function sendChat(message) {
@@ -209,6 +250,9 @@ async function sendChat(message) {
             lastPrice: sessionContext.lastPrice,
             recentTurns: sessionContext.recentTurns,
             pendingPosition: sessionContext.pendingPosition,
+            pendingAssetConfirmation: sessionContext.pendingAssetConfirmation,
+            pendingResetConfirmation: sessionContext.pendingResetConfirmation,
+            lastResearchSummary: sessionContext.lastResearchSummary,
           },
         }),
         signal: ctrl.signal,
@@ -258,20 +302,8 @@ async function sendChat(message) {
   synthesizeChief(reply);
   setDegraded(!!resp.degraded);
 
-  // Refresh state & charts (best-effort, don't block on failure)
-  try {
-    const state = await fetchState();
-    const portfolioSummary = await fetchPortfolioSummary();
-    setStateCache(state);
-    setTimeout(() => {
-      renderPortfolio(state, portfolioSummary);
-      renderPortfolioChart(state.positions || []);
-      const asset = sessionContext.lastAsset || (Object.values(state.positions || {})[0]?.assetSymbol);
-      if (asset) renderKlineChart(asset); else hideKlineChart();
-    }, 600);
-  } catch (err) {
-    console.error("fetchState failed:", err);
-  }
+  // Refresh state & charts via unified function
+  setTimeout(() => refreshPortfolioViews(sessionContext.lastAsset), 600);
 }
 
 function staggerAgentArrivals(agentResults, trace) {
@@ -297,6 +329,14 @@ async function boot() {
   initCommittee();
   initPortfolio();
 
+  // Init 3D Brain Wireframe (ambient visual, non-functional)
+  if (typeof BrainWireframe !== 'undefined') {
+    new BrainWireframe({
+      container: '#brain-canvas-container',
+      inputSelector: '#chatInput',
+    });
+  }
+
   onChatSend(sendChat);
 
   // Wire up onboarding hint chips
@@ -307,15 +347,11 @@ async function boot() {
     });
   });
 
-  // Initial state
-  const state = await fetchState();
-  const portfolioSummary = await fetchPortfolioSummary();
-  setStateCache(state);
-  renderPortfolio(state, portfolioSummary);
+  // Initial state via unified refresh
+  await refreshPortfolioViews();
 
-  renderPortfolioChart(state.positions || []);
-  const asset = sessionContext.lastAsset || (Object.values(state.positions || {})[0]?.assetSymbol);
-  if (asset) renderKlineChart(asset); else hideKlineChart();
+  // Wire up portfolio submitTrade callback
+  setRefreshCallback(refreshPortfolioViews);
 
   // F3: Live polling
   startPolling(fetchState, fetchPortfolioSummary, 5000);
@@ -333,6 +369,32 @@ async function boot() {
   // Reset button
   document.getElementById("resetBtn").addEventListener("click", () => {
     if (confirm("确定要重置 Demo 状态吗？")) resetDemo();
+  });
+
+  // Export conversation button
+  document.getElementById("exportChatBtn").addEventListener("click", async () => {
+    const sid = "demo-001";
+    const now = new Date();
+    const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const filename = `decision-brain-${sid}-${ts}.md`;
+
+    try {
+      const resp = await fetch(`/api/conversation-log/export?sessionId=${encodeURIComponent(sid)}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const text = await resp.text();
+      const blob = new Blob([text], { type: "text/markdown; charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("导出对话失败:", err.message);
+      alert("导出失败: " + err.message);
+    }
   });
 }
 

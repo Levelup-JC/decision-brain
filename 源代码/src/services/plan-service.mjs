@@ -72,7 +72,7 @@ function parseFloorRatio(planText, asset) {
   return 0.15;
 }
 
-export function buildDraftPlan(asset, position, valuationModel, naturalLanguagePlan, existingPlan) {
+export function buildDraftPlan(asset, position, valuationModel, naturalLanguagePlan, existingPlan, investmentGoalOverrides = {}) {
   const targets = parseTargets(naturalLanguagePlan);
   const floorRatio = parseFloorRatio(naturalLanguagePlan, asset);
   const conservative = valuationModel.scenarios.find((item) => item.name === "conservative");
@@ -181,6 +181,14 @@ export function buildDraftPlan(asset, position, valuationModel, naturalLanguageP
       positionHours: 24
     },
     nextReviewAt: addDays(nowIso(), 30),
-    updatedAt: nowIso()
+    updatedAt: nowIso(),
+    // Plan XVI: investment goal fields
+    investmentGoal: investmentGoalOverrides.investmentGoal || existingPlan?.investmentGoal || null,
+    targetUnits: investmentGoalOverrides.targetUnits ?? existingPlan?.targetUnits ?? null,
+    originalThesis: investmentGoalOverrides.originalThesis || existingPlan?.originalThesis || null,
+    timeHorizon: investmentGoalOverrides.timeHorizon || existingPlan?.timeHorizon || null,
+    userFloorRule: investmentGoalOverrides.floorRule || existingPlan?.userFloorRule || null,
+    sellRules: investmentGoalOverrides.sellRules || existingPlan?.sellRules || [],
+    panicGuard: investmentGoalOverrides.panicGuard || existingPlan?.panicGuard || { enabled: true, lastTriggeredAt: null },
   };
 }
