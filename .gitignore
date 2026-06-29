@@ -23,6 +23,8 @@ plan/*/node_modules/
 .env.*
 .env*.local
 .env*.production
+!.env.example
+!*/.env.example
 
 # IDE
 .vscode/
