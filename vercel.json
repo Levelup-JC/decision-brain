@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "源代码/src/index.mjs": {
-      "includeFiles": "源代码/src/ui/**/*"
-    }
-  }
-}
