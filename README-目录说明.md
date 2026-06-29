@@ -7,7 +7,7 @@
 | 路径 | 说明 |
 |---|---|
 | `README.md` | GitHub 参赛页主 README，面向评委和外部协作者 |
-| `源代码/` | 主应用代码：HTTP 服务、MCP 服务、Dashboard UI、测试、Demo harness |
+| `源代码/` | 主应用代码：HTTP 服务、MCP 服务、Dashboard UI、自动化测试和 Demo 支撑脚本 |
 | `源代码/README.md` | 开发者视角 README，说明运行方式、接口、记忆系统和测试 |
 | `plan/` | 开发计划、验收报告、Demo 脚本、复盘材料 |
 | `assets/` | Logo、视觉素材和项目图片 |
