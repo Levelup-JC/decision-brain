@@ -100,24 +100,6 @@ export async function handleRequest(request, response) {
       return;
     }
 
-    // ── DEBUG: file paths ────────────────────────────────────────────
-    if (request.method === "GET" && url.pathname === "/api/debug-paths") {
-      const { existsSync, readdirSync } = await import("node:fs");
-      const { join } = await import("node:path");
-      const { readdirSync: rd } = await import("node:fs");
-      const paths = {
-        cwd: process.cwd(),
-        uiDir,
-        uiDirExists: existsSync(uiDir),
-        varTaskContents: existsSync("/var/task") ? rd("/var/task").slice(0, 20) : null,
-        srcRootContents: existsSync("/var/task/源代码") ? rd("/var/task/源代码").slice(0, 20) : null,
-        srcSrcContents: existsSync("/var/task/源代码/src") ? rd("/var/task/源代码/src").slice(0, 20) : null,
-        srcUiContents: existsSync("/var/task/源代码/src/ui") ? rd("/var/task/源代码/src/ui").slice(0, 20) : null,
-      };
-      json(response, 200, paths);
-      return;
-    }
-
     if (request.method === "POST" && url.pathname === "/api/reset") {
       await store.clear();
       json(response, 200, { ok: true, message: "State reset" });
