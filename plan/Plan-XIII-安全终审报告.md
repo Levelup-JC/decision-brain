@@ -78,7 +78,7 @@ OpenClaw交付包.zip
 ### 3.1 `源代码/.env`
 
 - **Git tracked：否**（`.gitignore` 有 `.env` 规则且生效）
-- **内容：** 包含一个真实 DeepSeek API key（`sk-4d466e403ee94c07b24b7bf5e651dec6`）
+- **内容：** 包含一个真实 DeepSeek API key（已打码，不在仓库中展示）
 - **风险：** 低。文件未被 Git tracked，不会进入仓库。但**建议上传前轮换该 API key**，确保即使意外提交也无效。
 
 ### 3.2 `Lobster状态/state.json`

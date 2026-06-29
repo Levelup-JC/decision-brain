@@ -150,6 +150,17 @@ export function exportMarkdown(sessionId) {
       lines.push(``);
     }
 
+    if (turn.pendingSellExecution) {
+      const pse = turn.pendingSellExecution;
+      lines.push(`### 待确认卖出记录`);
+      lines.push(``);
+      lines.push(`- Asset: ${pse.assetQuery || "N/A"}`);
+      lines.push(`- Units: ${pse.units || "N/A"}`);
+      lines.push(`- SellPct: ${pse.sellPct || "N/A"}`);
+      lines.push(`- Confirmed: ${pse.confirmed ? "yes" : "no"}`);
+      lines.push(``);
+    }
+
     lines.push(`---`);
     lines.push(``);
   }

@@ -359,7 +359,8 @@ test("fallback-only unknown asset should not produce a casual add recommendation
       units: 500,
       averageCost: 1,
       currentPrice: 1,
-      portfolioValue: 10000
+      portfolioValue: 10000,
+      allowUnconfirmedAsset: true
     });
     await confirmPlan({ assetQuery: "BTW" });
 
@@ -397,7 +398,8 @@ test("refresh research connects to market-data MCP when available and returns re
         units: 500,
         averageCost: 1,
         currentPrice: 1,
-        portfolioValue: 10000
+        portfolioValue: 10000,
+        allowUnconfirmedAsset: true
       });
 
       const refreshed = await refreshResearch({
@@ -436,7 +438,8 @@ test("manual sources should improve research readiness and surface in add ration
       units: 500,
       averageCost: 1,
       currentPrice: 1,
-      portfolioValue: 50000
+      portfolioValue: 50000,
+      allowUnconfirmedAsset: true
     });
 
     await logSource({

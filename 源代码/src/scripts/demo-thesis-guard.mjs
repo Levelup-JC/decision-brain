@@ -95,11 +95,11 @@ async function main() {
   console.log("[8/10] Verifying guardrail reply...");
   const checks = {
     "先别急着执行": reply.includes("先别急着执行"),
-    "投资逻辑": reply.includes("投资逻辑"),
-    "计划边界": reply.includes("计划边界"),
-    "什么情况才该卖": reply.includes("什么情况才该卖") || reply.includes("thesis"),
-    "panic sell / 恐慌卖出": reply.includes("恐慌卖出") || reply.includes("panic"),
-    "暂不卖 / 选项": reply.includes("暂不卖") || reply.includes("1."),
+    "回放入理由": reply.includes("回放当初买入"),
+    "原计划是否失效": reply.includes("原计划是否失效"),
+    "你有三个选择": reply.includes("你有三个选择"),
+    "不会直接改仓位": reply.includes("不会直接把你的仓位改掉"),
+    "暂不卖 / 选项": reply.includes("暂时不卖") || reply.includes("1."),
     "数据来源": reply.includes("数据来源"),
   };
   for (const [check, passed] of Object.entries(checks)) {

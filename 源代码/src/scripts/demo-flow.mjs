@@ -21,6 +21,7 @@ const managed = await managePosition({
   averageCost: 1,
   currentPrice: 1,
   portfolioValue: 10000,
+  allowUnconfirmedAsset: true,
   naturalLanguagePlan: "2x 回本金，3x 卖 30%，保留历史最高持仓 20% 底仓"
 });
 

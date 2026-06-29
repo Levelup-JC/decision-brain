@@ -182,8 +182,16 @@ export function renderPortfolio(state, portfolioSummary) {
   // Asset list from portfolio-summary (preferred), enriched with state data
   const positions = portfolioSummary?.positions || [];
 
-  if (!assetsArr.length && !positions.length) {
-    list.innerHTML = '<div class="muted" style="padding:14px;font-size:13px;text-align:center;">暂未纳入资产。<br>在对话中研究一个资产即可添加。</div>';
+  // Plan XVIII: check both portfolioSummary positions AND state.positions before showing empty.
+  // portfolioSummary can be null on fetch error even when state has real positions.
+  const statePositionsArr = Object.values(state.positions || {});
+  const hasPortfolioData = positions.length > 0 || statePositionsArr.length > 0;
+
+  if (!assetsArr.length && !hasPortfolioData) {
+    const errorMsg = portfolioSummary === null && statePositionsArr.length === 0
+      ? '<div class="muted" style="padding:14px;font-size:13px;text-align:center;">持仓读取失败，请重试</div>'
+      : '<div class="muted" style="padding:14px;font-size:13px;text-align:center;">当前暂无持仓。<br>在对话中研究一个资产即可添加。</div>';
+    list.innerHTML = errorMsg;
     return;
   }
 
@@ -418,8 +426,23 @@ function buildInlineDetail(ctx) {
       <div class="dp-row"><span class="dp-label">当前 FDV</span><span class="dp-value">${formatCompactNumber(fdv)}</span></div>
       <div class="dp-row"><span class="dp-label">估值区间</span><span class="dp-value ${zoneClass(zone)}">${zoneLabel(zone)}</span></div>
       ${pos ? `<div class="dp-row"><span class="dp-label">持仓</span><span class="dp-value">${pos.units ?? 0} 个 / 均价 ${formatUsd(pos.averageCost)} / 总成本 ${formatUsd(pos.costBasisTotal)} / 现价 ${formatUsd(pos.currentPrice)}</span></div>` : ""}
+      ${(pos && pos.currentValue && pos.costBasisTotal) ? (() => {
+        const pnlV = pos.currentValue - pos.costBasisTotal;
+        const pnlP = pos.costBasisTotal > 0 ? (pnlV / pos.costBasisTotal * 100) : 0;
+        return `<div class="dp-row"><span class="dp-label">浮动盈亏</span><span class="dp-value ${pnlV >= 0 ? 'up' : 'down'}">$${pnlV.toFixed(0)} (${pnlP >= 0 ? '+' : ''}${pnlP.toFixed(1)}%)</span></div>`;
+      })() : ""}
       <div class="dp-row"><span class="dp-label">计划状态</span><span class="dp-value">${plan?.status || "无"}</span></div>
     </div>
+
+    ${(mem.investmentGoal || mem.targetUnits != null || mem.originalThesis || mem.floorRule) ? `
+    <div class="dp-section">
+      <div class="dp-section-title">投资目标 (Plan XVI)</div>
+      ${mem.investmentGoal ? `<div class="dp-row"><span class="dp-label">目标</span><span class="dp-value">${mem.investmentGoal}</span></div>` : ""}
+      ${mem.targetUnits != null ? `<div class="dp-row"><span class="dp-label">目标数量</span><span class="dp-value">${mem.targetUnits} 个${mem.goalProgress ? ` (当前 ${mem.goalProgress.label})` : ""}</span></div>` : ""}
+      ${mem.originalThesis ? `<div class="dp-row"><span class="dp-label">初始论题</span><span class="dp-value">${mem.originalThesis}</span></div>` : ""}
+      ${mem.timeHorizon ? `<div class="dp-row"><span class="dp-label">时间跨度</span><span class="dp-value">${mem.timeHorizon}</span></div>` : ""}
+      ${mem.floorRule ? `<div class="dp-row"><span class="dp-label">底仓规则</span><span class="dp-value">最低 ${mem.floorRule.minimumUnits ?? '--'} 个</span></div>` : ""}
+    </div>` : ""}
 
     ${mem.thesis ? `
     <div class="dp-section">

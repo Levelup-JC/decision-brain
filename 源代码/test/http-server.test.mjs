@@ -70,7 +70,7 @@ test("http request handler serves dashboard and lobster workflow endpoints", asy
   await withHttpState(t, async () => {
     const dashboard = await callRoute("GET", "/");
     assert.equal(dashboard.statusCode, 200);
-    assert.match(dashboard.body, /Decision Brain/);
+    assert.match(dashboard.body, /你的投资.*Agent.*团队/);
 
     const health = await callRoute("GET", "/api/health");
     assert.equal(health.statusCode, 200);

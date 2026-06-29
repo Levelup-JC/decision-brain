@@ -16,6 +16,8 @@ const USE_DEMO = (() => {
 
 // Last known good state cache for offline resilience
 let lastGoodState = null;
+// Plan XVIII: cache last valid portfolio summary so UI never flashes empty
+let lastGoodPortfolioSummary = null;
 
 // Preloaded demo state (loaded from demo-state.json)
 let demoStateCache = null;
@@ -107,10 +109,14 @@ async function fetchPortfolioSummary() {
   try {
     const r = await fetch("/api/portfolio-summary");
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.json();
+    const summary = await r.json();
+    if (summary?.ok && summary.totalCount >= 0) {
+      lastGoodPortfolioSummary = summary;
+    }
+    return summary;
   } catch (err) {
     console.error("fetchPortfolioSummary failed:", err.message);
-    return null;
+    return lastGoodPortfolioSummary;
   }
 }
 
@@ -162,6 +168,7 @@ async function resetDemo() {
   sessionContext.pendingResetConfirmation = null;
   sessionContext.lastResearchSummary = null;
   lastGoodState = null;
+  lastGoodPortfolioSummary = null;
 
   document.getElementById("chatList").innerHTML = `
     <div class="chat-msg chief">

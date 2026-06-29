@@ -102,11 +102,11 @@ test("classifyIntent: '我卖掉一个 BTC' → review_sell (ambiguous, ask for 
   assert.equal(r1.slots.assetQuery, "BTC");
 });
 
-test("classifyIntent: '确认记录卖出' → sell_execute (confirmation)", async (t) => {
+test("classifyIntent: '确认记录卖出' → sell_execute_confirmed (confirmation)", async (t) => {
   const { classifyIntent } = await import("../src/chat-orchestrator.mjs");
 
   const r1 = classifyIntent("确认记录卖出");
-  assert.equal(r1.intent, "sell_execute");
+  assert.equal(r1.intent, "sell_execute_confirmed");
 });
 
 test("classifyIntent: 'should I sell BTC' → review_sell (not sell_execute)", async (t) => {

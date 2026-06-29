@@ -1,6 +1,4 @@
 import { createServer as createHttpServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 
 import {
   archiveAsset,
@@ -22,35 +20,20 @@ import {
 } from "./services/api-service.mjs";
 import { resolveAssetIdentity } from "./services/asset-service.mjs";
 import { getAdapters } from "./adapters/index.mjs";
-import { resolveProjectPath } from "./paths.mjs";
+
 import { json, notFound, parseJsonBody, sendHtml, sendText } from "./utils/http.mjs";
 import { isRuleOnly } from "./llm-client.mjs";
 import { runOrchestrator, synthesizeRule, synthesizeWithResults } from "./chat-orchestrator.mjs";
 import { runAgent, runFanoutAgents } from "./agent-runner.mjs";
 import { store } from "./data-store.mjs";
 import { logTurn, getSessionLog, exportMarkdown, listSessions } from "./services/conversation-log-service.mjs";
-
-const uiDir = resolveProjectPath("src", "ui");
-
-const FALLBACK_LOGIN = `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>升级实验室 — 你的投资 Agent 团队</title>
-<link rel="icon" href="decision-brain-logo.png">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#202124;color:#e8eaed;font-family:"Google Sans","Roboto",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center}
-.hero-logo{width:80px;height:auto;margin-bottom:24px}
-h1{font-size:3rem;font-weight:900;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
-h1 span{color:#8ab4f8}
-.sub{font-size:12px;color:#8ab4f8;text-transform:uppercase;letter-spacing:.3em;margin-bottom:48px;opacity:.8}
-.btn{background:transparent;border:1px solid #8ab4f8;color:#8ab4f8;padding:16px 48px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.25em;cursor:pointer;transition:all .3s}
-.btn:hover{background:#8ab4f8;color:#202124;box-shadow:0 0 40px rgba(138,180,248,.1)}
-</style></head><body>
-<img class="hero-logo" src="decision-brain-logo.png" alt="Decision Brain">
-<h1>你的投资<span> Agent </span>团队</h1>
-<div class="sub">升级实验室出品</div>
-<button class="btn" onclick="location.href='/app'">立即体验</button>
-</body></html>`;
+import {
+  LOGIN_HTML,
+  DASHBOARD_HTML,
+  JS_MAP,
+  JSON_MAP,
+  IMAGE_MAP,
+} from "./ui/static-assets.mjs";
 
 function lookupAssetIdInState(assetQuery, state) {
   const normalized = String(assetQuery || "").toUpperCase().trim();
@@ -61,72 +44,51 @@ function lookupAssetIdInState(assetQuery, state) {
   return null;
 }
 
-async function serveDashboard(response) {
-  const html = await readFile(join(uiDir, "dashboard.html"), "utf8");
-  sendHtml(response, html);
-}
-
-async function serveStaticFile(response, filePath, contentType) {
-  const content = await readFile(filePath, "utf8");
-  sendText(response, content, contentType);
-}
-
-async function serveBinaryFile(response, filePath, contentType) {
-  const content = await readFile(filePath);
-  response.writeHead(200, { "content-type": contentType, "cache-control": "public, max-age=3600" });
-  response.end(content);
-}
-
 export async function handleRequest(request, response) {
   try {
     const url = new URL(request.url || "/", "http://127.0.0.1");
 
     if (request.method === "GET" && url.pathname === "/") {
-      try {
-        const html = await readFile(join(uiDir, "login.html"), "utf8");
-        sendHtml(response, html);
-      } catch {
-        sendHtml(response, FALLBACK_LOGIN);
-      }
+      sendHtml(response, LOGIN_HTML);
       return;
     }
 
     if (request.method === "GET" && url.pathname === "/app") {
-      try {
-        await serveDashboard(response);
-      } catch {
-        sendHtml(response, FALLBACK_LOGIN.replace("location.href='/app'", "location.href='/'"));
+      sendHtml(response, DASHBOARD_HTML);
+      return;
+    }
+
+    // Serve .js modules from static bundle
+    if (request.method === "GET" && url.pathname.endsWith(".js")) {
+      const name = url.pathname.replace(/^\//, "");
+      if (JS_MAP[name]) {
+        sendText(response, JS_MAP[name], "application/javascript; charset=utf-8");
+        return;
       }
-      return;
     }
 
-    // Serve any .js module from ui/
-    if (request.method === "GET" && url.pathname.endsWith(".js") && !url.pathname.includes("..")) {
-      try {
-        const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
-        await serveStaticFile(response, filePath, "application/javascript; charset=utf-8");
-      } catch { /* silently skip missing files on Vercel */ }
-      return;
+    // Serve .json files from static bundle
+    if (request.method === "GET" && url.pathname.endsWith(".json")) {
+      const name = url.pathname.replace(/^\//, "");
+      if (JSON_MAP[name]) {
+        sendText(response, JSON_MAP[name], "application/json; charset=utf-8");
+        return;
+      }
     }
 
-    // Serve .json files from ui/ (demo-state.json etc.)
-    if (request.method === "GET" && url.pathname.endsWith(".json") && !url.pathname.includes("..")) {
-      try {
-        const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
-        await serveStaticFile(response, filePath, "application/json; charset=utf-8");
-      } catch { /* silently skip */ }
-      return;
-    }
-
-    // Serve image files from ui/
-    const imgExt = url.pathname.match(/\.(png|svg|jpg|jpeg|webp|ico)$/i);
-    if (request.method === "GET" && imgExt && !url.pathname.includes("..")) {
-      try {
-        const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
+    // Serve image files from static bundle
+    const imgMatch = url.pathname.match(/\/([^/]+\.(png|svg|jpg|jpeg|webp|ico))$/i);
+    if (request.method === "GET" && imgMatch) {
+      const name = imgMatch[1];
+      const b64 = IMAGE_MAP[name];
+      if (b64) {
+        const ext = imgMatch[2].toLowerCase();
         const mimeTypes = { png: "image/png", svg: "image/svg+xml", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", ico: "image/x-icon" };
-        await serveBinaryFile(response, filePath, mimeTypes[imgExt[1].toLowerCase()] || "application/octet-stream");
-      } catch { /* silently skip missing images on Vercel */ }
-      return;
+        const buf = Buffer.from(b64, "base64");
+        response.writeHead(200, { "content-type": mimeTypes[ext] || "application/octet-stream", "cache-control": "public, max-age=3600" });
+        response.end(buf);
+        return;
+      }
     }
 
     if (request.method === "GET" && url.pathname === "/api/health") {
@@ -279,11 +241,11 @@ export async function handleRequest(request, response) {
 
       const orchestration = await runOrchestrator(body.message, sessionId || "stateless", context);
 
-      // C组: lookup_memory with no specific asset → portfolio overview, skip fanout
-      // Also trigger when message is clearly a portfolio-wide query even if
-      // Layer 2 fallback assigned a recent asset (e.g. "我的持仓总览" → BTC from traces)
+      // Plan XVIII: portfolio overview must always use getPortfolioSummary() as
+      // source of truth. The regex match overrides intent classification so
+      // even if LLM misclassifies the message, the user always sees real holdings.
       const isPortfolioQuery = /持仓总览|投资总览|全部.*仓|投资组合|portfolio.*overview|总览|之前.*买|历史.*仓|买了什么|买过什么|投了什么|什么仓位|我.*持仓|我.*仓位|做过什么/.test(body.message);
-      if (orchestration.intent === "lookup_memory" && (!orchestration.assetQuery || isPortfolioQuery)) {
+      if (isPortfolioQuery || (orchestration.intent === "lookup_memory" && !orchestration.assetQuery)) {
         try {
           const summary = await getPortfolioSummary();
           if (summary.totalCount === 0) {
@@ -292,17 +254,28 @@ export async function handleRequest(request, response) {
             const lines = summary.positions.map((p, i) => {
               const planLabel = p.plan?.status === "active" ? "活跃监控中"
                 : p.plan?.status === "draft" ? "draft (待确认)" : "无计划";
-              const zoneLabel = p.valuationZone ? `，估值区间: ${p.valuationZone}` : "";
-              const costInfo = p.averageCost ? `，成本 $${p.averageCost}` : "";
-              const reasonInfo = p.reason ? `，理由: ${p.reason}` : "";
-              const mcapInfo = p.latestMetrics?.marketCap
-                ? `，市值 $${(p.latestMetrics.marketCap / 1e9).toFixed(1)}B` : "";
-              return `${i + 1}. ${p.symbol}: 持有 ${p.units} 个${costInfo}，当前价 $${p.currentPrice}${mcapInfo}，计划状态: ${planLabel}${zoneLabel}${reasonInfo}`;
+              const costInfo = p.averageCost ? `成本 $${p.averageCost}` : "成本 --";
+              const valueInfo = p.currentValue ? `当前价值 $${p.currentValue}` : "";
+              const costBasisInfo = p.costBasisTotal ? `成本基础 $${p.costBasisTotal}` : "";
+              const pnlVal = p.currentValue && p.costBasisTotal
+                ? p.currentValue - p.costBasisTotal : null;
+              const pnlPct = p.costBasisTotal && p.costBasisTotal > 0 && pnlVal != null
+                ? ((pnlVal / p.costBasisTotal) * 100) : null;
+              const pnlInfo = pnlVal != null
+                ? `浮动${pnlVal >= 0 ? "盈利 +" : "亏损 "}$${Math.abs(pnlVal).toFixed(0)} (${pnlPct != null ? (pnlPct >= 0 ? "+" : "") + pnlPct.toFixed(1) + "%" : "--"})`
+                : "";
+              const reasonInfo = p.reason ? `理由: ${p.reason}` : "";
+              const goalInfo = p.plan?.investmentGoal ? `目标: ${p.plan.investmentGoal}` : "";
+              const zoneLabel = p.valuationZone ? `估值区间: ${p.valuationZone}` : "";
+              return `${i + 1}. ${p.symbol}: 持有 ${p.units} 个，${costInfo}，当前价 $${p.currentPrice}${valueInfo ? "，" + valueInfo : ""}${costBasisInfo ? "，" + costBasisInfo : ""}${pnlInfo ? "，" + pnlInfo : ""}，计划: ${planLabel}${zoneLabel ? "，" + zoneLabel : ""}${reasonInfo ? "，" + reasonInfo : ""}${goalInfo ? "，" + goalInfo : ""}`;
             });
             const statusParts = [];
             if (summary.activeCount > 0) statusParts.push(`${summary.activeCount} 个活跃`);
             if (summary.draftCount > 0) statusParts.push(`${summary.draftCount} 个待确认`);
-            orchestration.reply = `你的投资组合共 ${summary.totalCount} 个仓位 (${statusParts.join("，")}):\n\n${lines.join("\n")}\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。`;
+            const pnlLine = summary.unrealizedPnl !== 0
+              ? `\n浮动${summary.unrealizedPnl >= 0 ? "盈利" : "亏损"}: $${summary.unrealizedPnl} (${summary.unrealizedPnlPct >= 0 ? "+" : ""}${summary.unrealizedPnlPct}%)`
+              : "";
+            orchestration.reply = `你的投资组合共 ${summary.totalCount} 个仓位 (${statusParts.join("，")})，总价值 $${summary.totalPositionValue.toFixed(0)}${pnlLine}:\n\n${lines.join("\n")}\n\n以上数据来自你的持仓记录与投资计划。如需查看某个资产的详细计划或估值，可以直接问我具体资产。`;
           }
         } catch {
           orchestration.reply = "暂时无法读取持仓数据，请稍后重试。";
@@ -419,10 +392,23 @@ export async function handleRequest(request, response) {
         }
       }
 
-      // ── sell_execute: record executed sell, reduce position ──────────
+      // ── Safety net: review_sell MUST NEVER mutate positions ─────────
+      if (orchestration.intent === "review_sell") {
+        // Guaranteed no-op: review_sell only does analysis/advice.
+        // No managePosition call is reachable from this path.
+      }
+
+      // ── sell_execute (draft): user says they sold, but NO mutation yet ──
+      // Only creates pendingSellExecution draft. Actual mutation requires
+      // sell_execute_confirmed with existing draft.
       if (orchestration.intent === "sell_execute" && orchestration.assetQuery) {
+        // Draft created in orchestrator — no position mutation here.
+        // synthesizeRule already returns the confirmation prompt.
+      }
+
+      // ── sell_execute_confirmed: only path that triggers managePosition("sell") ──
+      if (orchestration.intent === "sell_execute_confirmed" && orchestration.assetQuery) {
         const pse = orchestration.pendingSellExecution || context.pendingSellExecution;
-        const isConfirmMsg = /^确认记录卖出$/i.test(body.message.trim());
 
         if (pse && pse.confirmed && pse.units) {
           try {
@@ -442,10 +428,8 @@ export async function handleRequest(request, response) {
             console.error("sellExecute failed:", err.message);
             orchestration.reply = `卖出记录失败：${err.message}。`;
           }
-        } else if (isConfirmMsg && pse && !pse.units) {
-          orchestration.reply = `请先说明卖出数量，例如"已经卖了 1 个 BTC"。`;
         }
-        // Otherwise: confirmation prompt already set by orchestrator synthesizeRule
+        // Without pending draft: synthesizeRule already returned rejection message
       }
 
       // confirm_plan: actually confirm the draft plan in state
@@ -519,6 +503,7 @@ export async function handleRequest(request, response) {
         slots: orchestration.slots,
         pendingPosition: orchestration.pendingPosition,
         pendingAssetConfirmation: orchestration.pendingAssetConfirmation,
+        pendingSellExecution: orchestration.pendingSellExecution,
         fanout: orchestration.fanout,
         dispatchPlan: orchestration.dispatchPlan,
         agentResults: orchestration.agentResults,

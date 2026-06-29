@@ -11,6 +11,7 @@ const VALID_INTENTS = [
   "review_add",
   "review_sell",
   "sell_execute",
+  "sell_execute_confirmed",
   "run_monitor",
   "log_source",
   "archive",
@@ -31,6 +32,7 @@ const INTENT_FANOUT = {
   review_add: ["asset_info", "memory", "valuation", "sentiment", "technical"],
   review_sell: ["asset_info", "memory", "valuation", "sentiment", "technical"],
   sell_execute: ["memory"],
+  sell_execute_confirmed: [],
   refresh_research: ["macro", "onchain", "sentiment", "technical", "news"],
   lookup_memory: ["memory"],
   confirm_plan: [],
@@ -182,7 +184,7 @@ const LOWER_STOPWORDS = new Set([
 ]);
 
 function extractSlotsRule(message, context = {}, intent = null) {
-  const slots = { assetQuery: null, units: null, averageCost: null, sellPct: null, reason: null, correctAssetQuery: null };
+  const slots = { assetQuery: null, units: null, averageCost: null, sellPct: null, reason: null, correctAssetQuery: null, userMentionedPrice: null };
 
   const pctMatch = message.match(/(\d+(?:\.\d+)?)\s*%/);
   if (pctMatch) slots.sellPct = parseFloat(pctMatch[1]);
@@ -282,6 +284,12 @@ function extractSlotsRule(message, context = {}, intent = null) {
     ];
     slots.panicFlag = panicPatterns.some((re) => re.test(message));
 
+    // Extract user-mentioned current price (e.g. "跌到6万" → 60000, "现在3万" → 30000)
+    const priceMentionMatch = message.match(/(?:跌到|跌至|跌到只剩|已经跌到|现在|当前|只剩|降到|跌成)\s*(\d+(?:\.\d+)?)\s*(万|[wW])/);
+    if (priceMentionMatch) {
+      slots.userMentionedPrice = parseFloat(priceMentionMatch[1]) * 10000;
+    }
+
     // Planned sell: user explicitly preparing to sell with quantity (not panic, not already executed)
     if (!slots.panicFlag) {
       const plannedPatterns = [
@@ -314,7 +322,7 @@ function classifyIntentRule(message) {
 
   // Reset portfolio: "清空所有资产", "重置全部仓位", "清除整个投资组合"
   // Also fire on confirmation "确认清空" or standalone "清空全部"
-  if (/^确认记录卖出$/i.test(message.trim())) return "sell_execute";
+  if (/^确认记录卖出$/i.test(message.trim())) return "sell_execute_confirmed";
   if (/^确认清空$/i.test(message.trim()) || /^确认重置$/i.test(message.trim())) return "reset_portfolio";
   if (/(?:清空|清除|重置|reset|clear).*(?:所有|全部|整个|all|everything|全部|整个)/.test(lower) &&
       /(?:资产|仓位|投资组合|持仓|position|portfolio|asset)/.test(lower)) return "reset_portfolio";
@@ -452,8 +460,9 @@ export function planFanout(intent) {
   return INTENT_FANOUT[intent] || [];
 }
 
-// Panic sell guardrail: 5-part reply that references original thesis, plan boundaries, and floor rules
-async function buildPanicSellReply(assetQuery, position, plan, valuationModel, currentPrice) {
+// Panic sell guardrail: 6-part reply that references original thesis, plan boundaries,
+// Bitget Agent data, and guarantees position won't be mutated
+async function buildPanicSellReply(assetQuery, position, plan, valuationModel, currentPrice, agentResults = [], userMentionedPrice = null) {
   const assetLabel = assetQuery || "该资产";
   const units = position?.units ?? "?";
   const avgCost = position?.averageCost != null ? `$${position.averageCost}` : "未知";
@@ -469,79 +478,159 @@ async function buildPanicSellReply(assetQuery, position, plan, valuationModel, c
   const targetUnits = plan?.targetUnits ?? null;
   const originalThesis = plan?.originalThesis || reason || null;
 
-  const priceLine = currentPrice != null ? `当前价格 $${currentPrice}` : "";
+  const priceLine = currentPrice != null ? `$${currentPrice}` : "暂无实时价格";
   const costLine = `平均成本 ${avgCost}`;
   const unrealized = currentPrice != null && position?.averageCost != null
-    ? `${(((currentPrice - position.averageCost) / position.averageCost) * 100).toFixed(1)}%`
+    ? (((currentPrice - position.averageCost) / position.averageCost) * 100).toFixed(1)
     : null;
 
-  // Part 1: 先别急着执行
-  let reply = `【先别急着执行】\n`;
-  reply += `你持有 ${assetLabel} ${units} 个，${costLine}。${priceLine}${unrealized ? `，浮动 ${unrealized}` : ""}。\n`;
-  reply += `在做出卖出决定之前，请先回看你的原始投资逻辑。市场下跌时的情绪化操作是散户亏损的主要原因。\n`;
+  // ── Extract Bitget Agent data ──
+  const assetInfoAgent = agentResults.find((r) => r.role === "asset_info");
+  const sentimentAgent = agentResults.find((r) => r.role === "sentiment");
+  const technicalAgent = agentResults.find((r) => r.role === "technical");
+  const memoryAgent = agentResults.find((r) => r.role === "memory");
 
-  // Plan XVI: show goal progress when target is set
+  const mcpPrice = assetInfoAgent?.data?.currentMetrics?.price ?? currentPrice;
+  const mcpOk = assetInfoAgent?.data?.mcpOk ?? false;
+  const sentimentFindings = sentimentAgent?.data?.findings || [];
+  const technicalFindings = technicalAgent?.data?.findings || [];
+
+  // ── Part 1: 先别急着执行 ──
+  let reply = `【先别急着执行】\n`;
+  reply += `你持有 ${assetLabel} ${units} 个，${costLine}。`;
+  if (currentPrice != null) {
+    reply += `实时价格 ${priceLine}${unrealized ? `，浮动 ${unrealized}` : ""}。`;
+  } else {
+    reply += `当前暂无实时价格数据。`;
+  }
+  reply += `\n在做出卖出决定之前，请先回看你的原始投资逻辑。市场下跌时的情绪化操作是散户亏损的主要原因。\n`;
+
+  // Goal progress
   if (targetUnits != null) {
     const goalLabel = investmentGoal || `囤 ${targetUnits} 个 ${assetLabel}`;
-    reply += `\n你原来的目标是：${goalLabel}。\n`;
-    reply += `当前进度是：${units} / ${targetUnits}${typeof units === "number" && units >= targetUnits ? " (已达标)" : ""}。\n`;
+    reply += `\n你的投资目标是：${goalLabel}。`;
+    reply += `当前进度：${units} / ${targetUnits}${typeof units === "number" && units >= targetUnits ? " (已达标)" : "，尚未完成"}。\n`;
   }
 
-  // Part 2: 回看你最初的投资逻辑
-  reply += `\n【回看你最初的投资逻辑】\n`;
+  // ── Part 2: 回放当初买入的理由 ──
+  reply += `\n【我先帮你回放当初买入这笔 ${assetLabel} 的理由｜回看你最初的投资逻辑】\n`;
   if (originalThesis) {
-    reply += `你最初的投资逻辑是：${originalThesis}\n`;
+    reply += `你当初买入 ${assetLabel} 的逻辑是：${originalThesis}\n`;
+  } else if (reason) {
+    reply += `你当初给出的买入理由是：${reason}\n`;
   } else if (thesis.length > 0) {
-    reply += `你为 ${assetLabel} 设定的 thesis：${thesis.join("；")}\n`;
+    reply += `系统记录的 ${assetLabel} thesis：${thesis.join("；")}\n`;
   } else {
-    reply += `我还没有你的原始投资逻辑。如果你补充一条 thesis，我能更准确地判断当前下跌是否改变了基本面。\n`;
+    reply += `我暂时还没有你的原始投资逻辑记录，缺少投资逻辑会让卖出判断更容易被短期情绪带偏。如果你能补充一条 thesis，我能更准确地判断这次下跌是暂时波动还是基本面变化。\n`;
   }
 
-  // Plan XVI: thesis validity question
-  reply += `\n现在需要先判断：这个 thesis 是否失效？\n`;
-  if (thesisInvalidators.length > 0) {
-    reply += `你此前设定的 thesis 失效条件：${thesisInvalidators.join("；")}\n`;
+  if (investmentGoal) {
+    reply += `你的投资目标是：${investmentGoal}\n`;
   }
-  reply += `如果只是短期价格下跌，而 thesis 没有失效，这更像恐慌卖出。\n`;
+  if (position?.averageCost != null) {
+    reply += `你的成本价是 ${avgCost}。`;
+    if (currentPrice != null && position.averageCost > 0) {
+      const dropPct = (((position.averageCost - currentPrice) / position.averageCost) * 100).toFixed(1);
+      if (currentPrice < position.averageCost) {
+        reply += `相比成本下跌了约 ${dropPct}%。`;
+      } else {
+        reply += `目前仍在成本价之上。`;
+      }
+    }
+    reply += `\n`;
+  }
 
-  // Part 3: 计划边界
+  // ── Part 3: 当前发生了什么变化 ──
+  reply += `\n【当前发生了什么变化】\n`;
+
+  // Price contradiction handling
+  if (userMentionedPrice != null && currentPrice != null) {
+    const userPrice = Number(userMentionedPrice);
+    const livePrice = Number(currentPrice);
+    if (Math.abs(userPrice - livePrice) / Math.max(userPrice, livePrice) > 0.1) {
+      reply += `你提到价格约为 $${userPrice}，但实时数据源显示当前价格约为 $${livePrice}。以下分析先按实时数据 $${livePrice} 进行判断。如果实时数据有延迟，请以你实际看到的为准。\n`;
+    } else {
+      reply += `当前实时价格 $${livePrice}，与你提到的价格基本一致。\n`;
+    }
+  } else if (userMentionedPrice != null && currentPrice == null) {
+    reply += `你提到价格约 $${userMentionedPrice}。由于实时数据暂不可用，以下按你口述的价格场景做压力测试。\n`;
+  } else if (currentPrice != null) {
+    reply += `实时价格 ${priceLine}。`;
+    if (position?.averageCost != null && currentPrice < position.averageCost) {
+      const dropPct = (((position.averageCost - currentPrice) / position.averageCost) * 100).toFixed(1);
+      reply += `相比你的成本 ${avgCost}，当前浮亏约 ${dropPct}%。`;
+    }
+    reply += `\n`;
+  }
+
+  // Bitget Agent insights
+  if (mcpOk) {
+    if (sentimentFindings.length > 0) {
+      reply += `\n市场情绪（Bitget MCP · Sentiment Agent）：${sentimentFindings[0]}\n`;
+    }
+    if (technicalFindings.length > 0) {
+      reply += `技术面（Bitget MCP · Technical Agent）：${technicalFindings[0]}\n`;
+    }
+  } else if (assetInfoAgent && !mcpOk) {
+    reply += `\nBitget MCP 实时数据暂不可用，以下分析基于本地记忆。\n`;
+  }
+
+  // Memory Agent
+  if (memoryAgent?.headline) {
+    reply += `\n本地记忆（Decision Brain · Memory Agent）：${memoryAgent.headline}\n`;
+  }
+
+  // ── Part 4: 原计划是否失效 ──
+  reply += `\n【原计划是否失效？】\n`;
+  if (originalThesis || thesis.length > 0) {
+    reply += `你当时的判断核心是：${originalThesis || thesis.join("；")}\n\n`;
+    reply += `现在需要诚实地回答：这个逻辑在今天还成立吗？\n`;
+    if (thesisInvalidators.length > 0) {
+      reply += `你此前设定的 thesis 失效条件：${thesisInvalidators.join("；")}\n`;
+    }
+    reply += `如果只是价格下跌而 thesis 没有变化，这次卖出的理由就不够充分，更像情绪驱动的恐慌卖出。\n`;
+    reply += `反之，如果你的投资逻辑已经被破坏（例如 BTC 基本面发生了根本变化），那么重新评估仓位是理性的。\n`;
+  } else {
+    reply += `因为你还没有记录投资 thesis，我无法帮你判断原计划是否失效。建议你先补充一条投资逻辑，再做卖出决策。\n`;
+  }
+
+  // Plan boundaries
   reply += `\n【计划边界】\n`;
   if (plan && plan.status === "active") {
-    reply += `你的 ${assetLabel} 投资计划当前为 active 状态。\n`;
-    if (sellZone) reply += `卖出区设定：${sellZone}\n`;
-    if (floorUnits != null) reply += `底仓要求：至少保留 ${floorUnits} 个 ${assetLabel}\n`;
-    if (plan.monitoringPolicy?.sellThresholdPct != null) {
-      reply += `监控减仓阈值：${plan.monitoringPolicy.sellThresholdPct}%\n`;
+    reply += `你的 ${assetLabel} 投资计划为 active 状态。`;
+    if (sellZone && sellZone !== "未设定") reply += `卖出区设定：${sellZone}。`;
+    if (floorUnits != null && units !== "?" && typeof units === "number") {
+      reply += `底仓要求：至少保留 ${floorUnits} 个。`;
     }
-  } else {
-    reply += `${assetLabel} 暂无 active 投资计划，缺少卖出边界参考。建议先确认计划，再做卖出决策。\n`;
+    reply += `\n`;
   }
 
-  // Part 4: 什么情况才该卖
   reply += `\n【什么情况才该卖】\n`;
-  reply += `卖出决策应该基于 thesis 是否被破坏，而不是短期价格波动。以下情况才应认真考虑卖出：\n`;
-  reply += `1. 你的投资逻辑已经不成立（thesis invalidated）\n`;
-  reply += `2. 估值已进入你设定的卖出区${sellZone !== "未设定" ? `（${sellZone}）` : ""}\n`;
-  reply += `3. 仓位占比过大，需要分散风险\n`;
-  reply += `4. 发现了更值得配置的替代标的\n`;
+  reply += `卖出应该基于 thesis 是否被破坏、估值是否进入卖出区、仓位是否超过风险承受能力，而不是只基于短期下跌。\n`;
 
-  // Part 5: 克制选项 (Plan XVI: numbered options)
-  reply += `\n【现在建议】\n`;
+  // ── Part 5: 你有三个选择 ──
+  reply += `\n【你有三个选择｜现在建议】\n`;
   if (originalThesis || thesis.length > 0) {
-    reply += `1. 暂不卖，先按原计划观察\n`;
-    if (floorUnits != null && units !== "?" && units > floorUnits) {
-      reply += `2. 如果必须降风险，只卖小比例，至少保留 ${floorUnits} 个底仓\n`;
-      reply += `3. 设置复查条件，而不是情绪化清仓\n`;
+    reply += `1. 暂时不卖，按原计划继续观察。如果你的目标仍是 ${targetUnits != null ? `${targetUnits} 个 ${assetLabel}` : `持有 ${assetLabel}`}，那么此刻不应该因为恐慌直接清仓。你可以设定一个复查条件（例如"价格回到 $X"或"下周重新评估"），而不是在情绪最紧张的时候做决定。\n`;
+    if (floorUnits != null && units !== "?" && typeof units === "number" && units > floorUnits) {
+      reply += `2. 如果必须降低风险，只卖小比例（不超过 ${units - floorUnits} 个），至少保留 ${floorUnits} 个底仓。卖出一部分可以缓解焦虑，但不会让你完全踏空。\n`;
     } else {
-      reply += `2. 如果必须操作，设置复查条件而不是情绪化卖出\n`;
-      reply += `3. 冷静后重新评估 thesis 和估值区间\n`;
+      reply += `2. 如果确实需要操作，卖出一小部分来缓解压力，但保留大部分仓位。等你冷静后再重新评估。\n`;
     }
+    reply += `3. 如果经过冷静复盘，你确认 thesis 确实已经失效或你的投资目标已经改变，那么按计划减仓是理性的。但请在复盘后说"我已经卖了 X 个 ${assetLabel}"，系统会生成待确认记录，不会直接改仓位。\n`;
   } else {
-    reply += `1. 先补一条投资 thesis，再做卖出判断\n`;
-    reply += `2. 在没有 thesis 的情况下，暂不做大幅卖出操作\n`;
-    reply += `3. 可以设定一个价格或时间条件来复查\n`;
+    reply += `1. 先补充你的投资 thesis，再做卖出判断\n`;
+    reply += `2. 在没有明确的投资逻辑之前，不建议做大幅卖出操作\n`;
+    reply += `3. 可以设定一个价格或时间条件来触发复查\n`;
   }
-  reply += `\n\n数据来源：Decision Brain 本地记忆。以上不是自动交易指令，不构成投资建议。`;
+
+  // ── Part 6: 不直接改仓位的保证 ──
+  reply += `\n【如果你仍要记录卖出】\n`;
+  reply += `我不会直接把你的仓位改掉。如果你已经完成卖出，请说"我已经卖了 X 个 ${assetLabel}"，我会先生成一条待确认记录，只有你回复"确认记录卖出"后才会更新持仓。这只是投资复盘和建议，不是自动交易指令。\n`;
+
+  reply += `\n数据来源：Decision Brain 本地记忆`;
+  if (mcpOk) reply += ` + Bitget MCP（Asset Info / Sentiment / Technical）`;
+  reply += `。以上不是自动交易指令，不构成投资建议。`;
 
   return reply;
 }
@@ -666,7 +755,7 @@ export function synthesizeRule(intent, agentResults, slots, context = {}) {
         ? `\n当前估值区间: ${sellCmp.zoneLabel}，实时价格 ${sellCmp.currentPrice || "暂无"}，FDV ${sellCmp.currentFdv || "暂无"}`
         : "";
       if (slots.panicFlag) {
-        return `【先别急着执行】\n你正在考虑卖出 ${assetLabel}。在做出决定之前，请先回看你的原始投资目标和计划边界。\n\n【回看你最初的投资逻辑】\n请检查你当初为什么投资 ${assetLabel}，这个理由是否依然成立。如果只是短期价格下跌而 thesis 没有失效，这更像恐慌卖出。\n\n【计划边界】\n请确认你的 ${assetLabel} 投资计划中设定的卖出区和底仓规则。\n\n【建议】\n1. 暂不卖，先按原计划观察\n2. 如果必须降风险，只卖小比例\n3. 设置复查条件，而不是情绪化清仓\n\n数据来源：Bitget MCP + Decision Brain 本地记忆。以上不是自动交易指令。`;
+        return `【先别急着执行】\n你正在考虑卖出 ${assetLabel}。在做出决定之前，请先回看你的原始投资目标和计划边界。市场下跌时的情绪化操作是散户亏损的主要原因。\n\n【我先帮你回放当初买入这笔 ${assetLabel} 的理由｜回看你最初的投资逻辑】\n请检查你当初为什么投资 ${assetLabel}，你的投资目标和成本价是什么，这个理由是否依然成立。\n\n【原计划是否失效？】\n如果只是短期价格下跌而 thesis 没有失效，这更像情绪驱动的恐慌卖出。反之，如果你的投资逻辑已经被破坏，重新评估仓位是理性的。\n\n【计划边界】\n请确认你的底仓要求、卖出区间和 thesis 失效条件。\n\n【什么情况才该卖】\n卖出应该基于 thesis 是否被破坏、估值是否进入卖出区、仓位是否超过风险承受能力，而不是只基于短期下跌。\n\n【你有三个选择｜现在建议】\n1. 暂时不卖，按原计划继续观察，设定复查条件而不是在情绪最紧张的时候做决定\n2. 如果必须降低风险，只卖小比例，保留底仓\n3. 如果确认 thesis 已失效，说"我已经卖了 X 个 ${assetLabel}"，系统会生成待确认记录\n\n【如果你仍要记录卖出】\n我不会直接改仓位。请说"我已经卖了 X 个 ${assetLabel}"，确认后才会更新持仓。这只是投资复盘和建议，不是自动交易指令。\n\n数据来源：Decision Brain 本地记忆。以上不是自动交易指令。`;
       }
       if (slots.plannedSellFlag) {
         const sellQty = slots.units ? ` ${slots.units} 个` : (slots.sellPct ? ` ${slots.sellPct}%` : "");
@@ -681,7 +770,17 @@ export function synthesizeRule(intent, agentResults, slots, context = {}) {
       const soldUnits = slots.units || 0;
       const sellPct = slots.sellPct;
       const qtyStr = soldUnits > 0 ? ` ${soldUnits} 个` : (sellPct ? ` ${sellPct}%` : "");
-      return `【当前状态】\n你已卖出 ${assetLabel}${qtyStr}。要记录这笔卖出吗？记录后你的 ${assetLabel} 持仓数量和成本将自动更新。\n\n请回复"确认记录卖出"来写入，或回复"取消"。\n\n数据来源：Bitget MCP + Decision Brain 本地记忆。以上不是自动交易指令。`;
+      return `【当前状态】\n你已卖出 ${assetLabel}${qtyStr}。要记录这笔卖出吗？\n\n注意：在回复"确认记录卖出"之前，你的持仓不会发生任何变化。\n\n请回复"确认记录卖出"来写入，或回复"取消"。\n\n数据来源：Bitget MCP + Decision Brain 本地记忆。以上不是自动交易指令。`;
+    }
+    case "sell_execute_confirmed": {
+      const pse = context.pendingSellExecution;
+      if (!pse) {
+        return `当前没有待确认的卖出记录。如果你确实已经卖出资产，请先说明卖出详情，例如"已经卖了 0.15 BTC，帮我记录"。`;
+      }
+      if (!pse.units) {
+        return `请先说明卖出数量，例如"已经卖了 1 个 BTC"。`;
+      }
+      return `正在记录卖出：${assetLabel} ${pse.units} 个。持仓即将更新。`;
     }
     case "run_monitor":
       return `【当前状态】\n正在对 ${assetLabel} 执行监控检查，获取实时数据并与计划阈值对比。\n\n【关键证据】\n1. 已识别资产：${assetLabel}\n2. 已触发 asset_info + memory Agent\n3. 实时数据与本地计划阈值正在加载中\n\n【风险与缺口】\n尚未获取实时价格、FDV 及计划阈值对比结果。\n\n【下一步建议】\n等待数据返回后，对比实时数据与计划阈值再给出具体建议。\n\n数据来源：Bitget MCP + Decision Brain 本地记忆。以上不是自动交易指令。`;
@@ -732,7 +831,7 @@ async function classifyIntentLLM(message, context = {}) {
 
   const systemPrompt = `You are an investment agent intent classifier. Given a user message (Chinese or English), output ONLY a JSON object:
 {
-  "intent": "one of: lookup_memory, evaluate_candidate, manage_position, refresh_research, confirm_plan, review_add, review_sell, run_monitor, log_source, archive, get_context, smalltalk, lookup_asset_info, strategy_dialogue, asset_identity_confirmation, correct_asset_identity, remove_position, reset_portfolio, unknown",
+  "intent": "one of: lookup_memory, evaluate_candidate, manage_position, refresh_research, confirm_plan, review_add, review_sell, sell_execute, sell_execute_confirmed, run_monitor, log_source, archive, get_context, smalltalk, lookup_asset_info, strategy_dialogue, asset_identity_confirmation, correct_asset_identity, remove_position, reset_portfolio, unknown",
   "assetQuery": "ticker or null",
   "units": number or null,
   "averageCost": number or null,
@@ -1297,7 +1396,8 @@ function buildDialogFrame(intent, assetQuery, method, context = {}) {
     confirm_plan: asset ? `用户正在确认 ${asset} 的投资计划` : "用户正在确认投资计划",
     review_add: asset ? `用户正在评估 ${asset} 的加仓机会` : "用户正在评估加仓机会",
     review_sell: asset ? `用户正在评估 ${asset} 的卖出决策` : "用户正在评估卖出决策",
-    sell_execute: asset ? `用户已经卖出 ${asset}，要求记录` : "用户已经卖出资产，要求记录",
+    sell_execute: asset ? `用户已经卖出 ${asset}，要求记录（待确认）` : "用户已经卖出资产，要求记录（待确认）",
+    sell_execute_confirmed: asset ? `用户确认记录 ${asset} 的卖出` : "用户确认记录卖出",
     run_monitor: asset ? `用户正在检查 ${asset} 的监控状态` : "用户正在检查监控状态",
     lookup_asset_info: asset ? `用户正在查询 ${asset} 的基本信息` : "用户正在查询资产信息",
     lookup_memory: "用户正在查看投资组合与记忆",
@@ -1320,7 +1420,8 @@ function buildDialogFrame(intent, assetQuery, method, context = {}) {
     confirm_plan: "activate_plan",
     review_add: "compare_plan_with_live_data",
     review_sell: "compare_plan_with_live_data",
-    sell_execute: "record_sell_execution",
+    sell_execute: "record_sell_draft",
+    sell_execute_confirmed: "record_sell_execution",
     run_monitor: "compare_plan_with_live_data",
     lookup_asset_info: "fetch_asset_data",
     lookup_memory: "query_memory",
@@ -1635,19 +1736,24 @@ export async function runOrchestrator(message, sessionId, context = {}) {
     }
   }
 
-  // ── Pending sell execution flow ────────────────────────────────
+  // ── Pending sell execution flow (3-layer state machine) ──────────
+  // Layer 1: review_sell — ONLY review, NEVER creates pendingSellExecution
+  // Layer 2: sell_execute (draft) — user says they already sold, creates draft
+  // Layer 3: sell_execute_confirmed — needs existing draft, triggers actual mutation
   let pendingSellExecution = context.pendingSellExecution || null;
+
   if (pendingSellExecution && !pendingSellExecution.confirmed) {
     if (isCancelMsg) {
       pendingSellExecution = null;
       classification.intent = "sell_execute";
       classification.slots._canceled = true;
-    } else if (intent === "sell_execute" && isConfirmMsg) {
+    } else if ((intent === "sell_execute" || intent === "sell_execute_confirmed") && isConfirmMsg) {
       pendingSellExecution = { ...pendingSellExecution, confirmed: true };
     }
   }
 
-  // Create pendingSellExecution for new sell_execute requests
+  // sell_execute_confirmed without existing draft → synthesizeRule rejects it
+  // Create pendingSellExecution for new sell_execute (draft) requests only
   if (!pendingSellExecution && intent === "sell_execute" && slots.assetQuery && !slots._canceled) {
     pendingSellExecution = {
       assetQuery: slots.assetQuery,
@@ -1792,7 +1898,7 @@ export async function synthesizeWithResults(intent, agentResults, slots, context
     return synthesizeRule(intent, agentResults, slots, context);
   }
 
-  // Panic sell guardrail: load position/plan/thesis data and build 5-part reply
+  // Panic sell guardrail: load position/plan/thesis data and build 6-part reply
   if (intent === "review_sell" && slots.panicFlag) {
     const assetLabel = slots.assetQuery || context.lastAsset;
     if (assetLabel) {
@@ -1808,7 +1914,9 @@ export async function synthesizeWithResults(intent, agentResults, slots, context
           const currentPrice = position?.currentPrice
             || agentResults.find((r) => r.role === "asset_info")?.data?.currentMetrics?.price
             || null;
-          return buildPanicSellReply(assetLabel, position, plan, valuationModel, currentPrice);
+          // Extract user-mentioned price from slots (e.g. "跌到6万" → 60000)
+          const userPrice = slots.userMentionedPrice || null;
+          return buildPanicSellReply(assetLabel, position, plan, valuationModel, currentPrice, agentResults, userPrice);
         }
       } catch {
         // Fall through to standard review_sell if state load fails

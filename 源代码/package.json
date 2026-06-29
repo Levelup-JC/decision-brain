@@ -32,6 +32,8 @@
     "test:plan16": "node --test tests/plan16-thesis-guard.test.mjs",
     "test:plan16:dialog-quality": "node --test tests/plan16-dialog-quality.test.mjs",
     "test:plan16:all": "npm run test:plan16 && npm run test:plan16:dialog-quality && npm run test:plan15:all",
+    "test:plan18": "node --test tests/plan18-*.mjs",
+    "test:plan18:all": "npm run test:plan18",
     "bootstrap:lobster": "node src/scripts/bootstrap-lobster-config.mjs",
     "install:lobster": "node src/scripts/install-lobster-config.mjs",
     "install:lobster:auto": "node src/scripts/install-lobster-auto.mjs",
