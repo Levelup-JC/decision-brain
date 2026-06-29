@@ -92,30 +92,40 @@ export async function handleRequest(request, response) {
     }
 
     if (request.method === "GET" && url.pathname === "/app") {
-      await serveDashboard(response);
+      try {
+        await serveDashboard(response);
+      } catch {
+        sendHtml(response, FALLBACK_LOGIN.replace("location.href='/app'", "location.href='/'"));
+      }
       return;
     }
 
     // Serve any .js module from ui/
     if (request.method === "GET" && url.pathname.endsWith(".js") && !url.pathname.includes("..")) {
-      const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
-      await serveStaticFile(response, filePath, "application/javascript; charset=utf-8");
+      try {
+        const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
+        await serveStaticFile(response, filePath, "application/javascript; charset=utf-8");
+      } catch { /* silently skip missing files on Vercel */ }
       return;
     }
 
     // Serve .json files from ui/ (demo-state.json etc.)
     if (request.method === "GET" && url.pathname.endsWith(".json") && !url.pathname.includes("..")) {
-      const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
-      await serveStaticFile(response, filePath, "application/json; charset=utf-8");
+      try {
+        const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
+        await serveStaticFile(response, filePath, "application/json; charset=utf-8");
+      } catch { /* silently skip */ }
       return;
     }
 
     // Serve image files from ui/
     const imgExt = url.pathname.match(/\.(png|svg|jpg|jpeg|webp|ico)$/i);
     if (request.method === "GET" && imgExt && !url.pathname.includes("..")) {
-      const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
-      const mimeTypes = { png: "image/png", svg: "image/svg+xml", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", ico: "image/x-icon" };
-      await serveBinaryFile(response, filePath, mimeTypes[imgExt[1].toLowerCase()] || "application/octet-stream");
+      try {
+        const filePath = join(uiDir, url.pathname.replace(/^\//, ""));
+        const mimeTypes = { png: "image/png", svg: "image/svg+xml", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", ico: "image/x-icon" };
+        await serveBinaryFile(response, filePath, mimeTypes[imgExt[1].toLowerCase()] || "application/octet-stream");
+      } catch { /* silently skip missing images on Vercel */ }
       return;
     }
 
