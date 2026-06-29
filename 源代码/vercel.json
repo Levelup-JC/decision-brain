@@ -1,7 +1,7 @@
 {
   "functions": {
     "src/index.mjs": {
-      "includeFiles": "src/ui/**/*"
+      "includeFiles": "src/ui/**"
     }
   }
 }

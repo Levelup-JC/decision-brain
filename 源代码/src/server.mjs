@@ -100,6 +100,23 @@ export async function handleRequest(request, response) {
       return;
     }
 
+    // ── DEBUG: file paths ────────────────────────────────────────────
+    if (request.method === "GET" && url.pathname === "/api/debug-paths") {
+      const { existsSync, readdirSync } = await import("node:fs");
+      const { join } = await import("node:path");
+      const paths = {
+        cwd: process.cwd(),
+        srcDir: join(process.cwd()),
+        uiDir,
+        uiDirExists: existsSync(uiDir),
+        varTaskContents: existsSync("/var/task") ? readdirSync("/var/task").slice(0, 20) : null,
+        varTaskSrcExists: existsSync("/var/task/src"),
+        varTaskSrcContents: existsSync("/var/task/src") ? readdirSync("/var/task/src").slice(0, 20) : null,
+      };
+      json(response, 200, paths);
+      return;
+    }
+
     if (request.method === "POST" && url.pathname === "/api/reset") {
       await store.clear();
       json(response, 200, { ok: true, message: "State reset" });
