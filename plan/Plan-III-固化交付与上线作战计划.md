@@ -26,7 +26,7 @@
 ### 仍遗留的 Plan-II 待办（已诚实列出，未完成）
 
 - Vercel KV 未创建（当前文件模式 `/tmp`，冷启动会丢）
-- Vercel `LLM_API_KEY` 仍是占位值，未替换 DeepSeek 真 key
+- Vercel `LLM_API_KEY` 仍是占位值，未替换 DeepSeek 环境变量
 - E2E 9 步把控人从未主持
 - Demo 未录、提交表单未填
 - 提交说明仍写"千问"，需改 DeepSeek
@@ -40,7 +40,7 @@
 里程碑节奏：
 
 - **M-III-1（固化）**：所有 Plan-II 代码 commit + push 到 `Levelup-JC/decision-brain`，git 工作区干净，无密钥泄漏。
-- **M-III-2（上线做实）**：Vercel 从最新 GitHub 重新部署，公网 `/api/health` + `/` + `/api/chat` 全部真实可达，KV 持久化生效，LLM 真 key 注入。
+- **M-III-2（上线做实）**：Vercel 从最新 GitHub 重新部署，公网 `/api/health` + `/` + `/api/chat` 全部真实可达，KV 持久化生效，LLM 环境变量 注入。
 - **M-III-3（收尾提交）**：把控人主持 E2E 9 步全过 + 录 Demo + 改提交说明 + 填表单三项。
 
 ---
@@ -49,7 +49,7 @@
 
 | 组 | 本阶段职责 | 依赖 |
 |----|-----------|------|
-| **A** | DeepSeek 真 key 注入 Vercel env、复跑线上 LLM 一次留档、修提交说明 | 依赖 C 部署做实 |
+| **A** | DeepSeek 环境变量配置 Vercel env、复跑线上 LLM 一次留档、修提交说明 | 依赖 C 部署做实 |
 | **B** | 线上环境前端复验（翻 false 后线上三栏正常、无 console error、降级提示） | 依赖 C 部署做实 |
 | **C** | git 固化 + Vercel 重新部署 + KV 创建 + 持久化线上实测 | 无（先行，关键路径起点） |
 | **All** | 把控人主持线上 E2E 9 步、终审、录 Demo、填表单 | 依赖三组合流 |
@@ -76,7 +76,7 @@
 
 | 编号 | 任务 | 交付指标 |
 |------|------|---------|
-| A-III-1 | Vercel 注入 DeepSeek 真 key | `vercel env` 中 `LLM_API_KEY` 替换占位值为真 DeepSeek key（只进 env，不进 git） |
+| A-III-1 | Vercel 配置 DeepSeek 环境变量 | `vercel env` 中 `LLM_API_KEY` 配置 DeepSeek 环境变量（只进 env，不进 git） |
 | A-III-2 | 线上 LLM 真跑一次留档 | 线上 `/api/chat -d '{"message":"研究BTW"}'` → `degraded=false`、intent 正确、agentResults 非空，存一份线上响应 JSON（区别于本地的 `A-II-3`） |
 | A-III-3 | 提交说明修正 | 删"千问/Qwen"那句，改为 DeepSeek（`api.deepseek.com/v1`, `deepseek-chat`），更新 `提交-Project-Description.md` |
 | A-III-4 | 线上降级保险复验 | 线上误填错 key 或 `CHAT_RULE_ONLY` 场景仍 HTTP 200 自动降级，不 500 |
@@ -151,7 +151,7 @@
 C-III-1 git 固化 push ──→ C-III-3 Vercel 重新部署 ──→ C-III-4 静态资源可达
        │                          │
 C-III-2 密钥复查 ─────────┘          ↓
-                              A-III-1 注入真 key
+                              A-III-1 注入环境变量
                                      │
                   ┌──────────────────┼──────────────────┐
                   ↓                   ↓                  ↓
@@ -179,7 +179,7 @@ C-III-2 密钥复查 ─────────┘          ↓
 - [ ] 线上 `/` 三栏正常、无 console error
 - [ ] 线上 `/api/chat` 真响应结构对齐 v2 §3，`degraded=false`
 - [ ] Vercel KV 创建，持久化线上实测通过
-- [ ] Vercel `LLM_API_KEY` 已替换为 DeepSeek 真 key
+- [ ] Vercel `LLM_API_KEY` 已配置为 DeepSeek 环境变量
 - [ ] 线上 DeepSeek 真跑一次并留档
 - [ ] 线上 E2E 9 步全过
 - [ ] 多 Agent 并发观感成立 + Bitget 5 Skill 显形 ≥1 次

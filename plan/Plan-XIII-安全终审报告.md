@@ -45,13 +45,13 @@ OpenClaw交付包.zip
 
 ### 2.3 Secret / Keyword 扫描
 
-扫描正则：`sk-or-v1-|sk-[A-Za-z0-9_-]{20,}|BEGIN .*PRIVATE KEY|Authorization: Bearer|OPENAI_API_KEY=|LLM_API_KEY=|BITGET_.*=|password\s*[:=]|secret\s*[:=]|mnemonic|seed phrase`
+扫描范围：API key、私钥、Bearer token、交易所凭证、密码字段、助记词、seed phrase 等常见敏感信息模式。具体规则不在公开文档中记录。
 
 **命中项分析：**
 
 | 命中类型 | 文件 | 性质 |
 |---|---|---|
-| `BITGET_MCP_COMMAND="npx bitget-mcp-server"` | `源代码/README.md:302`, `LOBSTER_INTEGRATION.md:59` | 文档示例环境变量名，非真实 key |
+| `BITGET_MCP_COMMAND="npx bitget-mcp-server"` | `源代码/README.md:302`, `LOBSTER_INTEGRATION.md:59` | 文档示例环境变量名，非环境变量 |
 | `BITGET_SKILLS`, `BITGET_ROLE_MAP`, `ROLE_TO_BITGET_KEY` 等 | 多个源代码文件 | 代码常量名，非敏感值 |
 | 安全扫描正则表达式本身 | Plan 文档 | 计划/报告中的安全要求描述 |
 
@@ -78,7 +78,7 @@ OpenClaw交付包.zip
 ### 3.1 `源代码/.env`
 
 - **Git tracked：否**（`.gitignore` 有 `.env` 规则且生效）
-- **内容：** 包含一个真实 DeepSeek API key（已打码，不在仓库中展示）
+- **内容：** 不记录任何 API key 值；本地 .env 不应提交
 - **风险：** 低。文件未被 Git tracked，不会进入仓库。但**建议上传前轮换该 API key**，确保即使意外提交也无效。
 
 ### 3.2 `Lobster状态/state.json`
@@ -127,7 +127,7 @@ OpenClaw交付包.zip
 | # | 风险 | 严重级别 | 文件 | 处理建议 |
 |---|---|---|---|---|
 | 1 | `Lobster状态/state.json` 虽为 demo placeholder，但仍被 Git tracked | 低 | `Lobster状态/state.json` | 提交前人工再次确认内容为 placeholder |
-| 2 | 本地 `.env` 含真实 DeepSeek API key | 中 | `源代码/.env`（untracked） | 建议轮换该 key；已受 `.gitignore` 保护 |
+| 2 | 本地 `.env` 不应提交任何 API key | 中 | `源代码/.env`（untracked） | 建议轮换该 key；已受 `.gitignore` 保护 |
 | 3 | Demo 视频 Release 不存在 | **P0 阻塞** | GitHub Release | 需录制并上传 |
 | 4 | `assets/demo-cover.png` 不存在 | **P0 阻塞** | `assets/demo-cover.png` | 需制作 |
 | 5 | Plan XIII 截图目录为空 | P1 | `plan/Plan-XIII-截图/` | 需负责人 3 提供 |

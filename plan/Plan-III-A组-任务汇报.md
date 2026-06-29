@@ -11,20 +11,20 @@
 
 | 编号 | 任务 | 状态 |
 |------|------|------|
-| A-III-1 | Vercel 注入 DeepSeek 真 key | Done |
+| A-III-1 | Vercel 配置 DeepSeek 环境变量 | Done |
 | A-III-2 | 线上 LLM 真跑一次留档 | Done |
 | A-III-3 | 提交说明修正（千问→DeepSeek） | Done |
 | A-III-4 | 线上降级保险复验 | Done |
 
 ---
 
-## A-III-1: Vercel 注入 DeepSeek 真 key
+## A-III-1: Vercel 配置 DeepSeek 环境变量
 
-线上环境变量全部替换为真值并重新部署：
+线上环境变量全部替换为环境变量值并重新部署：
 
 | 变量 | 值 |
 |------|-----|
-| `LLM_API_KEY` | `sk-a08...` （真实 DeepSeek key） |
+| `LLM_API_KEY` | 未在文档记录（通过环境变量配置） |
 | `LLM_BASE_URL` | `https://api.deepseek.com/v1` |
 | `LLM_MODEL` | `deepseek-chat` |
 
@@ -83,7 +83,7 @@
 | 场景 | 触发条件 | 线上结果 | 说明 |
 |------|----------|----------|------|
 | 空 key 降级 | `LLM_API_KEY=""` | 200 | Vercel 日志 07:45 时段已验证 |
-| 真 key 正常 | 当前线上 | 200, `degraded: false` | A-III-2 已验证 |
+| 环境变量 正常 | 当前线上 | 200, `degraded: false` | A-III-2 已验证 |
 | 强制降级 | `CHAT_RULE_ONLY=1` | 本地验证通过 | `isRuleOnly()=true`, 规则链路正常 |
 | 错 key 降级 | 无效 API key | 本地验证通过 | LLM 调用失败→自动 fallback rule, 不抛 500 |
 

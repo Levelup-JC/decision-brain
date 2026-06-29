@@ -26,7 +26,7 @@
 | README 完整性 | **通过** | 根 README 重写 + 源 README Mermaid 架构图 + 安全说明 |
 | 视频入口 | **待补** | README 已嵌入 GitHub Release 链接格式，视频待录制上传 |
 | 截图证据 | **通过** | 6 张截图已由负责人 3 补充（desktop/mobile/add-sol/update-sol/glow-curve/portfolio-overview） |
-| 安全审查 | **通过** | 代码扫描无真实 key/token/私钥泄露; `.env` 未 tracked; 详见安全审查报告 |
+| 安全审查 | **通过** | 代码扫描无环境变量/token/私钥泄露; `.env` 未 tracked; 详见安全审查报告 |
 | `npm test` | **通过** | 54/54 passed |
 
 ## 4. 负责人 1/2/3 代码变更验证
@@ -62,7 +62,7 @@
 - **`assets/demo-cover.png` 制作**：视频封面图
 
 ### P1
-- 本地 `.env` 中的 DeepSeek API key 建议轮换（已被 `.gitignore` 保护，未提交）
+- 本地 `.env` 中的 环境变量密钥如曾外泄必须轮换（已被 `.gitignore` 保护，未提交）
 - `Lobster状态/state.json` 提交前人工确认内容为 demo placeholder
 
 ### P2

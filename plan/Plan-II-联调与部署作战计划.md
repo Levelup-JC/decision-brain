@@ -46,7 +46,7 @@
 | 编号 | 任务 | 交付指标（达标定义） |
 |------|------|---------------------|
 | A-II-1 | 本地起真后端供 B 联调 | `node src/index.mjs` 起在 4177，`/api/health` 返回 ok，不崩 |
-| A-II-2 | 配通义千问真 key | `LLM_BASE_URL/LLM_API_KEY/LLM_MODEL` 指向千问，env 注入不进 git |
+| A-II-2 | 配通义千问环境变量 | `LLM_BASE_URL/LLM_API_KEY/LLM_MODEL` 指向千问，env 注入不进 git |
 | A-II-3 | 千问真跑一次完整对话 | "研究 BTW" 经千问分类+综合，`degraded=false`，留存一份真响应 JSON 截图/日志 |
 | A-II-4 | 修联调暴露的契约偏差 | B 报哪个字段缺/类型错，A 当天对齐 §3 契约，不甩锅给前端 |
 | A-II-5 | 降级保险复验 | `CHAT_RULE_ONLY=1` 与错误 key 两种情况均不 500，自动降级 |

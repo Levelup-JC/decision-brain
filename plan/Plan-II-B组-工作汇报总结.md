@@ -25,7 +25,7 @@
 | 编号 | 任务 | 状态 |
 |------|------|------|
 | A-II-1 | 本地起真后端 | 完成 — `node src/index.mjs` 在 0.0.0.0:4177，`/api/health` 返回 ok |
-| A-II-2 | 配 LLM 真 key | 完成 — 千问 key 无效，退 DeepSeek (`api.deepseek.com/v1`, `deepseek-chat`)，env 注入不进 git |
+| A-II-2 | 配 LLM 环境变量 | 完成 — 千问 key 无效，退 DeepSeek (`api.deepseek.com/v1`, `deepseek-chat`)，env 注入不进 git |
 | A-II-3 | LLM 真跑完整对话 | 完成 — "研究 BTW" 经 DeepSeek 分类+综合，`degraded=false`，留档 `plan/A-II-3-deepseek-response.json` |
 | A-II-4 | 修联调契约偏差 | 完成 — 唯一偏差 `researchReports` 缺失已修复，`api-service.mjs:64` 补序列化 |
 | A-II-5 | 降级保险复验 | 完成 — `CHAT_RULE_ONLY=1` 与错误 key 均 HTTP 200，自动降级 |

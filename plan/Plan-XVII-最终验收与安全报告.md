@@ -98,13 +98,13 @@ git ls-files | grep -iE '(\.env|\.pem|\.key|credentials|secret|token|password)'
 ### 3.2 .env 保护
 
 - `.env` 存在于 `源代码/` 目录，已由 `.gitignore` 保护
-- 包含 DeepSeek API key（建议轮换，见 6.3）
+- 不得记录 API key 值（建议轮换，见 6.3）
 
 ### 3.3 API Key / 私钥 / 助记词硬编码
 
 ```
 grep -rE '(sk-|api_key|apiKey|private_key|privateKey|mnemonic|seed_phrase|secret)' 源代码/src/
-→ 无真实 key。仅 api-service.mjs 中包含 "notFor: auto_trading, private_key_management" 的功能边界声明。
+→ 无环境变量。仅 api-service.mjs 中包含 "notFor: auto_trading, private_key_management" 的功能边界声明。
 ```
 
 ### 3.4 钱包私钥
@@ -199,7 +199,7 @@ const host = process.env.HOST || "0.0.0.0";
 |---|------|----------|----------|----------|
 | 1 | `npm test` 2 个存量测试失败（Plan not found for BTW） | 低 | 不阻断 Demo | 根因在 `confirmPlan` 中 BTW asset 映射。不影响 thesis guard 功能，建议 Plan XVIII 修复 |
 | 2 | Server 默认 HOST 为 `0.0.0.0` | 低 | 不阻断 | Vercel 部署需要。本地可通过 `HOST=127.0.0.1` 覆盖 |
-| 3 | 本地 `.env` 含 DeepSeek API key | 中 | 不阻断 | `.gitignore` 保护有效。建议上传前轮换该 key |
+| 3 | 本地 `.env` 不应提交任何 API key | 中 | 不阻断 | `.gitignore` 保护有效。建议上传前轮换该 key |
 | 4 | Demo 视频 Release 不存在 | P0 | **阻断 Demo 展示** | 需录制并上传 |
 | 5 | `assets/demo-cover.png` 不存在 | P0 | **阻断 Demo 展示** | 需制作 |
 | 6 | `OpenClaw交付包.zip` 被 Git tracked | 低 | 不阻断 | 内容安全（仅占位符），但建议后续通过 Release 分发 |

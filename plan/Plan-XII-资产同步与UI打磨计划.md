@@ -639,7 +639,7 @@ cd "/Users/jasoncong/Desktop/Decision Brain"
 git status --short
 git ls-files | rg '(^|/)(\\.env|\\.env\\.|state\\.json$|.*\\.zip$)'
 rg -n --hidden --glob '!**/node_modules/**' --glob '!**/.git/**' --glob '!**/package-lock.json' --glob '!**/*.png' --glob '!**/*.zip' \
-  'sk-or-v1-|sk-[A-Za-z0-9_-]{20,}|BEGIN .*PRIVATE KEY|Authorization: Bearer|OPENAI_API_KEY=|LLM_API_KEY=|BITGET_.*=|password\\s*[:=]|secret\\s*[:=]|mnemonic|seed phrase|/Users/' .
+  使用内部敏感信息扫描规则覆盖 API key、私钥、Bearer token、交易所凭证、密码字段、助记词、seed phrase 和本机绝对路径。
 ```
 
 如果命中：

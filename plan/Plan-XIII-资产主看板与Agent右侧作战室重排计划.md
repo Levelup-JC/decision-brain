@@ -33,7 +33,7 @@
 - Demo 视频还没有完成并上传，README 里的视频 Release 链接当前仍是预留入口。
 - `assets/demo-cover.png` 没有发现实际文件，需要补。
 - `Lobster状态/state.json` 当前是 Git tracked 文件，提交前必须人工确认内容确实是 demo placeholder。
-- `OpenClaw交付包.zip` 当前是 Git tracked 文件，提交前必须确认压缩包里没有真实 key、本机路径、个人配置。
+- `OpenClaw交付包.zip` 当前是 Git tracked 文件，提交前必须确认压缩包里没有环境变量、本机路径、个人配置。
 - `plan/Plan-XII-安全审查报告.md` 中关于 `git ls-files | rg '(\.env|state\.json|\.zip$)'` 的描述需要修正：当前实际能看到 tracked `Lobster状态/state.json`，不能继续写“无输出”。
 
 ---
@@ -399,7 +399,7 @@ SOL 值得买吗？
 cd "/Users/jasoncong/Desktop/Decision Brain"
 git status --short
 git ls-files | rg '(\.env|state\.json|\.zip$)'
-rg -n 'sk-or-v1-|sk-[A-Za-z0-9_-]{20,}|BEGIN .*PRIVATE KEY|Authorization: Bearer|OPENAI_API_KEY=|LLM_API_KEY=|BITGET_.*=|password\s*[:=]|secret\s*[:=]|mnemonic|seed phrase' .
+使用内部敏感信息扫描规则检查 API key、私钥、Bearer token、交易所凭证、密码字段、助记词和 seed phrase。
 rg -n '/Users/' .
 ```
 

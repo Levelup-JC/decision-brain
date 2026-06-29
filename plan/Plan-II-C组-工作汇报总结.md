@@ -99,7 +99,7 @@ PATCH /v9/projects/{id}  { "ssoProtection": null }
 | 编号 | 事项 | 优先级 |
 |------|------|--------|
 | 1 | **创建 Vercel KV 存储** — [Dashboard → Storage → KV](https://vercel.com/dashboard/stores) → 选择 decision-brain → 自动注入 `KV_REST_API_URL` + `KV_REST_API_TOKEN` | P0 |
-| 2 | **替换 LLM_API_KEY** — Vercel env 中当前为占位值，需替换为 DeepSeek 真实 key | P0 |
+| 2 | **替换 LLM_API_KEY** — Vercel env 中当前为占位值，需配置为 DeepSeek 环境变量 | P0 |
 | 3 | **ngrok 认证**（可选） — 获取 [auth token](https://dashboard.ngrok.com/get-started/your-authtoken) 激活独立回退通道 | P2 |
 
 ---

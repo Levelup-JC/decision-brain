@@ -22,7 +22,7 @@
 - [x] `git status` 干净，无业务文件未跟踪，无密钥泄漏
 - [x] `curl https://decision-brain-gray.vercel.app/api/health` → `{"ok":true}` — **不再 404**
 - [x] 线上 `/` 三栏页面能打开，无 404
-- [x] Chat API 结构正常（`degraded: true` 符合预期，等 A 组注入真 key）
+- [x] Chat API 结构正常（`degraded: true` 符合预期，等 A 组注入环境变量）
 
 ## 碰到的问题及处理
 
@@ -33,7 +33,7 @@
 
 C 组工作完成。以下任务现在可以启动：
 
-- **A 组**: DeepSeek 真 key 注入 + 线上 LLM 留档 + 改提交说明
+- **A 组**: DeepSeek 环境变量配置 + 线上 LLM 留档 + 改提交说明
 - **B 组**: 公网 URL 前端复验（连接 / 委员会冒泡 / 资产看板 / 诚实标注 / 降级提示）
 
 C 组无后续待办。

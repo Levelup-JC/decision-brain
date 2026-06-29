@@ -104,7 +104,7 @@ grep -r '/Users/' 源代码/src/
 | # | 风险 | 严重级别 | 处理建议 |
 |---|---|---|---|
 | 1 | `Lobster状态/state.json` 仍被 Git tracked | 低 | 已确认为 demo placeholder，提交前人工再确认 |
-| 2 | 本地 `.env` 含 DeepSeek API key | 中 | `.gitignore` 保护有效；建议轮换该 key |
+| 2 | 本地 `.env` 不应提交任何 API key | 中 | `.gitignore` 保护有效；建议轮换该 key |
 | 3 | `源代码/demos/` 未被 gitignore | 低 | 建议加入 `.gitignore`，demo 输出不应提交 |
 | 4 | Demo 视频 Release 不存在 | P0 阻塞 | 需录制并上传 |
 | 5 | `assets/demo-cover.png` 不存在 | P0 阻塞 | 需制作 |

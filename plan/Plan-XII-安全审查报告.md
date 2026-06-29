@@ -25,7 +25,7 @@
 
 ### 2.3 Secret/keyword scan
 
-扫描正则：`sk-or-v1-|sk-[A-Za-z0-9_-]{20,}|BEGIN .*PRIVATE KEY|Authorization: Bearer|OPENAI_API_KEY=|LLM_API_KEY=|BITGET_.*=|password\s*[:=]|secret\s*[:=]|mnemonic|seed phrase`
+扫描范围：API key、私钥、Bearer token、交易所凭证、密码字段、助记词、seed phrase 等常见敏感信息模式。具体规则不在公开文档中记录。
 
 命中项全部为：
 - 文档中的示例环境变量名（`export BITGET_MCP_COMMAND="npx bitget-mcp-server"`）
@@ -47,7 +47,7 @@
 
 | 风险 | 文件 | 处理结果 |
 |---|---|---|
-| 本地 `.env` 含真实 DeepSeek API key | `源代码/.env`（未 tracked） | `.gitignore` 保护，未提交。建议轮换该 key。 |
+| 本地 `.env` 不应提交任何 API key | `源代码/.env`（未 tracked） | `.gitignore` 保护，未提交。建议轮换该 key。 |
 | `Lobster状态/state.json` 被 git tracked | `Lobster状态/state.json` | 内容为 demo placeholder。提交前需人工确认无真实数据。 |
 | `源代码/data/` 目录含历史测试报告 | 多个 `plan*.json` | 仅测试输出，无敏感数据。建议加入 `.gitignore`。 |
 | `plan/Plan-VII-B组-过程文件/node_modules` 在工作区 | plan 目录 | 已通过 `.gitignore` 忽略 |
